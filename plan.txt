@@ -1,0 +1,86 @@
+# InvertisPrep Project Plan
+
+## Phase 1: Setup & Core Structure (Week 1)
+- [x] Initialize React + Vite project
+- [x] Set up Tailwind CSS and shadcn/ui
+- [x] Configure TypeScript setup
+- [x] Set up project structure
+- [x] Configure path aliases (@/*)
+- [x] Set up routing system
+- [ ] Design and implement authentication system
+
+## Phase 2: Resource Management (Week 2)
+- [ ] Create resource upload system
+- [ ] Implement file storage solution
+- [ ] Build search functionality
+- [ ] Create resource display components
+- [ ] Implement admin moderation system
+
+## Phase 3: Quizzo Development (Week 3)
+- [ ] Design quiz battle system
+- [ ] Implement Socket.IO for real-time functionality
+- [ ] Create matchmaking system
+- [ ] Build quiz interface
+- [ ] Implement scoring system
+
+## Phase 4: User Features (Week 4)
+- [ ] Create user dashboard
+- [ ] Implement leaderboard system
+- [ ] Build profile management
+- [ ] Create activity tracking
+- [ ] Implement notification system
+
+## Phase 5: Polish & Testing (Week 5)
+- [ ] UI/UX improvements
+- [ ] Performance optimization
+- [ ] Security testing
+- [ ] User testing
+- [ ] Bug fixes
+
+## Tech Stack Details
+- Frontend: React + Vite + TypeScript
+- UI: Tailwind CSS + shadcn/ui
+- Backend: Node.js + Express
+- Real-time: Socket.IO
+- Database: MongoDB
+- Storage: AWS S3 or similar
+- Authentication: JWT
+
+## File Structure
+```
+src/
+├── components/
+│   ├── ui/           # shadcn/ui components
+│   ├── layout/       # Layout components
+│   ├── resources/    # Resource management
+│   ├── quizzo/       # Quiz components
+│   └── shared/       # Shared components
+├── pages/
+│   ├── Home/
+│   ├── Resources/
+│   ├── Quizzo/
+│   ├── Dashboard/
+│   └── Profile/
+├── lib/             # Utility functions and types
+├── services/        # API services
+├── utils/          # Helper functions
+└── assets/         # Static assets
+```
+
+## Key Components to Build
+1. Navigation Bar
+2. Resource Card
+3. Quiz Battle Interface
+4. User Dashboard
+5. Search Component
+6. Upload Interface
+7. Leaderboard
+8. Profile Section
+
+## TypeScript Configuration
+- [x] tsconfig.json setup
+- [x] tsconfig.app.json setup
+- [x] tsconfig.node.json setup
+- [x] Path aliases configured
+- [x] Vite TypeScript configuration
+- [x] ESLint TypeScript configuration 
