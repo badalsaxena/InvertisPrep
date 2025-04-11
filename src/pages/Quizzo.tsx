@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { Navbar } from "@/components/layout/Navbar";
+import { useState } from "react";
+// Removed unused imports
+// import React, { useState } from "react";
+// import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Clock, Trophy, Users } from "lucide-react";
 

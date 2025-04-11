@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import { BookOpen, Trophy, Users, FileText, Brain, Laptop } from "lucide-react";
 
 export function Features() {
