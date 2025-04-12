@@ -31,6 +31,9 @@ export function Navbar() {
             <Link to="/resources" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium font-['Poppins']">
               Resources
             </Link>
+            <Link to="/pyq" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium font-['Poppins']">
+              PYQ
+            </Link>
             <Link to="/quizzo" className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium font-['Poppins']">
               Quizzo
             </Link>
@@ -79,6 +82,13 @@ export function Navbar() {
               onClick={() => setIsOpen(false)}
             >
               Resources
+            </Link>
+            <Link
+              to="/pyq"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 font-['Poppins']"
+              onClick={() => setIsOpen(false)}
+            >
+              PYQ
             </Link>
             <Link
               to="/quizzo"
