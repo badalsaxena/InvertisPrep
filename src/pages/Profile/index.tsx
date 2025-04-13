@@ -90,8 +90,9 @@ export default function Profile() {
               <h4 className="text-sm font-medium text-gray-500 mb-2">Account Actions</h4>
               <div className="flex flex-col space-y-2">
                 <Button 
-                  variant="destructive" 
+                  variant="secondary"
                   onClick={handleLogout}
+                  className="bg-red-600 text-white hover:bg-red-700"
                   disabled={isLoading}
                 >
                   {isLoading ? "Logging out..." : "Log out"}

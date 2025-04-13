@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   NavigationMenu,
-  NavigationMenuContent,
+  
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
+  
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,7 +83,7 @@ export default function Navbar() {
           <div className="flex items-center sm:hidden">
             <Button
               variant="ghost"
-              size="icon"
+              size="default"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
             >
