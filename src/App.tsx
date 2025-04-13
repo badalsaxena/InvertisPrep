@@ -8,7 +8,8 @@ import Services from "@/pages/Services";
 import Resources from "@/pages/Resources";
 import DepartmentView from "@/pages/Resources/DepartmentView";
 import Quizzo from "@/pages/Quizzo";
-import PYQ from "@/pages/PYQ";
+import PYQ from "@/pages/PYQ"; 
+
 
 function App() {
   return (
@@ -24,7 +25,8 @@ function App() {
                   <Hero />
                   <Features />
                 </main>
-              }
+              } 
+              
             />
             <Route path="/about" element={<About />} />
             <Route path="/services" element={<Services />} />
