@@ -23,7 +23,7 @@ export function Hero() {
       }}
     >
       {/* Gradient overlay for better text visibility and aesthetic */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-indigo-900/40"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-indigo-900/40"></div>
       
       <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

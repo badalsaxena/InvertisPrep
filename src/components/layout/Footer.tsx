@@ -1,82 +1,183 @@
 // import React from "react";
 import { Link } from "react-router-dom";
-import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Facebook, Twitter, Instagram, Youtube, Mail } from "lucide-react";
 
 export function Footer() {
+  const footerLinks = {
+    "Quick Links": [
+      { name: "Home", path: "/" },
+      { name: "About", path: "/about" },
+      { name: "Resources", path: "/resources" },
+      { name: "PYQ", path: "/pyq" },
+      { name: "Quizzo", path: "/quizzo" },
+    ],
+    "Resources": [
+      { name: "Study Materials", path: "/resources" },
+      { name: "Previous Year Papers", path: "/pyq" },
+      { name: "Quiz Battles", path: "/quizzo" },
+      { name: "Blog", path: "/blog" },
+    ],
+    "Support": [
+      { name: "Contact Us", path: "/contact" },
+      { name: "FAQ", path: "/faq" },
+      { name: "Privacy Policy", path: "/privacy" },
+      { name: "Terms of Service", path: "/terms" },
+    ],
+  };
+
+  const socialLinks = [
+    { icon: Facebook, href: "#", label: "Facebook" },
+    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Instagram, href: "#", label: "Instagram" },
+    { icon: Youtube, href: "#", label: "Youtube" },
+  ];
+
   return (
-    <footer className="bg-blue-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-gray-900 text-gray-200">
+      {/* Desktop Footer */}
+      <div className="hidden sm:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1">
-            <h3 className="text-2xl font-bold">InvertisPrep</h3>
-            <p className="mt-4 text-gray-400">
-              Your gateway to academic excellence. Access study materials, previous year papers, and compete in real-time quizzes.
+          {/* Brand Section */}
+          <div className="space-y-4">
+            <Link to="/" className="flex items-center">
+              <span className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+                INVERTISPREP
+              </span>
+            </Link>
+            <p className="text-sm text-gray-400">
+              Your gateway to academic excellence at Invertis University.
             </p>
+            {/* Newsletter */}
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-300">Subscribe to our newsletter</p>
+              <div className="flex space-x-2">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="max-w-[200px] bg-gray-800 border-gray-700 text-gray-200 placeholder:text-gray-500"
+                />
+                <Button variant="outline" className="border-gray-700 text-gray-200 hover:bg-gray-800 hover:text-gray-100">
+                  Subscribe
+                </Button>
+              </div>
+            </div>
           </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-400 hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-gray-400 hover:text-white transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link to="/services" className="text-gray-400 hover:text-white transition-colors">
-                  Services
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-            <ul className="space-y-2">
-              <li className="text-gray-400">
-                📧 invertisprep@example.com
-              </li>
-              <li className="text-gray-400">
-                📞 +91 1234567890
-              </li>
-            </ul>
-          </div>
-          
-          <div className="flex flex-col items-start">
-            <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
-            <ul className="flex space-x-4">
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-2xl">
-                  <FaFacebook />
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-2xl">
-                  <FaTwitter />
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors text-2xl">
-                  <FaInstagram />
-                </a>
-              </li>
-            </ul>
+
+          {/* Links Sections */}
+          {Object.entries(footerLinks).map(([title, links]) => (
+            <div key={title} className="space-y-4">
+              <h3 className="text-sm font-semibold text-gray-200">{title}</h3>
+              <ul className="space-y-2">
+                {links.map((link) => (
+                  <li key={link.path}>
+                    <Link
+                      to={link.path}
+                      className="text-sm text-gray-400 hover:text-purple-400 transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <Separator className="my-8 bg-gray-800" />
+
+        {/* Bottom Section */}
+        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <p className="text-sm text-gray-400">
+            © {new Date().getFullYear()} InvertisPrep. All rights reserved.
+          </p>
+          <div className="flex space-x-4">
+            {socialLinks.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                className="text-gray-400 hover:text-purple-400 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+              >
+                <social.icon className="h-5 w-5" />
+              </a>
+            ))}
           </div>
         </div>
-        <hr className="my-8 border-gray-700" />
-        <div className="flex justify-between text-gray-400">
-          <p>© {new Date().getFullYear()} InvertisPrep. All rights reserved.</p>
-          <p>Made with ❤️ by Ahqaf and Team</p>
+      </div>
+
+      {/* Mobile Footer */}
+      <div className="sm:hidden px-4 py-6">
+        <Accordion type="single" collapsible className="w-full">
+          {Object.entries(footerLinks).map(([title, links]) => (
+            <AccordionItem key={title} value={title} className="border-gray-800">
+              <AccordionTrigger className="text-sm font-semibold text-gray-200 hover:text-gray-100">
+                {title}
+              </AccordionTrigger>
+              <AccordionContent>
+                <ul className="space-y-2 py-2">
+                  {links.map((link) => (
+                    <li key={link.path}>
+                      <Link
+                        to={link.path}
+                        className="text-sm text-gray-400 hover:text-purple-400 transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+
+        {/* Mobile Newsletter */}
+        <div className="mt-6 space-y-4">
+          <h3 className="text-sm font-semibold text-gray-200">Subscribe to our newsletter</h3>
+          <div className="flex space-x-2">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              className="flex-1 bg-gray-800 border-gray-700 text-gray-200 placeholder:text-gray-500"
+            />
+            <Button variant="outline" className="border-gray-700 text-gray-200 hover:bg-gray-800 hover:text-gray-100">
+              <Mail className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <Separator className="my-6 bg-gray-800" />
+
+        {/* Mobile Bottom Section */}
+        <div className="space-y-4">
+          <div className="flex justify-center space-x-4">
+            {socialLinks.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                className="text-gray-400 hover:text-purple-400 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+              >
+                <social.icon className="h-5 w-5" />
+              </a>
+            ))}
+          </div>
+          <p className="text-sm text-gray-400 text-center">
+            © {new Date().getFullYear()} InvertisPrep. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

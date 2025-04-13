@@ -1,5 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Navbar } from "@/components/layout/Navbar";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
+import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 import { Hero } from "@/components/layout/Hero";
 import { Features } from "@/components/layout/Features";
 import { Footer } from "@/components/layout/Footer";
@@ -10,34 +15,59 @@ import DepartmentView from "@/pages/Resources/DepartmentView";
 import Quizzo from "@/pages/Quizzo";
 import PYQ from "@/pages/PYQ"; 
 
+// Protected Route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  
+  return <>{children}</>;
+};
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="flex-grow">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <main>
-                  <Hero />
-                  <Features />
-                </main>
-              } 
-              
-            />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/resources" element={<Resources />} />
-            <Route path="/resources/:departmentId" element={<DepartmentView />} />
-            <Route path="/pyq" element={<PYQ />} />
-            <Route path="/pyq/:departmentId" element={<DepartmentView />} />
-            <Route path="/pyq/:departmentId/:branchId" element={<DepartmentView />} />
-            <Route path="/quizzo" element={<Quizzo />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <main>
+                <Hero />
+                <Features />
+              </main>
+            } 
+          />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/resources/:departmentId" element={<DepartmentView />} />
+          <Route path="/pyq" element={<PYQ />} />
+          <Route path="/pyq/:departmentId" element={<DepartmentView />} />
+          <Route path="/pyq/:departmentId/:branchId" element={<DepartmentView />} />
+          <Route path="/quizzo" element={<Quizzo />} />
+        </Routes>
         <Footer />
       </div>
     </Router>
