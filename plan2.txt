@@ -1,0 +1,244 @@
+# InvertisPrep Backend Implementation Plan
+
+## Project Overview
+This backend will serve the InvertisPrep frontend by providing APIs to access PDF resources 
+(previous year question papers) organized by department, branch, semester, and academic session.
+
+## Technology Stack
+- Node.js & Express - Backend framework
+- fs-extra - Enhanced file system operations
+- multer - File upload handling
+- cors - Cross-Origin Resource Sharing
+- body-parser - Request parsing
+
+## Development Plan
+
+### 1. Repository Setup (Day 1)
+- Create new GitHub repository "invertisprepbackend"
+- Initialize with README.md, .gitignore (Node.js template), and LICENSE
+- Clone repository locally
+- Run `npm init -y` to create package.json
+- Install core dependencies:
+  ```
+  npm install express cors multer body-parser fs-extra
+  npm install nodemon --save-dev
+  ```
+- Configure package.json scripts:
+  ```json
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  }
+  ```
+
+### 2. Project Structure (Day 1)
+Create the following folder structure:
+```
+/invertisprepbackend
+├── index.js                # Main server file
+├── routes/                 # API routes
+│   └── resources.js        # Resource endpoints
+├── controllers/            # Business logic
+│   └── resourceController.js
+├── utils/                  # Utility functions
+│   └── fileSystem.js       # File operations
+├── public/                 # Public assets
+│   └── resources/          # PDF resources
+│       └── pyq/            # Previous year questions
+│           ├── btech/
+│           └── bca/
+├── tests/                  # Test files
+├── .env                    # Environment variables
+├── .env.example            # Example env file (for Git)
+└── .gitignore              # Files to ignore in Git
+```
+
+### 3. Core Server Implementation (Day 1)
+- Create basic Express server in index.js
+- Set up middleware (cors, body-parser)
+- Configure static file serving for resources
+- Implement basic error handling
+- Create environment variables for configuration
+
+### 4. File System Utilities (Day 2)
+- Implement directory reading function
+- Implement file listing function with extension filtering
+- Create path existence checking utility
+- Add functions to create directories if they don't exist
+
+### 5. Resource Controller Implementation (Day 2-3)
+- Implement getDepartments function
+- Implement getBranches function
+- Implement getSemesters function
+- Implement getSessions function
+- Implement getFiles function
+
+### 6. File Upload Implementation (Day 3)
+- Configure multer for PDF file uploads
+- Implement automatic directory creation if needed
+- Add file size and type validation
+- Create upload endpoint and controller function
+
+### 7. Routes Configuration (Day 3)
+- Set up all resource endpoints in routes/resources.js
+- Connect routes to controller functions
+- Add parameter validation middleware
+
+### 8. Testing (Day 4)
+- Manually test all API endpoints
+- Create sample data structure in public/resources
+- Test file downloads work correctly
+- Test file uploads work correctly
+- Verify CORS configuration works with frontend
+
+### 9. Integration with Frontend (Day 4-5)
+- Update frontend resourceService.ts to use new backend
+- Test the connection between frontend and backend
+- Handle error states and loading indicators
+- Implement proper file path resolution
+
+### 10. Documentation (Day 5)
+- Create API documentation
+- Add setup instructions in README.md
+- Document environment variables
+- Add example requests and responses
+
+### 11. Deployment (Day 6)
+- Choose deployment platform (Render, Railway, Heroku, etc.)
+- Configure environment variables on platform
+- Set up CI/CD pipeline for automatic deployment
+- Configure proper CORS for production frontend URL
+- Deploy initial version
+
+### 12. Monitoring and Maintenance (Ongoing)
+- Set up logging
+- Implement error tracking
+- Create backup strategy for uploaded files
+- Plan for scaling as resource collection grows
+
+## API Endpoints
+
+### 1. Get Departments
+```
+GET /api/resources/departments
+```
+
+### 2. Get Branches by Department
+```
+GET /api/resources/departments/:departmentId/branches
+```
+
+### 3. Get Semesters by Department and Branch
+```
+GET /api/resources/departments/:departmentId/branches/:branchId/semesters
+```
+
+### 4. Get Sessions by Department and Branch
+```
+GET /api/resources/departments/:departmentId/branches/:branchId/sessions
+```
+
+### 5. Get Files with Filters
+```
+GET /api/resources/files?department=btech&branch=cse&semester=1&session=2023-24
+```
+
+### 6. Upload File
+```
+POST /api/resources/upload
+Content-Type: multipart/form-data
+body: {
+  file: [PDF file],
+  department: "btech",
+  branch: "cse",
+  semester: "1",
+  session: "2023-24"
+}
+```
+
+## Data Structure
+The backend will use a directory structure to organize files:
+```
+public/resources/pyq/[department]/[branch]/[session]/semester-[number]/[filename].pdf
+```
+
+Example:
+```
+public/resources/pyq/btech/cse/2023-24/semester-1/CSE_2023_Sem1_MATHEMATICS_I.pdf
+```
+
+## Frontend Integration
+To integrate with the frontend, create a resourceService.ts file that will handle API calls:
+
+```typescript
+// src/services/resourceService.ts
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000/api/resources'; // Change in production
+
+export interface Department {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+}
+
+export interface PDFResource {
+  id: string;
+  title: string;
+  path: string;
+  filename: string;
+  semester: string;
+  session: string;
+  department: string;
+  branch: string;
+}
+
+export const getDepartments = async (): Promise<Department[]> => {
+  const response = await axios.get(`${API_URL}/departments`);
+  return response.data.departments;
+};
+
+export const getBranches = async (departmentId: string): Promise<Branch[]> => {
+  const response = await axios.get(`${API_URL}/departments/${departmentId}/branches`);
+  return response.data.branches;
+};
+
+export const getSemesters = async (departmentId: string, branchId: string): Promise<string[]> => {
+  const response = await axios.get(
+    `${API_URL}/departments/${departmentId}/branches/${branchId}/semesters`
+  );
+  return response.data.semesters;
+};
+
+export const getSessions = async (departmentId: string, branchId: string): Promise<string[]> => {
+  const response = await axios.get(
+    `${API_URL}/departments/${departmentId}/branches/${branchId}/sessions`
+  );
+  return response.data.sessions;
+};
+
+export const getFiles = async (
+  department: string,
+  branch: string,
+  semester: string,
+  session: string
+): Promise<PDFResource[]> => {
+  const response = await axios.get(`${API_URL}/files`, {
+    params: { department, branch, semester, session }
+  });
+  return response.data.files;
+};
+```
+
+## Future Enhancements
+1. Authentication for admin features
+2. PDF metadata extraction
+3. Search across all PDFs
+4. File categorization beyond just PYQs
+5. User feedback/ratings on resources
+6. Analytics on most downloaded resources 

@@ -1,18 +1,39 @@
 import { departments } from "@/data/resources";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Wand2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function PYQ() {
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="max-w-3xl mx-auto text-center mb-12">
+      <div className="max-w-3xl mx-auto text-center mb-8">
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
           Previous Year Questions
         </h1>
         <p className="text-lg text-gray-600">
           Access previous year question papers for all departments and semesters.
         </p>
+      </div>
+
+      {/* New Wizard Banner */}
+      <div className="max-w-4xl mx-auto mb-12 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg p-6 shadow-md">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-blue-600" />
+              Find Question Papers
+            </h2>
+            <p className="text-gray-600 mt-1">
+              Use our step-by-step wizard to find and download the exact resources you need.
+            </p>
+          </div>
+          <Link to="/pyq-wizard">
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+              Launch Wizard
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-12 max-w-6xl mx-auto">
@@ -24,10 +45,10 @@ export default function PYQ() {
                 <p className="text-gray-600 mt-1">{department.description}</p>
               </div>
               <Link 
-                to={`/pyq/${department.id}`}
+                to="/pyq-wizard"
                 className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm font-medium"
               >
-                View All Papers
+                Find Papers
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
@@ -35,7 +56,7 @@ export default function PYQ() {
             {department.branches ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {department.branches.map((branch) => (
-                  <Link key={branch.id} to={`/pyq/${department.id}/${branch.id}`}>
+                  <Link key={branch.id} to="/pyq-wizard">
                     <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full">
                       <CardHeader>
                         <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
@@ -60,7 +81,7 @@ export default function PYQ() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {department.semesters?.map((semester) => (
-                  <Link key={semester} to={`/pyq/${department.id}/semester-${semester}`}>
+                  <Link key={semester} to="/pyq-wizard">
                     <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] cursor-pointer h-full">
                       <CardHeader>
                         <CardTitle className="text-lg group-hover:text-blue-600 transition-colors">
