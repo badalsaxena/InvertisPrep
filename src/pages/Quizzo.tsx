@@ -4,6 +4,7 @@ import { useState } from "react";
 // import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Clock, Trophy, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Sample quiz questions
 const sampleQuestions = [
@@ -68,8 +69,13 @@ export default function Quizzo() {
             Quizzo Battle
           </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Test your knowledge in real-time 1v1 quiz battles with your peers.
+            Test your knowledge in quiz battles. Play solo or compete with peers in real-time matches.
           </p>
+          <div className="mt-6">
+            <Link to="/quizzo/multiplayer" className="text-indigo-600 font-medium hover:text-indigo-800">
+              Try Multiplayer Mode →
+            </Link>
+          </div>
         </div>
 
         <div className="max-w-2xl mx-auto">
@@ -82,15 +88,24 @@ export default function Quizzo() {
                 Ready for a Challenge?
               </h2>
               <p className="text-gray-600 mb-8">
-                Compete in a 1v1 quiz battle with 10 seconds per question. Test your knowledge and climb the leaderboard!
+                Test your knowledge with 10 seconds per question. Practice in solo mode or challenge others in multiplayer!
               </p>
               <div className="flex justify-center gap-4">
                 <Button
                   onClick={startGame}
                   className="px-6"
                 >
-                  Start Quizzo
+                  Start Solo Mode
                 </Button>
+                <Link to="/quizzo/multiplayer">
+                  <Button
+                    variant="outline"
+                    className="px-6 flex items-center gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    Multiplayer
+                  </Button>
+                </Link>
               </div>
             </div>
           )}
@@ -100,7 +115,7 @@ export default function Quizzo() {
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-indigo-600" />
-                  <span className="font-medium">You vs. Opponent</span>
+                  <span className="font-medium">Solo Practice</span>
                 </div>
                 <div className="flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
                   <Clock className="h-4 w-4" />
@@ -164,6 +179,15 @@ export default function Quizzo() {
                 >
                   Play Again
                 </Button>
+                <Link to="/quizzo/multiplayer">
+                  <Button
+                    variant="outline"
+                    className="px-6 flex items-center gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    Try Multiplayer
+                  </Button>
+                </Link>
               </div>
             </div>
           )}

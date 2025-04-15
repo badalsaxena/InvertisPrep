@@ -13,6 +13,7 @@ import Services from "@/pages/Services";
 import Resources from "@/pages/Resources";
 import DepartmentWizard from "@/pages/Resources/DepartmentWizard";
 import Quizzo from "@/pages/Quizzo";
+import MultiplayerQuizzo from "@/pages/MultiplayerQuizzo";
 import PYQ from "@/pages/PYQ"; 
 
 // Protected Route component
@@ -70,7 +71,9 @@ function App() {
           <Route path="/pyq/:departmentId" element={<Navigate to="/pyq-wizard" replace />} />
           <Route path="/pyq/:departmentId/:branchId" element={<Navigate to="/pyq-wizard" replace />} />
           
+          {/* Quizzo routes */}
           <Route path="/quizzo" element={<Quizzo />} />
+          <Route path="/quizzo/multiplayer" element={<MultiplayerQuizzo />} />
         </Routes>
         <Footer />
       </div>
