@@ -201,7 +201,7 @@ export default function DepartmentWizard() {
   const handleDownload = (resource: PDFResource) => {
     try {
       // Construct the correct path to the file
-      const fullPath = `http://localhost:5000${resource.path}`;
+      const fullPath = `https://invertisprepbackend.vercel.app${resource.path}`;
       
       // Create a download link
       const link = document.createElement('a');
