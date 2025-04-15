@@ -50,11 +50,12 @@ export default function DepartmentWizard() {
       setLoading(true);
       try {
         const data = await getDepartments();
+        console.log('Fetched Departments:', data);
         setDepartments(data);
         setError(null);
       } catch (err) {
         setError("Failed to load departments. Please try again later.");
-        console.error(err);
+        console.error('Error fetching departments:', err);
       } finally {
         setLoading(false);
       }
