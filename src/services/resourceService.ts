@@ -2,7 +2,7 @@ import { Department, Branch, PDFResource } from '../data/resources';
 import { extractSubjectName } from '../lib/utils';
 
 // Set API URL - change in production to your deployed backend URL
-const API_URL = 'http://localhost:5000/api/resources';
+const API_URL = 'https://invertisprepbackend.vercel.app/api/resources';
 
 // Get all departments
 export const getDepartments = async (): Promise<Department[]> => {
@@ -50,10 +50,8 @@ export const getSemesters = async (departmentId: string, branchId: string): Prom
 };
 
 // Get sessions
-export const getSessions = async (departmentId: string, branchId: string, semester: string): Promise<string[]> => {
+export const getSessions = async (departmentId: string, branchId: string): Promise<string[]> => {
   try {
-    // If we have a semester, we could use it in the query parameters
-    // but the current API doesn't seem to require it
     const response = await fetch(
       `${API_URL}/departments/${departmentId}/branches/${branchId}/sessions`
     );
