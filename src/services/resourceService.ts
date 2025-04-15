@@ -1,6 +1,5 @@
 import { Department, Branch, PDFResource } from '../data/resources';
 import { extractSubjectName } from '../lib/utils';
-import axios from 'axios';
 
 // Set API URL - change in production to your deployed backend URL
 const API_URL = 'http://localhost:5000/api/resources';
@@ -53,6 +52,8 @@ export const getSemesters = async (departmentId: string, branchId: string): Prom
 // Get sessions
 export const getSessions = async (departmentId: string, branchId: string, semester: string): Promise<string[]> => {
   try {
+    // If we have a semester, we could use it in the query parameters
+    // but the current API doesn't seem to require it
     const response = await fetch(
       `${API_URL}/departments/${departmentId}/branches/${branchId}/sessions`
     );
@@ -89,7 +90,7 @@ export const getFiles = async (
     // Process the files to add readable subject names
     return files.map((file: PDFResource) => ({
       ...file,
-      subjectName: extractSubjectName(file.fileName || file.filename)
+      subjectName: file.fileName || file.filename ? extractSubjectName(file.fileName || file.filename || '') : file.title
     }));
   } catch (error) {
     console.error('Error fetching files:', error);

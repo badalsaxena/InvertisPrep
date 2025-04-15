@@ -1,12 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
@@ -33,8 +25,6 @@ import { Department, Branch, PDFResource } from "@/data/resources";
 type WizardStep = 'department' | 'branch' | 'semester' | 'session' | 'resources';
 
 export default function DepartmentWizard() {
-  const navigate = useNavigate();
-  
   // State for the wizard
   const [currentStep, setCurrentStep] = useState<WizardStep>('department');
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
@@ -484,7 +474,7 @@ export default function DepartmentWizard() {
                           </div>
                           <div className="flex-1">
                             <h3 className="font-semibold mb-1 break-words">
-                              {resource.subjectName || resource.title || resource.fileName}
+                              {resource.subjectName || resource.title || resource.fileName || resource.filename || 'Untitled Document'}
                             </h3>
                             <p className="text-sm text-gray-600 mb-3">
                               Semester {resource.semester} • {resource.session}

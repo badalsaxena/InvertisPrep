@@ -10,6 +10,8 @@ export function cn(...inputs: ClassValue[]) {
  * Example: "CSE_2023_Sem1_MATHEMATICS_I.pdf" -> "Mathematics I"
  */
 export function extractSubjectName(filename: string): string {
+  if (!filename) return '';
+  
   // Remove .pdf extension if present
   let name = filename.replace(/\.pdf$/i, '');
   
