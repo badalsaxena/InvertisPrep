@@ -111,7 +111,7 @@ export default function DepartmentWizard() {
       const fetchSessions = async () => {
         setLoading(true);
         try {
-          const data = await getSessions(selectedDepartment, selectedBranch, selectedSemester);
+          const data = await getSessions(selectedDepartment, selectedBranch);
           setSessions(data);
           setError(null);
         } catch (err) {
@@ -124,7 +124,7 @@ export default function DepartmentWizard() {
 
       fetchSessions();
     }
-  }, [selectedDepartment, selectedBranch, selectedSemester]);
+  }, [selectedDepartment, selectedBranch]);
 
   // Move to the next step in the wizard
   const goToNextStep = () => {
