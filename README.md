@@ -91,7 +91,7 @@ This will:
    Create a `.env` file in the root:
    ```
    VITE_API_URL=/api
-   VITE_QUIZZO_REALTIME_URL=http://localhost:8080
+   VITE_QUIZZO_REALTIME_URL=https://your-realtime-server-url
    ```
 
 4. **Setup real-time server**:

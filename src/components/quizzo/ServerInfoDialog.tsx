@@ -43,7 +43,7 @@ export default function ServerInfoDialog() {
       const apiStatus = apiResponse.ok ? 'connected' : 'disconnected';
       
       // Get the WebSocket URL from the environment variable or use default
-      const wsUrl = import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-unified-server.onrender.com';
+      const wsUrl = import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.vercel.app';
       
       // Check WebSocket server
       let wsStatus: 'connecting' | 'connected' | 'disconnected' = 'connecting';
@@ -177,7 +177,7 @@ export default function ServerInfoDialog() {
               <h3 className="font-medium mb-2">Server Details</h3>
               <div className="text-sm space-y-1">
                 <div><strong>API URL:</strong> {import.meta.env.VITE_API_URL || '/api'}</div>
-                <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-unified-server.onrender.com'}</div>
+                <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.vercel.app'}</div>
                 <div><strong>Protocol:</strong> WebSocket (with HTTP fallback)</div>
               </div>
             </div>

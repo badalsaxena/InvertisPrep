@@ -64,7 +64,7 @@ class QuizzoSocketService {
     }
     
     // We use a separate unified server deployed elsewhere
-    return 'https://quizzo-unified-server.onrender.com';
+    return 'https://quizzo-realtime.vercel.app';
   }
   
   // Connect to socket server
