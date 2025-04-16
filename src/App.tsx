@@ -11,10 +11,10 @@ import { Footer } from "@/components/layout/Footer";
 import About from "@/pages/About";
 import Services from "@/pages/Services";
 import Resources from "@/pages/Resources";
-import DepartmentWizard from "@/pages/Resources/DepartmentWizard";
 import Quizzo from "@/pages/Quizzo";
 import MultiplayerQuizzo from "@/pages/MultiplayerQuizzo";
 import PYQ from "@/pages/PYQ"; 
+import ProgramDetails from "@/pages/PYQ/ProgramDetails";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -64,12 +64,11 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/pyq" element={<PYQ />} />
-          <Route path="/pyq-wizard" element={<DepartmentWizard />} />
+          <Route path="/pyq/:programId" element={<ProgramDetails />} />
           
-          {/* Redirect old department view paths to wizard */}
-          <Route path="/resources/:departmentId" element={<Navigate to="/pyq-wizard" replace />} />
-          <Route path="/pyq/:departmentId" element={<Navigate to="/pyq-wizard" replace />} />
-          <Route path="/pyq/:departmentId/:branchId" element={<Navigate to="/pyq-wizard" replace />} />
+          {/* Redirect old department view paths */}
+          <Route path="/resources/:departmentId" element={<Navigate to="/pyq" replace />} />
+          <Route path="/pyq/:departmentId/:branchId" element={<Navigate to="/pyq" replace />} />
           
           {/* Quizzo routes */}
           <Route path="/quizzo" element={<Quizzo />} />
