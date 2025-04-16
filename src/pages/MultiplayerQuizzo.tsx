@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, Trophy, Users, XCircle, Loader, CheckCircle } from "lucide-react";
 import quizzoSocketService from "@/services/quizzoSocket";
-import { useNavigate } from "react-router-dom";
 import { 
   Select,
   SelectContent,
@@ -23,13 +22,11 @@ const SUBJECTS = [
 ];
 
 export default function MultiplayerQuizzo() {
-  const navigate = useNavigate();
   const [username, setUsername] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   
   // Game state management
   const [gameState, setGameState] = useState<'setup' | 'matching' | 'playing' | 'finished'>('setup');
-  const [currentRoom, setCurrentRoom] = useState<any | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<any | null>(null);
   const [questionCount, setQuestionCount] = useState<number>(0);
   const [totalQuestions, setTotalQuestions] = useState<number>(10);
@@ -82,7 +79,6 @@ export default function MultiplayerQuizzo() {
     // Match found event
     quizzoSocketService.onMatchFound((data) => {
       console.log("Match found:", data);
-      setCurrentRoom(data);
       setOpponent(data.opponent);
       setGameState('playing');
       clearInterval(matchingTimerRef.current as NodeJS.Timeout);
@@ -227,7 +223,6 @@ export default function MultiplayerQuizzo() {
   // Play again
   const playAgain = () => {
     setGameState('setup');
-    setCurrentRoom(null);
     setCurrentQuestion(null);
     setQuestionCount(0);
     setSelectedOption(null);

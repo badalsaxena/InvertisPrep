@@ -44,7 +44,7 @@ function setupEnvFiles() {
     console.log(`${colors.yellow}Creating main .env file${colors.reset}`);
     fs.writeFileSync(mainEnvPath, 
       'VITE_API_URL=/api\n' +
-      'VITE_QUIZZO_REALTIME_URL=http://localhost:8080\n'
+      'VITE_QUIZZO_REALTIME_URL=https://quizzo-realtime.vercel.app\n'
     );
     console.log(`${colors.green}Created .env file${colors.reset}`);
   } else {

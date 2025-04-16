@@ -2,14 +2,12 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Info, Server, Copy, Check, Wifi, RefreshCw, CheckCircle, XCircle } from "lucide-react";
-import axios from "axios";
+import { Server, RefreshCw, CheckCircle, XCircle } from "lucide-react";
 
 interface ServerStatus {
   api: 'connecting' | 'connected' | 'disconnected';
@@ -24,10 +22,6 @@ export default function ServerInfoDialog() {
     realtime: 'connecting',
     lastChecked: null
   });
-  const [status, setStatus] = useState<ServerStatus | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
   
   const checkServerStatus = async () => {
     setServerStatus(prev => ({ 
@@ -49,7 +43,7 @@ export default function ServerInfoDialog() {
       const apiStatus = apiResponse.ok ? 'connected' : 'disconnected';
       
       // Get the WebSocket URL from the environment variable or use default
-      const wsUrl = import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.onrender.com';
+      const wsUrl = import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.vercel.app';
       
       // Check WebSocket server
       let wsStatus: 'connecting' | 'connected' | 'disconnected' = 'connecting';
@@ -83,63 +77,6 @@ export default function ServerInfoDialog() {
       checkServerStatus();
     }
   }, [isOpen]);
-  
-  const fetchServerInfo = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Get the server URL from the socket service
-      const serverUrl = getServerBaseUrl();
-      
-      // Fetch server status
-      const response = await axios.get(`${serverUrl}/status`);
-      setStatus(response.data);
-    } catch (err) {
-      console.error("Failed to fetch server info:", err);
-      setError("Could not connect to the server. Make sure the Quizzo server is running.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Get the base server URL (without socket.io path)
-  const getServerBaseUrl = (): string => {
-    // First check if explicitly set in environment
-    if (import.meta.env.VITE_QUIZZO_SERVER_URL) {
-      return import.meta.env.VITE_QUIZZO_SERVER_URL;
-    }
-    
-    // Otherwise, derive from current host dynamically
-    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    const hostname = window.location.hostname; // This will be the actual host IP/domain
-    const port = '5000'; // Default Quizzo backend port
-    
-    return `${protocol}//${hostname}:${port}`;
-  };
-  
-  // Format uptime seconds to human-readable format
-  const formatUptime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
-    } else {
-      return `${secs}s`;
-    }
-  };
-  
-  // Copy server URL to clipboard
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
   
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -240,7 +177,7 @@ export default function ServerInfoDialog() {
               <h3 className="font-medium mb-2">Server Details</h3>
               <div className="text-sm space-y-1">
                 <div><strong>API URL:</strong> {import.meta.env.VITE_API_URL || '/api'}</div>
-                <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.onrender.com'}</div>
+                <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.vercel.app'}</div>
                 <div><strong>Protocol:</strong> WebSocket (with HTTP fallback)</div>
               </div>
             </div>
