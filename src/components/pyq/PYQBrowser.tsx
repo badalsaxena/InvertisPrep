@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import AuthRequiredDialog from '@/components/AuthRequiredDialog';
 import SelectionForm from './SelectionForm';
 
 interface PYQBrowserProps {
@@ -9,6 +11,9 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
   const [results, setResults] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [currentPaperUrl, setCurrentPaperUrl] = useState('');
+  const { user } = useAuth();
 
   const handleFormSubmit = async (department: string, branch: string, semester: string, session?: string) => {
     setLoading(true);
@@ -43,6 +48,16 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
     }
   };
 
+  const handleDownload = (e: React.MouseEvent, downloadUrl: string) => {
+    if (!user) {
+      e.preventDefault();
+      setCurrentPaperUrl(downloadUrl);
+      setIsAuthDialogOpen(true);
+      return;
+    }
+    // Allow default behavior if authenticated
+  };
+
   return (
     <div className="container mx-auto py-8">
       <SelectionForm onSubmit={handleFormSubmit} />
@@ -73,6 +88,7 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
                   href={paper.downloadUrl} 
                   target="_blank" 
                   rel="noopener noreferrer" 
+                  onClick={(e) => handleDownload(e, paper.downloadUrl)}
                   className="inline-block bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary/90"
                 >
                   Download
@@ -82,6 +98,13 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
           </div>
         </div>
       )}
+      
+      {/* Auth Required Dialog */}
+      <AuthRequiredDialog 
+        isOpen={isAuthDialogOpen}
+        setIsOpen={setIsAuthDialogOpen}
+        returnPath="/pyq"
+      />
     </div>
   );
 };

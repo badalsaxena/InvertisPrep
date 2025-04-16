@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,27 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const navigate = useNavigate();
   const { signInWithEmail, signInWithGoogle } = useAuth();
+
+  useEffect(() => {
+    // Check for redirect path in session storage
+    const storedPath = sessionStorage.getItem('authRedirectPath');
+    if (storedPath) {
+      setRedirectPath(storedPath);
+    }
+  }, []);
+
+  const handleRedirectAfterLogin = () => {
+    if (redirectPath) {
+      // Clear the stored path
+      sessionStorage.removeItem('authRedirectPath');
+      navigate(redirectPath);
+    } else {
+      navigate("/");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +40,7 @@ export default function Login() {
       setError("");
       setLoading(true);
       await signInWithEmail(email, password);
-      navigate("/");
+      handleRedirectAfterLogin();
     } catch (error) {
       setError("Failed to sign in. Please check your credentials.");
     } finally {
@@ -34,7 +53,7 @@ export default function Login() {
       setError("");
       setLoading(true);
       await signInWithGoogle();
-      navigate("/");
+      handleRedirectAfterLogin();
     } catch (error) {
       setError("Failed to sign in with Google.");
     } finally {

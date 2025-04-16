@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthRequiredDialog from "@/components/AuthRequiredDialog";
 
 // Backend URL - can be moved to environment variable
 const BACKEND_URL = "https://invertisprepbackend.vercel.app";
@@ -580,6 +582,18 @@ function ProgramDetails() {
 
 // Paper card component
 function PaperCard({ paper }: { paper: Paper }) {
+  const { user } = useAuth();
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  
+  const handleDownload = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      setIsAuthDialogOpen(true);
+      return;
+    }
+    // Allow default link behavior if authenticated
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-md transition-all h-full border border-gray-200">
       <CardHeader className="pb-2">
@@ -600,12 +614,20 @@ function PaperCard({ paper }: { paper: Paper }) {
           href={`${BACKEND_URL}${paper.path}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handleDownload}
           className="inline-flex items-center px-3 py-1.5 text-xs bg-primary hover:bg-primary/90 text-white rounded-md transition-colors"
         >
           <FileText className="h-3 w-3 mr-1.5" />
           Download
         </a>
       </div>
+      
+      {/* Auth Required Dialog */}
+      <AuthRequiredDialog 
+        isOpen={isAuthDialogOpen}
+        setIsOpen={setIsAuthDialogOpen}
+        returnPath={`/pyq/${paper.department}/${paper.branch}`}
+      />
     </Card>
   );
 }

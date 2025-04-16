@@ -20,6 +20,8 @@ import {
   getFiles,
 } from "@/services/resourceService";
 import { Department, Branch, PDFResource } from "@/data/resources";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthRequiredDialog from "@/components/AuthRequiredDialog";
 
 // Define the steps in our wizard
 type WizardStep = 'department' | 'branch' | 'semester' | 'session' | 'resources';
@@ -43,6 +45,10 @@ export default function DepartmentWizard() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const { user } = useAuth();
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [resourceToDownload, setResourceToDownload] = useState<PDFResource | null>(null);
 
   // Fetch departments on component mount
   useEffect(() => {
@@ -200,6 +206,14 @@ export default function DepartmentWizard() {
 
   // Handle downloading a file
   const handleDownload = (resource: PDFResource) => {
+    // Check if user is authenticated
+    if (!user) {
+      // Open auth dialog if not authenticated
+      setResourceToDownload(resource);
+      setIsAuthDialogOpen(true);
+      return;
+    }
+    
     try {
       // Construct the correct path to the file
       const fullPath = `https://invertisprepbackend.vercel.app${resource.path}`;
@@ -218,6 +232,15 @@ export default function DepartmentWizard() {
       console.log(`Downloading file: ${resource.fileName || resource.filename || resource.id}`);
     } catch (error) {
       console.error('Download failed:', error);
+    }
+  };
+
+  // Continue download after authentication
+  const handleAuthComplete = () => {
+    if (resourceToDownload && user) {
+      // Re-attempt download after auth
+      handleDownload(resourceToDownload);
+      setResourceToDownload(null);
     }
   };
 
@@ -564,6 +587,14 @@ export default function DepartmentWizard() {
           {renderStepContent()}
         </Card>
       </div>
+      
+      {/* Auth Required Dialog */}
+      <AuthRequiredDialog 
+        isOpen={isAuthDialogOpen}
+        setIsOpen={setIsAuthDialogOpen}
+        onComplete={handleAuthComplete}
+        returnPath="/resources"
+      />
     </div>
   );
 } 
