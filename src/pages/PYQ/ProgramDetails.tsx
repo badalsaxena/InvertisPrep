@@ -497,18 +497,6 @@ function ProgramDetails() {
           </p>
         </div>
       )}
-      
-      {/* Debug Info - Only shown in development */}
-      {process.env.NODE_ENV === 'development' && selectedBranch && selectedSemester && selectedSession && (
-        <div className="max-w-xl mx-auto mt-8 p-4 border border-gray-200 rounded-lg text-xs font-mono bg-gray-50">
-          <h4 className="font-bold mb-2">Debug Information:</h4>
-          <p>Program: {programId}</p>
-          <p>Branch: {selectedBranch}</p>
-          <p>Session: {selectedSession}</p>
-          <p>Semester: {selectedSemester}</p>
-          <p className="mt-2 text-green-600">API URL: {BACKEND_URL}/api/resources/files?department={programId}&branch={selectedBranch}&semester={selectedSemester}&session={selectedSession}</p>
-        </div>
-      )}
     </div>
   );
 }
