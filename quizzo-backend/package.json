@@ -1,31 +1,29 @@
 {
   "name": "quizzo-backend",
   "version": "1.0.0",
-  "description": "Multiplayer quiz game backend service for InvertisPrep",
-  "main": "server.js",
-  "type": "module",
+  "description": "Backend for Quizzo multiplayer game",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "quiz",
-    "socket.io",
     "multiplayer",
     "game",
-    "education"
+    "websocket"
   ],
-  "author": "InvertisPrep",
+  "author": "",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "socket.io": "^4.6.1",
-    "uuid": "^9.0.0"
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.0.2"
   }
 } 

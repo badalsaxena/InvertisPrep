@@ -8,33 +8,81 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Info, Server, Copy, Check, Wifi } from "lucide-react";
+import { Info, Server, Copy, Check, Wifi, RefreshCw, CheckCircle, XCircle } from "lucide-react";
 import axios from "axios";
 
 interface ServerStatus {
-  status: string;
-  uptime: number;
-  connections: number;
-  rooms: number;
-  matchmaking: {
-    c: number;
-    dsa: number;
-    python: number;
-    java: number;
-    web: number;
-  };
-  server: {
-    port: number;
-    localIPs: string[];
-    host: string;
-  };
+  api: 'connecting' | 'connected' | 'disconnected';
+  realtime: 'connecting' | 'connected' | 'disconnected';
+  lastChecked: Date | null;
 }
 
 export default function ServerInfoDialog() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({
+    api: 'connecting',
+    realtime: 'connecting',
+    lastChecked: null
+  });
   const [status, setStatus] = useState<ServerStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  
+  const checkServerStatus = async () => {
+    setServerStatus(prev => ({ 
+      ...prev, 
+      api: 'connecting', 
+      realtime: 'connecting' 
+    }));
+    
+    try {
+      // Get the API URL from the environment variable or use default
+      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      
+      // Check API server
+      const apiResponse = await fetch(apiUrl, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      const apiStatus = apiResponse.ok ? 'connected' : 'disconnected';
+      
+      // Get the WebSocket URL from the environment variable or use default
+      const wsUrl = import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.onrender.com';
+      
+      // Check WebSocket server
+      let wsStatus: 'connecting' | 'connected' | 'disconnected' = 'connecting';
+      try {
+        const wsResponse = await fetch(wsUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+        wsStatus = wsResponse.ok ? 'connected' : 'disconnected';
+      } catch (error) {
+        wsStatus = 'disconnected';
+      }
+      
+      setServerStatus({
+        api: apiStatus,
+        realtime: wsStatus,
+        lastChecked: new Date()
+      });
+    } catch (error) {
+      console.error('Error checking server status:', error);
+      setServerStatus({
+        api: 'disconnected',
+        realtime: 'disconnected',
+        lastChecked: new Date()
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      checkServerStatus();
+    }
+  }, [isOpen]);
   
   const fetchServerInfo = async () => {
     setLoading(true);
@@ -93,148 +141,119 @@ export default function ServerInfoDialog() {
     });
   };
   
-  // Fetch data when dialog opens
-  const handleDialogOpen = (open: boolean) => {
-    if (open) {
-      fetchServerInfo();
-    }
-  };
-  
   return (
-    <Dialog onOpenChange={handleDialogOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-1">
           <Server className="h-4 w-4" />
           <span>Server Info</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Server className="h-5 w-5" />
-            <span>Quizzo Server Information</span>
-          </DialogTitle>
-          <DialogDescription>
-            Connection details for multiplayer games
-          </DialogDescription>
+          <DialogTitle>Quizzo Server Information</DialogTitle>
         </DialogHeader>
-        
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin h-8 w-8 border-4 border-indigo-600 rounded-full border-t-transparent"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 p-4 rounded-md text-red-700 text-sm">
-            <p>{error}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={fetchServerInfo}
-            >
-              Retry Connection
-            </Button>
-          </div>
-        ) : status ? (
+        <div className="py-4">
           <div className="space-y-4">
-            <div className="bg-green-50 p-3 rounded-lg flex items-center gap-2">
-              <div className="bg-green-100 p-1.5 rounded-full">
-                <Wifi className="h-4 w-4 text-green-700" />
-              </div>
-              <div>
-                <p className="text-green-700 font-medium">Server is online</p>
-                <p className="text-xs text-green-600">Uptime: {formatUptime(status.uptime)}</p>
-              </div>
+            <div className="flex items-center justify-between">
+              <div className="font-medium">Connection details for multiplayer games</div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={checkServerStatus}
+                className="flex items-center gap-1"
+              >
+                <RefreshCw className="h-4 w-4" />
+                <span>Refresh</span>
+              </Button>
             </div>
             
-            <div>
-              <h3 className="text-sm font-medium mb-1 text-gray-700">Active Users</h3>
-              <div className="bg-gray-50 p-3 rounded-lg grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <p className="text-gray-500">Connected:</p>
-                  <p className="font-medium">{status.connections} users</p>
+            {/* API Server Status */}
+            <div className={`p-4 rounded-lg border ${
+              serverStatus.api === 'connected' 
+                ? 'bg-green-50 border-green-200' 
+                : serverStatus.api === 'disconnected'
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-yellow-50 border-yellow-200'
+            }`}>
+              <h3 className="font-medium mb-2">API Server</h3>
+              {serverStatus.api === 'connected' && (
+                <div className="flex items-center gap-2 text-green-700">
+                  <CheckCircle className="h-5 w-5" />
+                  <span>Connected to the Quizzo API server.</span>
                 </div>
-                <div>
-                  <p className="text-gray-500">Active Rooms:</p>
-                  <p className="font-medium">{status.rooms} games</p>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-sm font-medium mb-1 text-gray-700">Matchmaking Queues</h3>
-              <div className="grid grid-cols-5 gap-1 text-xs bg-gray-50 p-2 rounded-lg">
-                <div className="text-center p-1">
-                  <p className="text-gray-600">C</p>
-                  <p className="font-medium">{status.matchmaking.c}</p>
-                </div>
-                <div className="text-center p-1">
-                  <p className="text-gray-600">DSA</p>
-                  <p className="font-medium">{status.matchmaking.dsa}</p>
-                </div>
-                <div className="text-center p-1">
-                  <p className="text-gray-600">Python</p>
-                  <p className="font-medium">{status.matchmaking.python}</p>
-                </div>
-                <div className="text-center p-1">
-                  <p className="text-gray-600">Java</p>
-                  <p className="font-medium">{status.matchmaking.java}</p>
-                </div>
-                <div className="text-center p-1">
-                  <p className="text-gray-600">Web</p>
-                  <p className="font-medium">{status.matchmaking.web}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-sm font-medium mb-1 text-gray-700">Connection URLs</h3>
-              <p className="text-xs text-gray-500 mb-2">Share these URLs for others to connect over the network</p>
+              )}
               
-              <div className="space-y-2">
-                {status.server.localIPs.map((url, index) => (
-                  <div key={index} className="flex items-center justify-between bg-indigo-50 p-2 rounded-md">
-                    <code className="text-xs font-mono text-indigo-700">{url}</code>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => copyToClipboard(url)}
-                    >
-                      {copied ? (
-                        <Check className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Copy className="h-4 w-4 text-gray-600" />
-                      )}
-                    </Button>
-                  </div>
-                ))}
+              {serverStatus.api === 'disconnected' && (
+                <div className="flex items-center gap-2 text-red-700">
+                  <XCircle className="h-5 w-5" />
+                  <span>Could not connect to the API server.</span>
+                </div>
+              )}
+              
+              {serverStatus.api === 'connecting' && (
+                <div className="flex items-center gap-2 text-yellow-700">
+                  <RefreshCw className="h-5 w-5 animate-spin" />
+                  <span>Checking connection to API server...</span>
+                </div>
+              )}
+            </div>
+            
+            {/* WebSocket Server Status */}
+            <div className={`p-4 rounded-lg border ${
+              serverStatus.realtime === 'connected' 
+                ? 'bg-green-50 border-green-200' 
+                : serverStatus.realtime === 'disconnected'
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-yellow-50 border-yellow-200'
+            }`}>
+              <h3 className="font-medium mb-2">Real-time Server</h3>
+              {serverStatus.realtime === 'connected' && (
+                <div className="flex items-center gap-2 text-green-700">
+                  <CheckCircle className="h-5 w-5" />
+                  <span>Connected to the Quizzo real-time server.</span>
+                </div>
+              )}
+              
+              {serverStatus.realtime === 'disconnected' && (
+                <div className="flex items-center gap-2 text-red-700">
+                  <XCircle className="h-5 w-5" />
+                  <span>Could not connect to the real-time server.</span>
+                </div>
+              )}
+              
+              {serverStatus.realtime === 'connecting' && (
+                <div className="flex items-center gap-2 text-yellow-700">
+                  <RefreshCw className="h-5 w-5 animate-spin" />
+                  <span>Checking connection to real-time server...</span>
+                </div>
+              )}
+            </div>
+            
+            {serverStatus.lastChecked && (
+              <div className="text-xs text-gray-500">
+                Last checked: {serverStatus.lastChecked.toLocaleTimeString()}
+              </div>
+            )}
+            
+            <div>
+              <h3 className="font-medium mb-2">Server Details</h3>
+              <div className="text-sm space-y-1">
+                <div><strong>API URL:</strong> {import.meta.env.VITE_API_URL || '/api'}</div>
+                <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.onrender.com'}</div>
+                <div><strong>Protocol:</strong> WebSocket (with HTTP fallback)</div>
               </div>
             </div>
             
-            <div className="bg-blue-50 p-3 rounded-lg text-xs text-blue-700">
-              <p className="flex items-center gap-1">
-                <Info className="h-4 w-4 flex-shrink-0" />
-                <span>
-                  To play multiplayer games, both players must connect to the same server.
-                  Share one of the URLs above with friends on the same network.
-                </span>
-              </p>
+            <div className="pt-2 text-sm text-gray-500">
+              <p>The application requires both servers to be running:</p>
+              <ul className="list-disc list-inside mt-1">
+                <li>API server (hosted on Vercel): Provides questions and validates answers</li>
+                <li>Real-time server: Handles matchmaking and live game updates</li>
+              </ul>
             </div>
           </div>
-        ) : (
-          <div className="text-center py-4 text-gray-500">
-            Click "Retry" to fetch server information
-            <Button
-              variant="outline" 
-              size="sm"
-              className="mt-2 mx-auto block"
-              onClick={fetchServerInfo}
-            >
-              Retry
-            </Button>
-          </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );

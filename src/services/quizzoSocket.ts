@@ -9,28 +9,19 @@ export interface QuizUser {
 
 export interface QuizRoom {
   id: string;
-  users: QuizUser[];
+  players: QuizUser[];
   subject: string;
-  state: 'waiting' | 'playing' | 'completed';
 }
 
 export interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
-  correctIndex?: number; // Only shown at the end or after answering
-}
-
-export interface QuizAnswer {
-  questionId: string;
-  answerIndex: number;
-  timeElapsed: number; // ms taken to answer
 }
 
 export interface QuizResult {
   userId: string;
   score: number;
-  answers: QuizAnswer[];
   totalTime: number;
 }
 
@@ -41,17 +32,17 @@ export enum QuizSocketEvents {
   DISCONNECT = 'disconnect',
   
   // Matchmaking events
-  JOIN_MATCHMAKING = 'join_matchmaking',
-  LEAVE_MATCHMAKING = 'leave_matchmaking',
-  MATCH_FOUND = 'match_found',
+  JOIN_MATCHMAKING = 'joinMatchmaking',
+  LEAVE_MATCHMAKING = 'leaveMatchmaking',
+  MATCH_FOUND = 'matchFound',
   
   // Quiz events
-  QUIZ_START = 'quiz_start',
-  QUIZ_QUESTION = 'quiz_question',
-  SUBMIT_ANSWER = 'submit_answer',
-  ANSWER_RESULT = 'answer_result',
-  OPPONENT_ANSWERED = 'opponent_answered',
-  QUIZ_END = 'quiz_end',
+  QUIZ_START = 'quizStart',
+  QUIZ_QUESTION = 'quizQuestion',
+  SUBMIT_ANSWER = 'submitAnswer',
+  ANSWER_RESULT = 'answerResult',
+  OPPONENT_ANSWERED = 'opponentAnswered',
+  QUIZ_END = 'quizEnd',
   
   // Room events
   JOIN_ROOM = 'join_room',
@@ -65,49 +56,45 @@ export enum QuizSocketEvents {
 class QuizzoSocketService {
   private socket: Socket | null = null;
   
-  // Get the server URL from environment variables or use dynamic detection
-  private getServerUrl(): string {
+  // Get the server URL
+  private getRealtimeServerUrl(): string {
     // First check if explicitly set in environment
-    if (import.meta.env.VITE_QUIZZO_SERVER_URL) {
-      return import.meta.env.VITE_QUIZZO_SERVER_URL;
+    if (import.meta.env.VITE_QUIZZO_REALTIME_URL) {
+      return import.meta.env.VITE_QUIZZO_REALTIME_URL;
     }
     
-    // Otherwise, derive from current host dynamically
-    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    const hostname = window.location.hostname; // This will be the actual host IP/domain
-    const port = '5000'; // Default Quizzo backend port
-    
-    return `${protocol}//${hostname}:${port}`;
+    // We use a separate realtime server deployed elsewhere
+    return 'https://quizzo-realtime.onrender.com';
   }
   
   // Connect to socket server
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const serverUrl = this.getServerUrl();
-        console.log(`Connecting to Quizzo server at: ${serverUrl}`);
+        const serverUrl = this.getRealtimeServerUrl();
+        console.log(`Connecting to Quizzo real-time server at: ${serverUrl}`);
         
         this.socket = io(serverUrl, {
-          transports: ['websocket', 'polling'], // Prefer WebSocket but fallback to polling
+          transports: ['websocket', 'polling'],
           reconnectionAttempts: 5,
           reconnectionDelay: 1000
         });
         
-        this.socket.on(QuizSocketEvents.CONNECT, () => {
-          console.log('Connected to Quizzo server');
+        this.socket.on('connect', () => {
+          console.log('Connected to Quizzo real-time server');
           resolve();
         });
         
-        this.socket.on(QuizSocketEvents.DISCONNECT, () => {
-          console.log('Disconnected from Quizzo server');
+        this.socket.on('disconnect', () => {
+          console.log('Disconnected from Quizzo real-time server');
         });
         
-        this.socket.on(QuizSocketEvents.ERROR, (error) => {
-          console.error('Socket error:', error);
+        this.socket.on('connect_error', (error) => {
+          console.error('Socket connection error:', error);
           reject(error);
         });
       } catch (error) {
-        console.error('Failed to connect to Quizzo server:', error);
+        console.error('Failed to connect to Quizzo real-time server:', error);
         reject(error);
       }
     });
@@ -129,7 +116,7 @@ class QuizzoSocketService {
       throw new Error('Socket not connected');
     }
     
-    this.socket.emit(QuizSocketEvents.JOIN_MATCHMAKING, { subject, username });
+    this.socket.emit('joinMatchmaking', { subject, username });
   }
   
   // Leave matchmaking queue
@@ -138,7 +125,7 @@ class QuizzoSocketService {
       throw new Error('Socket not connected');
     }
     
-    this.socket.emit(QuizSocketEvents.LEAVE_MATCHMAKING);
+    this.socket.emit('leaveMatchmaking');
   }
   
   // Submit answer for a question
@@ -147,7 +134,7 @@ class QuizzoSocketService {
       throw new Error('Socket not connected');
     }
     
-    this.socket.emit(QuizSocketEvents.SUBMIT_ANSWER, {
+    this.socket.emit('submitAnswer', {
       questionId,
       answerIndex,
       timeElapsed
@@ -155,12 +142,20 @@ class QuizzoSocketService {
   }
   
   // Event listeners
-  onMatchFound(callback: (room: QuizRoom) => void): void {
+  onMatchmakingStatus(callback: (status: { status: string }) => void): void {
     if (!this.socket) {
       throw new Error('Socket not connected');
     }
     
-    this.socket.on(QuizSocketEvents.MATCH_FOUND, callback);
+    this.socket.on('matchmakingStatus', callback);
+  }
+  
+  onMatchFound(callback: (data: { roomId: string, subject: string, opponent: string, players: QuizUser[] }) => void): void {
+    if (!this.socket) {
+      throw new Error('Socket not connected');
+    }
+    
+    this.socket.on('matchFound', callback);
   }
   
   onQuizStart(callback: () => void): void {
@@ -168,15 +163,15 @@ class QuizzoSocketService {
       throw new Error('Socket not connected');
     }
     
-    this.socket.on(QuizSocketEvents.QUIZ_START, callback);
+    this.socket.on('quizStart', callback);
   }
   
-  onQuizQuestion(callback: (question: QuizQuestion) => void): void {
+  onQuizQuestion(callback: (data: { question: QuizQuestion, questionCount: number, totalQuestions: number }) => void): void {
     if (!this.socket) {
       throw new Error('Socket not connected');
     }
     
-    this.socket.on(QuizSocketEvents.QUIZ_QUESTION, callback);
+    this.socket.on('quizQuestion', callback);
   }
   
   onAnswerResult(callback: (result: { correct: boolean, score: number }) => void): void {
@@ -184,7 +179,7 @@ class QuizzoSocketService {
       throw new Error('Socket not connected');
     }
     
-    this.socket.on(QuizSocketEvents.ANSWER_RESULT, callback);
+    this.socket.on('answerResult', callback);
   }
   
   onOpponentAnswered(callback: () => void): void {
@@ -192,7 +187,23 @@ class QuizzoSocketService {
       throw new Error('Socket not connected');
     }
     
-    this.socket.on(QuizSocketEvents.OPPONENT_ANSWERED, callback);
+    this.socket.on('opponentAnswered', callback);
+  }
+  
+  onOpponentLeft(callback: () => void): void {
+    if (!this.socket) {
+      throw new Error('Socket not connected');
+    }
+    
+    this.socket.on('opponentLeft', callback);
+  }
+  
+  onError(callback: (error: { message: string }) => void): void {
+    if (!this.socket) {
+      throw new Error('Socket not connected');
+    }
+    
+    this.socket.on('error', callback);
   }
   
   onQuizEnd(callback: (results: { myResult: QuizResult, opponentResult: QuizResult }) => void): void {
@@ -200,7 +211,7 @@ class QuizzoSocketService {
       throw new Error('Socket not connected');
     }
     
-    this.socket.on(QuizSocketEvents.QUIZ_END, callback);
+    this.socket.on('quizEnd', callback);
   }
   
   // Remove event listeners
@@ -210,17 +221,18 @@ class QuizzoSocketService {
     }
     
     this.socket.removeAllListeners();
+    
     // Add back the core listeners
-    this.socket.on(QuizSocketEvents.CONNECT, () => {
-      console.log('Connected to Quizzo server');
+    this.socket.on('connect', () => {
+      console.log('Connected to Quizzo real-time server');
     });
     
-    this.socket.on(QuizSocketEvents.DISCONNECT, () => {
-      console.log('Disconnected from Quizzo server');
+    this.socket.on('disconnect', () => {
+      console.log('Disconnected from Quizzo real-time server');
     });
     
-    this.socket.on(QuizSocketEvents.ERROR, (error) => {
-      console.error('Socket error:', error);
+    this.socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
     });
   }
 }

@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, Trophy, Users, XCircle, Loader, CheckCircle } from "lucide-react";
-import quizzoSocketService, { 
-  QuizSocketEvents, 
-  QuizRoom, 
-  QuizQuestion, 
-  QuizResult 
-} from "@/services/quizzoSocket";
+import quizzoSocketService from "@/services/quizzoSocket";
 import { useNavigate } from "react-router-dom";
 import { 
   Select,
@@ -34,19 +29,20 @@ export default function MultiplayerQuizzo() {
   
   // Game state management
   const [gameState, setGameState] = useState<'setup' | 'matching' | 'playing' | 'finished'>('setup');
-  const [currentRoom, setCurrentRoom] = useState<QuizRoom | null>(null);
-  const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
+  const [currentRoom, setCurrentRoom] = useState<any | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<any | null>(null);
   const [questionCount, setQuestionCount] = useState<number>(0);
-  const [totalQuestions, setTotalQuestions] = useState<number>(10); // Default 10 questions
+  const [totalQuestions, setTotalQuestions] = useState<number>(10);
   const [timeLeft, setTimeLeft] = useState<number>(15);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [myScore, setMyScore] = useState<number>(0);
   const [opponentScore, setOpponentScore] = useState<number>(0);
   const [opponentAnswered, setOpponentAnswered] = useState<boolean>(false);
-  const [gameResults, setGameResults] = useState<{myResult: QuizResult, opponentResult: QuizResult} | null>(null);
+  const [gameResults, setGameResults] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [matchingTime, setMatchingTime] = useState<number>(0);
+  const [opponent, setOpponent] = useState<string>("");
   
   // Timer refs
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,10 +74,16 @@ export default function MultiplayerQuizzo() {
   
   // Set up socket event listeners
   useEffect(() => {
+    // Matchmaking status event
+    quizzoSocketService.onMatchmakingStatus((data) => {
+      console.log("Matchmaking status:", data);
+    });
+    
     // Match found event
-    quizzoSocketService.onMatchFound((room) => {
-      console.log("Match found:", room);
-      setCurrentRoom(room);
+    quizzoSocketService.onMatchFound((data) => {
+      console.log("Match found:", data);
+      setCurrentRoom(data);
+      setOpponent(data.opponent);
       setGameState('playing');
       clearInterval(matchingTimerRef.current as NodeJS.Timeout);
     });
@@ -95,14 +97,15 @@ export default function MultiplayerQuizzo() {
     });
     
     // Quiz question event
-    quizzoSocketService.onQuizQuestion((question) => {
-      console.log("New question:", question);
-      setCurrentQuestion(question);
+    quizzoSocketService.onQuizQuestion((data) => {
+      console.log("New question:", data);
+      setCurrentQuestion(data.question);
       setSelectedOption(null);
       setIsCorrect(null);
       setOpponentAnswered(false);
       setTimeLeft(15);
-      setQuestionCount(prev => prev + 1);
+      setQuestionCount(data.questionCount);
+      setTotalQuestions(data.totalQuestions);
       startTimeRef.current = Date.now();
       
       // Start timer
@@ -117,7 +120,7 @@ export default function MultiplayerQuizzo() {
             // Auto-submit incorrect answer if time runs out
             if (selectedOption === null) {
               const timeElapsed = Date.now() - startTimeRef.current;
-              quizzoSocketService.submitAnswer(question.id, -1, timeElapsed);
+              quizzoSocketService.submitAnswer(data.question.id, -1, timeElapsed);
             }
             return 0;
           }
@@ -137,6 +140,13 @@ export default function MultiplayerQuizzo() {
     quizzoSocketService.onOpponentAnswered(() => {
       console.log("Opponent answered");
       setOpponentAnswered(true);
+    });
+    
+    // Opponent left event
+    quizzoSocketService.onOpponentLeft(() => {
+      console.log("Opponent left");
+      setError("Your opponent has left the game.");
+      setGameState('setup');
     });
     
     // Quiz end event
@@ -344,9 +354,7 @@ export default function MultiplayerQuizzo() {
                 <div className="flex items-center gap-2">
                   <Users className="h-5 w-5 text-indigo-600" />
                   <span className="font-medium">
-                    {username} vs. {
-                      currentRoom?.users.find(u => u.name !== username)?.name || "Opponent"
-                    }
+                    {username} vs. {opponent || "Opponent"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
@@ -375,7 +383,7 @@ export default function MultiplayerQuizzo() {
                 
                 {/* Answer options */}
                 <div className="space-y-3">
-                  {currentQuestion.options.map((option, index) => (
+                  {currentQuestion.options.map((option: string, index: number) => (
                     <button
                       key={index}
                       className={`w-full p-4 text-left rounded-lg border ${
