@@ -37,7 +37,7 @@ export class QuizzoApiService {
       return import.meta.env.VITE_API_URL;
     }
     
-    // Default to unified server
+    // Default to unified server - same as WebSocket server
     return 'https://quizzo-realtime.vercel.app';
   }
 
@@ -48,14 +48,17 @@ export class QuizzoApiService {
    */
   async getQuestions(subject: string): Promise<Question[]> {
     try {
+      console.log(`Fetching questions for ${subject} from ${this.baseUrl}/questions/${subject}`);
       const response = await fetch(`${this.baseUrl}/questions/${subject}`);
       
       if (!response.ok) {
         const error = await response.text();
+        console.error(`Server responded with status ${response.status}: ${error}`);
         throw new Error(`Failed to fetch questions: ${response.status} - ${error}`);
       }
       
       const data = await response.json();
+      console.log(`Received ${data.questions.length} questions for ${subject}`);
       return data.questions;
     } catch (error) {
       console.error('Error fetching questions:', error);

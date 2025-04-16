@@ -16,43 +16,33 @@ A real-time multiplayer quiz application where students can test their knowledge
 Quizzo uses a modern, scalable architecture:
 
 - **Frontend**: React.js with Vite, TypeScript, and TailwindCSS
-- **API Service**: Serverless functions (hosted on Vercel)
-- **Real-time Server**: Node.js with Socket.IO (hosted separately)
+- **Unified Server**: Node.js with Express and Socket.IO (hosted on Render)
 
 ```
-┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│                 │      │                 │      │                 │
-│    Frontend     │◄────►│   API Service   │      │  Real-time      │
-│    (Vercel)     │      │    (Vercel)     │      │    Server       │
-│                 │      │                 │      │                 │
-└────────┬────────┘      └─────────────────┘      └────────▲────────┘
-         │                                                  │
-         │                                                  │
-         └──────────────────────────────────────────────────┘
-                           WebSocket Connection
+┌─────────────────┐             ┌─────────────────┐
+│                 │             │                 │
+│    Frontend     │◄───────────►│  Unified Server │
+│    (Vercel)     │   API &     │    (Render)     │
+│                 │  WebSocket  │                 │
+└─────────────────┘             └─────────────────┘
 ```
 
 ## 🚀 Deployment
 
-The application is split into two deployable parts:
+The application is deployed in two parts:
 
-### Frontend & API (Vercel)
+### Frontend (Vercel)
 
-The main application and API endpoints are deployed to Vercel:
+The main frontend application is deployed to Vercel:
+- React application with UI components
+- Connects to the unified server for both API and WebSocket functionality
 
-1. **Frontend**: React application with UI components
-2. **API Endpoints**: Serverless functions for:
-   - `/api`: Health check and API information
-   - `/api/questions/[subject]`: Get random questions for a specific subject
-   - `/api/validate-answer`: Validate submitted answers
+### Unified Server (Render)
 
-### Real-time Server (External)
-
-The WebSocket server for real-time multiplayer functionality is deployed separately:
-
-- Hosted on platforms like Render, Heroku, or Railway
-- Handles matchmaking, live game sessions, and real-time updates
-- Located in the `quizzo-realtime` directory
+A single unified server for both API and real-time functionality:
+- Hosted on Render (https://quizzo-realtime.onrender.com)
+- Handles API endpoints for question retrieval and answer validation
+- Manages WebSocket connections for matchmaking and real-time game updates
 
 ## 🛠️ Installation
 
@@ -167,8 +157,8 @@ The app will be available at `http://localhost:5173`
 
 ### Main App (.env)
 
-- `VITE_API_URL`: URL for the API endpoints (default: `/api` for local, full URL for production)
-- `VITE_QUIZZO_REALTIME_URL`: URL for the real-time WebSocket server
+- `VITE_API_URL`: URL for the API endpoints (https://quizzo-realtime.onrender.com)
+- `VITE_QUIZZO_REALTIME_URL`: URL for the WebSocket server (https://quizzo-realtime.onrender.com)
 
 ### Real-time Server (.env)
 

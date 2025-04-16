@@ -43,7 +43,7 @@ export default function ServerInfoDialog() {
       const apiStatus = apiResponse.ok ? 'connected' : 'disconnected';
       
       // Get the WebSocket URL from the environment variable or use default
-      const wsUrl = import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.vercel.app';
+      const wsUrl = import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.onrender.com';
       
       // Check WebSocket server
       let wsStatus: 'connecting' | 'connected' | 'disconnected' = 'connecting';
@@ -176,18 +176,18 @@ export default function ServerInfoDialog() {
             <div>
               <h3 className="font-medium mb-2">Server Details</h3>
               <div className="text-sm space-y-1">
-                <div><strong>API URL:</strong> {import.meta.env.VITE_API_URL || 'https://quizzo-realtime.vercel.app'}</div>
-                <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.vercel.app'}</div>
+                <div><strong>API URL:</strong> {import.meta.env.VITE_API_URL || 'https://quizzo-realtime.onrender.com'}</div>
+                <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.onrender.com'}</div>
                 <div><strong>Protocol:</strong> WebSocket (with HTTP fallback)</div>
               </div>
             </div>
             
             <div className="pt-2 text-sm text-gray-500">
-              <p>The application requires a unified server to run:</p>
+              <p>The application connects to a unified server that provides:</p>
               <ul className="list-disc list-inside mt-1">
-                <li>Unified server: Handles both API requests and WebSocket connections</li>
-                <li>WebSocket: Real-time matchmaking and live game updates</li>
-                <li>API: Provides questions and validates answers</li>
+                <li>WebSocket connections for real-time multiplayer functionality</li>
+                <li>API endpoints for questions and game data</li>
+                <li>Matchmaking and game session management</li>
               </ul>
             </div>
           </div>

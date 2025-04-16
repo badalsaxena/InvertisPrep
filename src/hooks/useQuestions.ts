@@ -22,11 +22,13 @@ export function useQuestions(): UseQuestionsResult {
     try {
       setLoading(true);
       setError(null);
+      console.log(`Fetching questions for subject: ${subject}`);
       const fetchedQuestions = await apiService.getQuestions(subject);
+      console.log(`Successfully fetched ${fetchedQuestions.length} questions`);
       setQuestions(fetchedQuestions);
     } catch (err) {
+      console.error('Error in useQuestions hook:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch questions'));
-      console.error('Error fetching questions:', err);
     } finally {
       setLoading(false);
     }

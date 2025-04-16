@@ -1,0 +1,434 @@
+# Frontend Integration Guide
+
+## 1. Update Environment Variables
+
+Add these to your frontend project's environment variables:
+
+```
+VITE_API_URL=https://quizzo-realtime.onrender.com
+VITE_WEBSOCKET_URL=https://quizzo-realtime.onrender.com
+```
+
+## 2. Socket.IO Integration
+
+In your frontend codebase, create or update your WebSocket connection:
+
+```javascript
+// src/services/socket.js
+import { io } from 'socket.io-client';
+
+const SOCKET_URL = import.meta.env.VITE_WEBSOCKET_URL || 'https://quizzo-realtime.onrender.com';
+
+// Initialize socket connection
+const socket = io(SOCKET_URL, {
+  transports: ['websocket'],
+  autoConnect: false, // Don't connect immediately
+  withCredentials: true
+});
+
+// Debug logging for socket events
+socket.on('connect', () => {
+  console.log('Connected to WebSocket server');
+});
+
+socket.on('disconnect', () => {
+  console.log('Disconnected from WebSocket server');
+});
+
+socket.on('connect_error', (error) => {
+  console.error('Connection error:', error);
+});
+
+// Export the socket instance
+export default socket;
+```
+
+## 3. API Service
+
+Create or update your API service:
+
+```javascript
+// src/services/api.js
+const API_URL = import.meta.env.VITE_API_URL || 'https://quizzo-realtime.onrender.com';
+
+/**
+ * Get all available subjects
+ */
+export const getSubjects = async () => {
+  const response = await fetch(`${API_URL}/subjects`);
+  return response.json();
+};
+
+/**
+ * Get questions for a specific subject
+ * @param {string} subject - The subject to get questions for
+ */
+export const getQuestions = async (subject) => {
+  const response = await fetch(`${API_URL}/questions/${subject}`);
+  return response.json();
+};
+
+/**
+ * Validate an answer
+ * @param {Object} data - The answer data
+ * @param {string} data.subject - The subject
+ * @param {string} data.questionId - The question ID
+ * @param {number} data.answerIndex - The selected answer index
+ */
+export const validateAnswer = async (data) => {
+  const response = await fetch(`${API_URL}/validate-answer`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  return response.json();
+};
+```
+
+## 4. Multiplayer Game Logic
+
+Here's how to implement the multiplayer game logic:
+
+```javascript
+// src/services/quizGame.js
+import socket from './socket';
+
+/**
+ * Join matchmaking for a subject
+ * @param {string} username - The user's name
+ * @param {string} subject - The subject to matchmake for
+ */
+export const joinMatchmaking = (username, subject) => {
+  socket.connect();
+  socket.emit('joinMatchmaking', { username, subject });
+};
+
+/**
+ * Leave the matchmaking queue
+ */
+export const leaveMatchmaking = () => {
+  socket.emit('leaveMatchmaking');
+};
+
+/**
+ * Submit an answer to a question
+ * @param {string} questionId - The question ID
+ * @param {number} answerIndex - The selected answer index
+ * @param {number} timeElapsed - Time taken to answer in milliseconds
+ */
+export const submitAnswer = (questionId, answerIndex, timeElapsed) => {
+  socket.emit('submitAnswer', { questionId, answerIndex, timeElapsed });
+};
+
+/**
+ * Disconnect from the WebSocket server
+ */
+export const disconnectFromServer = () => {
+  socket.disconnect();
+};
+
+// Socket event handlers
+export const onMatchmakingStatus = (callback) => {
+  socket.on('matchmakingStatus', callback);
+  return () => socket.off('matchmakingStatus', callback);
+};
+
+export const onMatchFound = (callback) => {
+  socket.on('matchFound', callback);
+  return () => socket.off('matchFound', callback);
+};
+
+export const onQuizStart = (callback) => {
+  socket.on('quizStart', callback);
+  return () => socket.off('quizStart', callback);
+};
+
+export const onQuizQuestion = (callback) => {
+  socket.on('quizQuestion', callback);
+  return () => socket.off('quizQuestion', callback);
+};
+
+export const onAnswerResult = (callback) => {
+  socket.on('answerResult', callback);
+  return () => socket.off('answerResult', callback);
+};
+
+export const onOpponentAnswered = (callback) => {
+  socket.on('opponentAnswered', callback);
+  return () => socket.off('opponentAnswered', callback);
+};
+
+export const onOpponentLeft = (callback) => {
+  socket.on('opponentLeft', callback);
+  return () => socket.off('opponentLeft', callback);
+};
+
+export const onQuizEnd = (callback) => {
+  socket.on('quizEnd', callback);
+  return () => socket.off('quizEnd', callback);
+};
+
+export const onError = (callback) => {
+  socket.on('error', callback);
+  return () => socket.off('error', callback);
+};
+```
+
+## 5. React Component Example
+
+Here's an example of how to use these functions in a React component:
+
+```jsx
+import React, { useEffect, useState } from 'react';
+import { getSubjects } from '../services/api';
+import { 
+  joinMatchmaking, 
+  leaveMatchmaking,
+  submitAnswer,
+  disconnectFromServer,
+  onMatchmakingStatus,
+  onMatchFound,
+  onQuizStart,
+  onQuizQuestion,
+  onAnswerResult,
+  onOpponentAnswered,
+  onOpponentLeft,
+  onQuizEnd,
+  onError
+} from '../services/quizGame';
+
+function MultiplayerQuiz() {
+  const [username, setUsername] = useState('');
+  const [subjects, setSubjects] = useState([]);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [gameState, setGameState] = useState('initial'); // initial, matching, matched, playing, finished
+  const [opponent, setOpponent] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [score, setScore] = useState(0);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Fetch available subjects
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const data = await getSubjects();
+        setSubjects(data.subjects);
+      } catch (err) {
+        setError('Failed to load subjects. Please try again.');
+      }
+    };
+    fetchSubjects();
+  }, []);
+
+  // Set up socket event listeners
+  useEffect(() => {
+    // Clean up function to remove all listeners
+    const cleanupFunctions = [
+      onMatchmakingStatus((data) => {
+        console.log('Matchmaking status:', data);
+        setGameState('matching');
+      }),
+      
+      onMatchFound((data) => {
+        console.log('Match found:', data);
+        setGameState('matched');
+        setOpponent(data.opponent);
+      }),
+      
+      onQuizStart(() => {
+        console.log('Quiz started');
+        setGameState('playing');
+      }),
+      
+      onQuizQuestion((data) => {
+        console.log('Question received:', data);
+        setCurrentQuestion(data.question);
+        // Start a timer for the question
+      }),
+      
+      onAnswerResult((data) => {
+        console.log('Answer result:', data);
+        setScore(data.score);
+      }),
+      
+      onOpponentAnswered(() => {
+        console.log('Opponent answered');
+        // Update UI to show opponent answered
+      }),
+      
+      onOpponentLeft(() => {
+        console.log('Opponent left');
+        setError('Your opponent left the game.');
+        setGameState('finished');
+      }),
+      
+      onQuizEnd((data) => {
+        console.log('Quiz ended:', data);
+        setGameState('finished');
+        setResults(data);
+      }),
+      
+      onError((data) => {
+        console.error('Error:', data);
+        setError(data.message);
+      })
+    ];
+
+    // Return cleanup function
+    return () => {
+      cleanupFunctions.forEach(cleanup => cleanup());
+      disconnectFromServer();
+    };
+  }, []);
+
+  // Handle starting matchmaking
+  const handleStartMatchmaking = () => {
+    if (!username || !selectedSubject) {
+      setError('Please enter your name and select a subject.');
+      return;
+    }
+    
+    joinMatchmaking(username, selectedSubject);
+  };
+
+  // Handle canceling matchmaking
+  const handleCancelMatchmaking = () => {
+    leaveMatchmaking();
+    setGameState('initial');
+  };
+
+  // Handle submitting an answer
+  const handleSubmitAnswer = (answerIndex) => {
+    if (!currentQuestion) return;
+    
+    const timeElapsed = 5000; // Replace with actual time calculation
+    submitAnswer(currentQuestion.id, answerIndex, timeElapsed);
+  };
+
+  // Render different views based on game state
+  const renderGameContent = () => {
+    switch (gameState) {
+      case 'initial':
+        return (
+          <div className="initial-screen">
+            <h2>Play Multiplayer Quiz</h2>
+            <input
+              type="text"
+              placeholder="Your Name"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <select 
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+            >
+              <option value="">Select Subject</option>
+              {subjects.map(subject => (
+                <option key={subject} value={subject}>{subject}</option>
+              ))}
+            </select>
+            <button onClick={handleStartMatchmaking}>Find Opponent</button>
+          </div>
+        );
+        
+      case 'matching':
+        return (
+          <div className="matching-screen">
+            <h2>Finding an opponent...</h2>
+            <p>Looking for players interested in {selectedSubject}</p>
+            <button onClick={handleCancelMatchmaking}>Cancel</button>
+          </div>
+        );
+        
+      case 'matched':
+        return (
+          <div className="matched-screen">
+            <h2>Opponent Found!</h2>
+            <p>You will be playing against {opponent}</p>
+            <p>The quiz will start in a few seconds...</p>
+          </div>
+        );
+        
+      case 'playing':
+        return (
+          <div className="playing-screen">
+            <h2>Question</h2>
+            {currentQuestion && (
+              <>
+                <p>{currentQuestion.question}</p>
+                <div className="options">
+                  {currentQuestion.options.map((option, index) => (
+                    <button 
+                      key={index}
+                      onClick={() => handleSubmitAnswer(index)}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                <p>Your score: {score}</p>
+              </>
+            )}
+          </div>
+        );
+        
+      case 'finished':
+        return (
+          <div className="finished-screen">
+            <h2>Quiz Completed!</h2>
+            {results && (
+              <>
+                <h3>Results</h3>
+                <p>Your score: {results.myResult.score}</p>
+                <p>Opponent score: {results.opponentResult.score}</p>
+                <h3>
+                  {results.myResult.score > results.opponentResult.score
+                    ? 'You Win!'
+                    : results.myResult.score < results.opponentResult.score
+                    ? 'You Lose!'
+                    : 'It\'s a tie!'}
+                </h3>
+              </>
+            )}
+            <button onClick={() => setGameState('initial')}>Play Again</button>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="multiplayer-quiz">
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={() => setError(null)}>Dismiss</button>
+        </div>
+      )}
+      {renderGameContent()}
+    </div>
+  );
+}
+
+export default MultiplayerQuiz;
+```
+
+## 6. Additional Notes
+
+- Make sure to handle disconnections properly
+- For production, add proper error handling and user feedback
+- Test both the WebSocket and API functionality thoroughly
+- You may need to add loading states and better UI feedback
+
+## 7. Deployment
+
+This guide assumes:
+1. Your frontend is deployed to Vercel (https://invertisprep.vercel.app)
+2. Your backend is deployed to Render (https://quizzo-realtime.onrender.com)
+
+Both should now work together seamlessly. 

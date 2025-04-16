@@ -1,0 +1,228 @@
+# Quizzo Unified Server API Endpoints
+
+This document provides all the details required to implement API endpoints in your unified server.
+
+## Overview
+
+The unified server needs to handle both API requests and WebSocket connections for the Quizzo application. 
+Here are the API endpoints that need to be implemented:
+
+## 1. Health Check Endpoint
+
+**Route:** GET /
+**Description:** Returns the status of the server and available endpoints
+
+```javascript
+// Route: GET /
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'Quizzo Unified Server is running',
+    version: '1.0.0',
+    connections: io.engine.clientsCount,
+    matchmaking: matchmakingQueues,
+    rooms: quizRooms.size,
+    endpoints: [
+      {
+        path: '/',
+        method: 'GET',
+        description: 'Health check and API info'
+      },
+      {
+        path: '/questions/:subject',
+        method: 'GET',
+        description: 'Get random questions for a subject'
+      },
+      {
+        path: '/validate-answer',
+        method: 'POST',
+        description: 'Validate an answer for a question'
+      }
+    ]
+  });
+});
+```
+
+## 2. Questions Endpoint
+
+**Route:** GET /questions/:subject
+**Description:** Returns random questions for a specified subject
+
+```javascript
+// Route: GET /questions/:subject
+app.get('/questions/:subject', (req, res) => {
+  // Get the subject from the URL parameter
+  const { subject } = req.params;
+
+  // Check if the subject is valid
+  if (!subject || !questionsBySubject[subject]) {
+    return res.status(404).json({
+      error: 'Subject not found',
+      availableSubjects: Object.keys(questionsBySubject)
+    });
+  }
+
+  // Select 10 random questions for the subject
+  const subjectQuestions = questionsBySubject[subject];
+  const shuffled = [...subjectQuestions].sort(() => 0.5 - Math.random());
+  const selectedQuestions = shuffled.slice(0, 10).map(q => ({
+    id: q.id,
+    question: q.question,
+    options: q.options,
+    // Don't expose the correct answer to the client
+    correctAnswer: undefined 
+  }));
+
+  // Return the questions
+  res.status(200).json({ 
+    subject,
+    questions: selectedQuestions
+  });
+});
+```
+
+## 3. Answer Validation Endpoint
+
+**Route:** POST /validate-answer
+**Description:** Validates a user's answer to a question
+
+```javascript
+// Route: POST /validate-answer
+app.post('/validate-answer', express.json(), (req, res) => {
+  const { subject, questionId, answerIndex } = req.body;
+
+  // Validate request parameters
+  if (!subject || !questionId || answerIndex === undefined) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+      required: ['subject', 'questionId', 'answerIndex']
+    });
+  }
+
+  // Find the subject question set
+  const subjectQuestions = questionsBySubject[subject];
+  if (!subjectQuestions) {
+    return res.status(404).json({ error: 'Subject not found' });
+  }
+
+  // Find the specific question
+  const question = subjectQuestions.find(q => q.id === questionId);
+  if (!question) {
+    return res.status(404).json({ error: 'Question not found' });
+  }
+
+  // Check if the answer is correct
+  const isCorrect = question.correctAnswer === answerIndex;
+
+  // Return the result
+  res.status(200).json({
+    correct: isCorrect,
+    questionId
+  });
+});
+```
+
+## Required CORS Configuration
+
+```javascript
+// CORS middleware
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
+  allowedHeaders: ['X-CSRF-Token', 'X-Requested-With', 'Accept', 'Accept-Version', 'Content-Length', 'Content-MD5', 'Content-Type', 'Date', 'X-Api-Version']
+}));
+
+// Body parser for JSON data
+app.use(express.json());
+```
+
+## WebSocket Event Handlers
+
+The following WebSocket events need to be implemented:
+
+### Connection Events
+- `connect`: When a user connects to the server
+- `disconnect`: When a user disconnects from the server
+
+### Matchmaking Events
+- `joinMatchmaking`: When a user wants to join the matchmaking queue
+- `leaveMatchmaking`: When a user wants to leave the matchmaking queue
+- `matchFound`: When a match is found between two players
+
+### Quiz Events
+- `quizStart`: When a quiz starts
+- `quizQuestion`: When a new question is sent
+- `submitAnswer`: When a user submits an answer
+- `answerResult`: When the result of an answer is sent back
+- `opponentAnswered`: When the opponent answers a question
+- `quizEnd`: When a quiz ends
+
+## Example WebSocket Implementation
+
+Here's a simplified example of the Socket.IO implementation:
+
+```javascript
+io.on('connection', (socket) => {
+  console.log(`New user connected: ${socket.id}`);
+  
+  // Matchmaking
+  socket.on('joinMatchmaking', ({ subject, username }) => {
+    // Implementation to add user to matchmaking queue
+    // ...
+    
+    // When match is found
+    io.to(socket.id).emit('matchFound', {
+      roomId: 'room-id',
+      subject: subject,
+      opponent: 'opponent-username',
+      players: [/* player data */]
+    });
+  });
+  
+  socket.on('leaveMatchmaking', () => {
+    // Implementation to remove user from matchmaking queue
+    // ...
+  });
+  
+  // Game logic
+  socket.on('submitAnswer', ({ questionId, answerIndex, timeElapsed }) => {
+    // Implementation to handle answer submission
+    // ...
+    
+    // Send answer result back to the user
+    io.to(socket.id).emit('answerResult', {
+      correct: true/false,
+      score: 100 // updated score
+    });
+    
+    // Notify opponent
+    io.to('opponent-socket-id').emit('opponentAnswered');
+  });
+  
+  socket.on('disconnect', () => {
+    console.log(`User disconnected: ${socket.id}`);
+    // Implementation to handle user disconnection
+    // ...
+  });
+});
+```
+
+## Complete Implementation Reference
+
+For a complete implementation, ensure:
+
+1. Express is properly set up with middleware
+2. Socket.IO is initialized and configured
+3. All API endpoints are implemented
+4. All WebSocket event handlers are implemented
+5. Game logic for matchmaking, quizzes, and scoring is implemented
+6. Error handling for all endpoints and events
+
+## Frontend Configuration
+
+The frontend should be configured with these environment variables:
+
+```
+VITE_API_URL=https://quizzo-realtime.vercel.app
+VITE_QUIZZO_REALTIME_URL=https://quizzo-realtime.vercel.app
+``` 

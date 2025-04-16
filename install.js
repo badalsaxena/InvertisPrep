@@ -43,8 +43,8 @@ function setupEnvFiles() {
   if (!fs.existsSync(mainEnvPath)) {
     console.log(`${colors.yellow}Creating main .env file${colors.reset}`);
     fs.writeFileSync(mainEnvPath, 
-      'VITE_API_URL=https://quizzo-unified-server.onrender.com\n' +
-      'VITE_QUIZZO_REALTIME_URL=https://quizzo-unified-server.onrender.com\n'
+      'VITE_API_URL=https://quizzo-realtime.onrender.com\n' +
+      'VITE_QUIZZO_REALTIME_URL=https://quizzo-realtime.onrender.com\n'
     );
     console.log(`${colors.green}Created .env file${colors.reset}`);
   } else {

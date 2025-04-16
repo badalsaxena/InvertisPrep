@@ -52,10 +52,12 @@ export default function MultiplayerQuizzo() {
   useEffect(() => {
     const connectToSocket = async () => {
       try {
+        console.log("Attempting to connect to Socket server...");
         await quizzoSocketService.connect();
+        console.log("Successfully connected to Socket server");
       } catch (error) {
         console.error("Failed to connect to Quizzo server:", error);
-        setError("Failed to connect to the Quizzo server. Please try again later.");
+        setError("Failed to connect to the Quizzo server. Please try again later or check server status.");
       }
     };
     
