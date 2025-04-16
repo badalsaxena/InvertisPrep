@@ -6,7 +6,7 @@
  * Get the API URL from environment variables with fallback
  */
 export const getApiUrl = (): string => {
-  return import.meta.env.VITE_API_URL || 'https://invertisprep.vercel.app/api';
+  return import.meta.env.VITE_API_URL || 'https://quizzo-realtime.vercel.app';
 };
 
 /**

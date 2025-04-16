@@ -32,7 +32,7 @@ export default function ServerInfoDialog() {
     
     try {
       // Get the API URL from the environment variable or use default
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://quizzo-realtime.vercel.app';
       
       // Check API server
       const apiResponse = await fetch(apiUrl, {
@@ -176,17 +176,18 @@ export default function ServerInfoDialog() {
             <div>
               <h3 className="font-medium mb-2">Server Details</h3>
               <div className="text-sm space-y-1">
-                <div><strong>API URL:</strong> {import.meta.env.VITE_API_URL || '/api'}</div>
+                <div><strong>API URL:</strong> {import.meta.env.VITE_API_URL || 'https://quizzo-realtime.vercel.app'}</div>
                 <div><strong>WebSocket URL:</strong> {import.meta.env.VITE_QUIZZO_REALTIME_URL || 'https://quizzo-realtime.vercel.app'}</div>
                 <div><strong>Protocol:</strong> WebSocket (with HTTP fallback)</div>
               </div>
             </div>
             
             <div className="pt-2 text-sm text-gray-500">
-              <p>The application requires both servers to be running:</p>
+              <p>The application requires a unified server to run:</p>
               <ul className="list-disc list-inside mt-1">
-                <li>API server (hosted on Vercel): Provides questions and validates answers</li>
-                <li>Real-time server: Handles matchmaking and live game updates</li>
+                <li>Unified server: Handles both API requests and WebSocket connections</li>
+                <li>WebSocket: Real-time matchmaking and live game updates</li>
+                <li>API: Provides questions and validates answers</li>
               </ul>
             </div>
           </div>

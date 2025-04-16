@@ -32,8 +32,13 @@ export class QuizzoApiService {
   }
 
   private getApiUrl(): string {
-    // Default to deployed Vercel URL, but allow override from environment
-    return process.env.NEXT_PUBLIC_API_URL || '/api';
+    // First check if explicitly set in environment
+    if (import.meta.env.VITE_API_URL) {
+      return import.meta.env.VITE_API_URL;
+    }
+    
+    // Default to unified server
+    return 'https://quizzo-realtime.vercel.app';
   }
 
   /**
