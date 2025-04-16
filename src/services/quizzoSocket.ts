@@ -63,8 +63,8 @@ class QuizzoSocketService {
       return import.meta.env.VITE_QUIZZO_REALTIME_URL;
     }
     
-    // We use a separate realtime server deployed elsewhere
-    return 'https://quizzo-realtime.vercel.app';
+    // We use a separate unified server deployed elsewhere
+    return 'https://quizzo-unified-server.onrender.com';
   }
   
   // Connect to socket server
