@@ -11,6 +11,23 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Facebook, Twitter, Instagram, Youtube, Mail } from "lucide-react";
 
+// Add CSS for blinking heart animation
+const heartBlink = `
+  @keyframes heartBeat {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.25); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.25); }
+    60% { transform: scale(1); }
+  }
+  
+  .heart-icon {
+    display: inline-block;
+    color: #ff3366;
+    animation: heartBeat 2s infinite;
+  }
+`;
+
 export function Footer() {
   const footerLinks = {
     "Quick Links": [
@@ -43,6 +60,9 @@ export function Footer() {
 
   return (
     <footer className="bg-gray-900 text-gray-200">
+      {/* Add the heart animation style */}
+      <style>{heartBlink}</style>
+      
       {/* Desktop Footer */}
       <div className="hidden sm:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -96,9 +116,24 @@ export function Footer() {
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <div className="text-sm text-gray-400">
+            <p className="flex items-center">
+              Made with <span className="heart-icon mx-1">❤️</span> by{" "}
+              <a 
+                href="https://github.com/AhqafCoder" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-purple-400 hover:text-purple-300 transition-colors ml-1"
+              >
+                AhqafCoder
+              </a> & Team
+            </p>
+          </div>
+          
           <p className="text-sm text-gray-400">
             © {new Date().getFullYear()} InvertisPrep. All rights reserved.
           </p>
+          
           <div className="flex space-x-4">
             {socialLinks.map((social) => (
               <a
@@ -175,9 +210,23 @@ export function Footer() {
               </a>
             ))}
           </div>
-          <p className="text-sm text-gray-400 text-center">
-            © {new Date().getFullYear()} InvertisPrep. All rights reserved.
-          </p>
+          
+          <div className="text-center">
+            <p className="text-sm text-gray-400">
+              © {new Date().getFullYear()} InvertisPrep. All rights reserved.
+            </p>
+            <p className="mt-1 text-sm text-gray-400 flex items-center justify-center">
+              Made with <span className="heart-icon mx-1">❤️</span> by{" "}
+              <a 
+                href="https://github.com/AhqafCoder" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-purple-400 hover:text-purple-300 transition-colors ml-1"
+              >
+                AhqafCoder
+              </a> & Team
+            </p>
+          </div>
         </div>
       </div>
     </footer>
