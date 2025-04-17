@@ -1,0 +1,1511 @@
+# InvertisPrep Platform Enhancement: User Profiles & Economy System
+
+## Core Features Implemented
+
+1. **Personal Dashboard for Users**
+   - ✅ Enhanced user profile with personal information, course selection and account management
+   - ✅ QCoins wallet integration with transaction history
+   - ✅ Clean, modern UI with responsive design
+   - ✅ Academic progress tracking section
+
+2. **Platform Economy System**
+   - ✅ Virtual currency system (QCoins) with Firestore-backed storage
+   - ✅ User-friendly wallet interface for managing QCoins
+   - ✅ Transaction history with detailed records
+   - ✅ Reward system for participation and activities
+
+3. **Authentication Improvements**
+   - ✅ Seamless user identification using Firebase Authentication
+   - ✅ Profile data integration with Firestore database
+   - ✅ Error handling and fallback mechanisms for improved reliability
+   - ✅ Email verification status tracking
+
+4. **User Experience Enhancements**
+   - ✅ Breadcrumb navigation for improved user orientation
+   - ✅ Consistent styling across the application
+   - ✅ Real-time updates and feedback on user actions
+   - ✅ Mobile-responsive design for all components
+
+## Technical Implementation Summary
+
+### 1. Backend Architecture
+
+#### Firebase Integration
+- Using Firebase Authentication for user management
+- Firestore database for profile and wallet storage
+- Secure transaction recording with proper error handling
+- Real-time data updates and synchronization
+
+#### Database Structure
+```
+users/
+  ├── {uid}/
+  │     ├── displayName
+  │     ├── email
+  │     ├── photoURL
+  │     ├── createdAt
+  │     ├── lastLogin
+  │     ├── course
+  │     ├── lastUpdated
+  │     │
+  │     ├── wallet
+  │     │     ├── balance
+  │     │     ├── lastUpdated
+  │     │     └── transactions (array)
+  │     │           ├── id
+  │     │           ├── amount
+  │     │           ├── type (DEPOSIT, REWARD, SPENT)
+  │     │           ├── description
+  │     │           ├── timestamp
+  │     │           └── status (COMPLETED, PENDING, FAILED)
+```
+
+### 2. Frontend Improvements
+
+#### User Interface
+- Clean, modern design using component-based architecture
+- Tabs-based organization of profile settings
+- Consistent styling and visual feedback
+- Enhanced transaction history with summary statistics
+
+#### User Experience
+- Breadcrumb navigation for better orientation
+- Meaningful feedback messages on actions
+- Graceful error handling with fallback data
+- Offline support and data caching
+
+## Future Enhancements
+
+### 1. Advanced Game & Learning Features
+- Implement quiz scoring and QCoin rewards integration
+- Create detailed achievement system with badges
+- Add progress tracking for courses and learning paths
+- Develop personalized learning recommendations
+
+### 2. Enhanced Economy System
+- Implement daily earning caps to prevent system abuse
+- Add premium content purchases using QCoins
+- Develop leaderboards for QCoin earners
+- Create social features for QCoin gifting and rewards
+
+### 3. Analytics & Reporting
+- User activity dashboards for administrators
+- Learning progress reports for students
+- System usage analytics for platform optimization
+- Quiz performance statistics and improvement recommendations
+
+### 4. Platform Security
+- Enhanced transaction verification
+- Rate limiting for sensitive operations
+- Advanced fraud detection for QCoin economy
+- Regular security audits and updates
+
+## Implementation Timeline
+
+### Completed:
+- ✅ Core user profile functionality
+- ✅ QCoins wallet and transaction system
+- ✅ Improved navigation and user experience
+- ✅ Enhanced error handling and data reliability
+
+### In Progress:
+- 🔄 Quiz integration with QCoins rewards
+- 🔄 Expanded academic progress tracking
+- 🔄 Enhanced profile customization options
+
+### Upcoming:
+- ⏳ Leaderboards and social features
+- ⏳ Premium content marketplace
+- ⏳ Advanced analytics and reporting
+- ⏳ Mobile app development
+
+## Technical Implementation Plan
+
+### 1. Backend Architecture Enhancement
+
+#### Resources Server (Existing)
+- Add user profile data endpoints with rate limiting
+- Create user asset management API with transaction redundancy
+- Implement transaction history tracking with immutable audit logs
+- Store user achievements and badges
+- Add server-side validation for all operations
+
+#### Quizzo Server (Existing)
+- Add persistent user session recognition
+- Implement game result reporting to main server with retry mechanisms
+- Create QCoin award mechanics with anti-farming protections
+- Update matchmaking to use persistent identifiers
+- Implement server-side verification for all game results
+
+### 2. Database Structure
+
+```
+users/
+  ├── {uid}/
+  │     ├── profile
+  │     │     ├── displayName
+  │     │     ├── email
+  │     │     ├── photoURL
+  │     │     ├── createdAt
+  │     │     ├── settings
+  │     │     └── lastLogin
+  │     │
+  │     ├── wallet
+  │     │     ├── balance
+  │     │     ├── pendingTransactions
+  │     │     ├── dailyEarnings (for limits)
+  │     │     ├── transactions/
+  │     │     │     └── {transactionId}/
+  │     │     │           ├── amount
+  │     │     │           ├── type (DEPOSIT, REWARD, SPENT)
+  │     │     │           ├── description
+  │     │     │           ├── timestamp
+  │     │     │           ├── status (PENDING, COMPLETED, FAILED)
+  │     │     │           └── verificationHash
+  │     │     └── paymentMethods/
+  │     │           └── {paymentMethodId}/
+  │     │                 ├── type
+  │     │                 ├── lastFour
+  │     │                 ├── expiryDate
+  │     │                 └── tokenizedData
+  │     │
+  │     ├── gameHistory/
+  │     │     └── {gameId}/
+  │     │           ├── opponent
+  │     │           ├── score
+  │     │           ├── result (WIN, LOSS, DRAW)
+  │     │           ├── coinsEarned
+  │     │           ├── subject
+  │     │           ├── timestamp
+  │     │           └── verificationHash
+  │     │
+  │     ├── limitations/
+  │     │     ├── dailyPlayCount
+  │     │     ├── dailyEarningsCap
+  │     │     ├── lastResetDate
+  │     │     └── riskLevel
+  │     │
+  │     └── achievements/
+  │           └── {achievementId}/
+  │                 ├── name
+  │                 ├── description
+  │                 ├── unlockedAt
+  │                 └── icon
+  │
+  └── leaderboards/
+        ├── global/
+        │     └── {uid}: score
+        ├── weekly/
+        │     └── {weekId}/
+        │           └── {uid}: score
+        └── subjects/
+              └── {subjectId}/
+                    └── {uid}: score
+```
+
+### 3. Implementation Steps
+
+#### Phase 1: User Profile & Authentication Integration (3-4 weeks)
+1. **Firebase Authentication Integration**
+   - Keep Firebase Authentication on the frontend server
+   - Implement token-based authentication between frontend and backend servers
+   - Set up Firebase Admin SDK on resources server for token verification
+   - Create authentication middleware for backend API routes
+   - Implement user session management with security timeouts
+
+   **Frontend Implementation:**
+   ```typescript
+   // src/services/authService.ts
+   import { getAuth, onAuthStateChanged } from 'firebase/auth';
+   import { apiClient } from './apiClient';
+   
+   export const setupAuthTokenInterceptor = () => {
+     const auth = getAuth();
+     
+     onAuthStateChanged(auth, async (user) => {
+       if (user) {
+         // Get token when user is authenticated
+         const token = await user.getIdToken();
+         
+         // Set token in API client
+         apiClient.setAuthToken(token);
+       } else {
+         // Clear token when user signs out
+         apiClient.clearAuthToken();
+       }
+     });
+   };
+   
+   // Ensure this is called when your app initializes
+   ```
+
+   **Backend Implementation (Resources Server):**
+   ```javascript
+   // middlewares/auth.js
+   const admin = require('firebase-admin');
+   const serviceAccount = require('../config/firebase-service-account.json');
+   
+   admin.initializeApp({
+     credential: admin.credential.cert(serviceAccount)
+   });
+   
+   const verifyToken = async (req, res, next) => {
+     try {
+       const idToken = req.headers.authorization?.split('Bearer ')[1];
+       if (!idToken) {
+         return res.status(401).json({ error: 'Unauthorized' });
+       }
+       
+       const decodedToken = await admin.auth().verifyIdToken(idToken);
+       req.user = decodedToken;
+       next();
+     } catch (error) {
+       return res.status(401).json({ error: 'Invalid token' });
+     }
+   };
+   
+   module.exports = { verifyToken };
+   ```
+
+   **Protected Routes Implementation:**
+   ```javascript
+   // routes/userRoutes.js
+   const express = require('express');
+   const router = express.Router();
+   const { verifyToken } = require('../middlewares/auth');
+   const userController = require('../controllers/userController');
+   
+   // Protect all user routes
+   router.use(verifyToken);
+   
+   // Add user ownership verification
+   const verifyUserOwnership = (req, res, next) => {
+     if (req.user.uid !== req.params.uid) {
+       return res.status(403).json({ error: 'Forbidden: You can only access your own data' });
+     }
+     next();
+   };
+   
+   // Protected user routes
+   router.get('/:uid', verifyUserOwnership, userController.getUserProfile);
+   router.put('/:uid', verifyUserOwnership, userController.updateUserProfile);
+   router.get('/:uid/wallet', verifyUserOwnership, userController.getWallet);
+   
+   module.exports = router;
+   ```
+
+2. **User Profile Database Implementation**
+   - Create Firestore collections and documents structure
+   - Implement automatic profile creation upon first authentication
+   - Add profile synchronization between frontend cache and backend database
+   - Set up secure Firestore rules for proper data access control
+
+   **User Profile Creation:**
+   ```javascript
+   // On resources server
+   const createUserProfile = async (user) => {
+     try {
+       const userRef = db.collection('users').doc(user.uid);
+       const userDoc = await userRef.get();
+       
+       if (!userDoc.exists) {
+         // Initialize new user profile
+         await userRef.set({
+           profile: {
+             displayName: user.displayName || '',
+             email: user.email,
+             photoURL: user.photoURL || '',
+             createdAt: admin.firestore.FieldValue.serverTimestamp(),
+             lastLogin: admin.firestore.FieldValue.serverTimestamp()
+           },
+           wallet: {
+             balance: 0,
+             pendingTransactions: [],
+             dailyEarnings: 0
+           },
+           limitations: {
+             dailyPlayCount: 0,
+             dailyEarningsCap: 20, // Default cap
+             lastResetDate: admin.firestore.FieldValue.serverTimestamp(),
+             riskLevel: 'normal'
+           }
+         });
+         
+         // Create initial achievement
+         await userRef.collection('achievements').doc('welcome').set({
+           name: 'Welcome to InvertisPrep',
+           description: 'Joined the platform',
+           unlockedAt: admin.firestore.FieldValue.serverTimestamp(),
+           icon: 'welcome-badge'
+         });
+         
+         console.log(`Created new profile for user ${user.uid}`);
+       } else {
+         // Update last login time
+         await userRef.update({
+           'profile.lastLogin': admin.firestore.FieldValue.serverTimestamp()
+         });
+       }
+     } catch (error) {
+       console.error('Error creating user profile:', error);
+       throw error;
+     }
+   };
+   ```
+
+3. **API Routes Implementation**
+   - Design and implement RESTful API endpoints for user profile management
+   - Create controllers for handling user profile requests
+   - Implement proper error handling and validation
+   - Add rate limiting to prevent abuse
+
+4. **Cross-Server Authentication**
+   - Set up secure server-to-server authentication between Quizzo and Resources servers
+   - Generate and manage API keys for server-to-server requests
+   - Implement request signing for enhanced security
+   - Create middleware for verifying server-to-server requests
+
+   **Server-to-Server Authentication:**
+   ```javascript
+   // On Quizzo server - sending requests to Resources server
+   const crypto = require('crypto');
+   const axios = require('axios');
+   
+   const sendServerToServerRequest = async (endpoint, data) => {
+     const timestamp = Date.now().toString();
+     const apiKey = process.env.RESOURCES_SERVER_API_KEY;
+     const secretKey = process.env.RESOURCES_SERVER_SECRET_KEY;
+     
+     // Create signature
+     const payload = JSON.stringify(data);
+     const signature = crypto
+       .createHmac('sha256', secretKey)
+       .update(`${timestamp}:${payload}`)
+       .digest('hex');
+     
+     try {
+       const response = await axios.post(`${process.env.RESOURCES_SERVER_URL}${endpoint}`, data, {
+         headers: {
+           'X-API-Key': apiKey,
+           'X-Timestamp': timestamp,
+           'X-Signature': signature,
+           'Content-Type': 'application/json'
+         }
+       });
+       
+       return response.data;
+     } catch (error) {
+       console.error('Server-to-server request failed:', error);
+       throw error;
+     }
+   };
+   ```
+
+   **Server-to-Server Verification (on Resources server):**
+   ```javascript
+   // middlewares/serverAuth.js
+   const crypto = require('crypto');
+   
+   const verifyServerRequest = (req, res, next) => {
+     try {
+       const apiKey = req.headers['x-api-key'];
+       const timestamp = req.headers['x-timestamp'];
+       const signature = req.headers['x-signature'];
+       const payload = JSON.stringify(req.body);
+       const secretKey = process.env.SERVER_SECRET_KEY;
+       
+       // Verify API key
+       if (apiKey !== process.env.EXPECTED_API_KEY) {
+         return res.status(401).json({ error: 'Invalid API key' });
+       }
+       
+       // Check timestamp to prevent replay attacks (5 minute window)
+       const now = Date.now();
+       const requestTime = parseInt(timestamp, 10);
+       if (now - requestTime > 5 * 60 * 1000) {
+         return res.status(401).json({ error: 'Request expired' });
+       }
+       
+       // Verify signature
+       const expectedSignature = crypto
+         .createHmac('sha256', secretKey)
+         .update(`${timestamp}:${payload}`)
+         .digest('hex');
+       
+       if (signature !== expectedSignature) {
+         return res.status(401).json({ error: 'Invalid signature' });
+       }
+       
+       // Request is verified
+       next();
+     } catch (error) {
+       console.error('Server authentication error:', error);
+       return res.status(500).json({ error: 'Server authentication failed' });
+     }
+   };
+   
+   module.exports = { verifyServerRequest };
+   ```
+
+5. **Dashboard UI Implementation**
+   - Design and build user profile components
+   - Implement authentication state management in frontend
+   - Create protected routes for authenticated users only
+   - Add loading states and error handling for auth operations
+   - Build responsive UI with accessibility considerations
+
+6. **Frontend-Backend Integration Testing**
+   - Test authentication flow from frontend to backend
+   - Verify token validation and expiration handling
+   - Ensure proper error handling for authentication failures
+   - Test API endpoints with authenticated requests
+   - Verify cross-server communication security
+
+#### Phase 2: Economy System (4 weeks)
+1. Create wallet database structure in Firebase with transaction validation
+2. Implement secure transaction system with double-entry bookkeeping
+3. Build QCoin award system in Quizzo server
+   - Participation rewards (1 QCoin) with daily caps
+   - Victory rewards (5 QCoins) with anti-farming measures
+   - Implement transaction idempotency to prevent duplicates
+4. Create wallet management endpoints in resources server with rate limiting
+5. Design and implement wallet UI in frontend with clear transaction history
+
+#### Phase 3: Payment Integration (3 weeks)
+1. Select payment gateway integration (Stripe/PayPal) with fallback provider
+2. Implement secure payment processing with PCI compliance
+3. Create top-up UI flow with clear terms and conditions
+4. Add transaction history and receipts with offline access
+5. Implement security measures and fraud prevention
+   - Risk scoring system for transactions
+   - Velocity checks to prevent abuse
+   - Limits for new accounts
+
+#### Phase 4: Leaderboards & Social Features (2 weeks)
+1. Build leaderboard data structure and update logic with caching
+2. Create leaderboard API endpoints with pagination and filtering
+3. Implement UI for global and category leaderboards with refresh controls
+4. Add social sharing capabilities with privacy controls
+5. Implement notifications for leaderboard achievements
+
+### 4. API Endpoints to Create
+
+#### User Profile Endpoints
+```
+GET /api/users/{uid} - Get user profile
+PUT /api/users/{uid} - Update user profile
+GET /api/users/{uid}/history - Get user game history
+GET /api/users/{uid}/achievements - Get user achievements
+POST /api/users/{uid}/settings - Update user settings
+```
+
+#### Wallet & Economy Endpoints
+```
+GET /api/users/{uid}/wallet - Get wallet information
+POST /api/users/{uid}/wallet/transactions - Create new transaction
+GET /api/users/{uid}/wallet/transactions - Get transaction history
+POST /api/payments/create-checkout - Create payment checkout session
+POST /api/payments/webhook - Handle payment gateway webhooks
+GET /api/users/{uid}/wallet/limits - Get current earning limits and status
+```
+
+#### Leaderboard Endpoints
+```
+GET /api/leaderboards/global - Get global leaderboard
+GET /api/leaderboards/weekly - Get current week's leaderboard
+GET /api/leaderboards/subjects/{subjectId} - Get subject-specific leaderboard
+GET /api/leaderboards/friends/{uid} - Get leaderboard of user's friends
+```
+
+### 5. Cross-Server Communication
+
+1. Implement secure server-to-server communication
+   - API keys for inter-server authentication
+   - Webhook system for real-time updates
+   - Retry mechanisms with exponential backoff
+   - Circuit breakers to prevent cascading failures
+
+2. Quizzo server updates user data via:
+   ```
+   POST /api/internal/game-results
+   {
+     userId: "uid",
+     gameId: "game123",
+     result: "WIN",
+     opponent: "opponent_uid",
+     score: 80,
+     coinsEarned: 5,
+     subject: "math",
+     verificationToken: "hash_based_on_game_data_and_server_secret"
+   }
+   ```
+
+3. Resources server validates and processes:
+   - Verifies the request authenticity
+   - Updates user wallet (with transaction atomicity)
+   - Records game history
+   - Updates leaderboards
+   - Implements idempotency to prevent duplicate processing
+
+### 6. Security Considerations
+
+1. **Wallet Security**
+   - Server-side validation for all transactions
+   - Transaction audit logs with immutable storage
+   - Rate limiting for transaction endpoints
+   - Encryption for sensitive data
+   - Double-entry bookkeeping for balance integrity
+   - Regular reconciliation processes
+
+2. **Payment Processing**
+   - PCI compliance for payment handling
+   - Tokenization of payment information
+   - Secure webhook validation
+   - Multiple payment providers for redundancy
+   - Clearly documented refund policy
+   - Transaction monitoring for suspicious activity
+
+3. **Anti-Cheating Measures**
+   - Server-side validation of game results
+   - Rate limiting for QCoin earnings with daily caps
+   - Detection systems for suspicious activity
+   - IP and device tracking for fraud prevention
+   - Challenge verification for high-value rewards
+   - Regular security audits
+
+4. **Data Protection**
+   - GDPR and CCPA compliance measures
+   - Data minimization principles
+   - Clear user consent flows
+   - Ability to export and delete user data
+   - Encryption of sensitive information
+
+### 7. Frontend Components
+
+1. **Dashboard Page**
+   - User profile section with edit capabilities
+   - Game history timeline with filters
+   - Statistics summary with visualizations
+   - Achievement showcase
+   - Clear navigation to all platform features
+
+2. **Wallet Interface**
+   - Current balance display with transaction counts
+   - Transaction history with filtering and search
+   - Top-up button and flow with clear fee disclosure
+   - Spending options (future feature)
+   - Daily earnings tracker and limits display
+
+3. **Leaderboard UI**
+   - Global ranking table with pagination
+   - Filters for different time periods
+   - Subject-specific leaderboards
+   - User position highlight with percentile
+   - Friends filter option
+
+4. **Enhanced Quiz UI**
+   - Automatic player identification
+   - QCoin balance display
+   - Reward animations with clear explanation
+   - Anti-cheating measures (e.g., time limits)
+   - Offline mode with sync mechanisms
+
+### 8. Testing Strategy
+
+1. Unit tests for transaction processing with edge cases
+2. Integration tests for cross-server communication
+3. Load testing for leaderboard updates and concurrent transactions
+4. Security testing for payment processing including penetration testing
+5. User acceptance testing for wallet UI
+6. Performance testing under high transaction volumes
+7. Disaster recovery testing
+8. Database migration and version update testing
+
+### 9. Firebase Configuration Updates
+
+1. **Firestore Rules**
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles - users can read/write only their own data
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // Only the server can modify wallet balances
+      match /wallet {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false; // Only server can write transactions via cloud functions
+      }
+      
+      // Transaction history - users can only read
+      match /wallet/transactions/{transactionId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false; // Only server can write transactions
+      }
+      
+      // Game history - users can read but not write
+      match /gameHistory/{gameId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false; // Only server can write game history
+      }
+    }
+    
+    // Leaderboards - public read, server-only write
+    match /leaderboards/{boardType} {
+      allow read: if true;
+      allow write: if false; // Only server can update leaderboards
+    }
+  }
+}
+```
+
+2. **Firebase Functions**
+- Transaction processing function with idempotency checks
+- Leaderboard update functions with optimization for large datasets
+- Payment webhook handler with retry logic
+- Daily reset for user limits and stats aggregation
+- Automated backup functions
+
+### 10. Integration with Existing Systems
+
+1. **Authentication System**
+   - Extend the current Firebase Auth implementation
+   - Add user profile creation on signup
+   - Initialize wallet with 0 balance for new users
+   - Add verification steps for financial operations
+
+2. **Quizzo Integration**
+   - Update player identification in matchmaking
+   - Add reward distribution after games with verification
+   - Implement server-to-server notifications with failure handling
+   - Add offline mode with data synchronization
+
+3. **Resources Server**
+   - Add user-specific resource access tracking
+   - Implement premium content (purchasable with QCoins)
+   - Add personalized recommendations based on history
+   - Cache frequently accessed data for performance
+
+### 11. Scalability Considerations
+
+1. **Database Optimization**
+   - Implement sharding strategy for user data
+   - Create indices for common queries
+   - Implement caching for leaderboards and frequently accessed data
+   - Plan for database partitioning as user base grows
+
+2. **Server Capacity Planning**
+   - Implement auto-scaling for API servers
+   - Use serverless functions where appropriate
+   - Distribute load across multiple regions
+   - Plan capacity for peak usage (e.g., during promotions)
+
+3. **Cost Management**
+   - Monitor database read/write operations
+   - Implement tiered storage for historical data
+   - Optimize cloud function execution
+   - Set up billing alerts and quotas
+
+### 12. Future Expansion Possibilities
+
+1. **Store/Marketplace**
+   - Digital items purchasable with QCoins
+   - Special quiz access passes
+   - Premium study materials
+   - Virtual gifts for other users
+
+2. **Subscription Tiers**
+   - Monthly QCoin packages with volume discounts
+   - Premium features for subscribers
+   - Special tournaments and events
+   - Early access to new content
+
+3. **Achievements System**
+   - Milestone rewards
+   - Streak bonuses
+   - Subject mastery badges
+   - Seasonal events and rewards
+
+4. **Social Features**
+   - Friend system with challenges
+   - Private tournaments
+   - Team competitions
+   - Chat functionality
+
+### 13. Risk Mitigation
+
+1. **Economic Balance**
+   - Monitor coin supply and inflation rates
+   - Adjust reward rates based on economic indicators
+   - Implement coin sinks (ways to spend coins)
+   - Regular economic reviews and adjustments
+
+2. **Technical Failures**
+   - Implement comprehensive logging
+   - Set up automated alerts for system issues
+   - Create fallback mechanisms for critical features
+   - Document disaster recovery procedures
+
+3. **Regulatory Compliance**
+   - Stay updated on virtual currency regulations
+   - Implement KYC procedures for larger transactions
+   - Clear terms of service for virtual economy
+   - Regular legal reviews
+
+4. **User Experience**
+   - Gradually introduce features to avoid overwhelming users
+   - Clear documentation and tutorials
+   - Support system for economic questions
+   - Regular feedback collection and implementation
+
+### 14. Maintenance Considerations
+
+1. **Database Scaling**
+   - Implement caching for leaderboards
+   - Consider sharding for user data as it grows
+   - Regular cleanup of old/inactive data
+   - Optimize query patterns for scale
+
+2. **Monitoring**
+   - Transaction logs and anomaly detection
+   - Wallet balance audits with automated reconciliation
+   - API usage monitoring with rate limit alerts
+   - Performance metrics with historical trending
+
+3. **Backup Strategy**
+   - Regular backups of user financial data
+   - Point-in-time recovery capability
+   - Disaster recovery procedures
+   - Test restore processes regularly
+
+4. **Update Procedures**
+   - Zero-downtime deployment strategy
+   - Feature flags for gradual rollouts
+   - Backward compatibility planning
+   - Clear update communication to users
+
+# Phase 2: Resources Server Authentication & Authorization Implementation
+
+## Backend Configuration
+
+### Step 1: Install Required Dependencies
+```bash
+# Install Firebase Admin SDK and other dependencies
+npm install firebase-admin --save
+npm install jsonwebtoken --save
+npm install dotenv --save
+```
+
+### Step 2: Set Up Firebase Admin SDK
+
+1. **Create Firebase Configuration File (src/config/firebase.js)**
+```javascript
+const admin = require('firebase-admin');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+// Check if running in a production environment
+const isProd = process.env.NODE_ENV === 'production';
+
+// Initialize Firebase Admin with environment variables
+if (!admin.apps.length) {
+  // If using environment variables (recommended for production)
+  if (isProd) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      })
+    });
+  } 
+  // For local development with service account file
+  else {
+    const serviceAccount = require('../path-to-your-service-account.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+  }
+}
+
+module.exports = admin;
+```
+
+2. **Create .env File (Not to be committed to git)**
+```
+# Firebase Admin SDK
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-client-email
+FIREBASE_PRIVATE_KEY="your-private-key"
+
+# Server settings
+PORT=5000
+NODE_ENV=development
+
+# CORS settings
+ALLOWED_ORIGINS=http://localhost:3000,https://invertisprep.vercel.app
+```
+
+3. **Update .gitignore to exclude sensitive files**
+```
+# Environment variables
+.env
+
+# Service account keys
+*-service-account.json
+```
+
+### Step 3: Create Authentication Middleware
+
+1. **Create Authentication Middleware (src/middleware/auth.js)**
+```javascript
+const admin = require('../config/firebase');
+
+/**
+ * Middleware to verify Firebase authentication token
+ */
+exports.verifyToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        error: 'Unauthorized', 
+        message: 'Authentication token is required' 
+      });
+    }
+    
+    const token = authHeader.split('Bearer ')[1];
+    
+    // Verify the token with Firebase Admin
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    
+    // Add the authenticated user to the request object
+    req.user = decodedToken;
+    
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    
+    if (error.code === 'auth/id-token-expired') {
+      return res.status(401).json({ 
+        error: 'Unauthorized', 
+        message: 'Token expired, please sign in again' 
+      });
+    }
+    
+    if (error.code === 'auth/argument-error') {
+      return res.status(401).json({ 
+        error: 'Unauthorized', 
+        message: 'Invalid token format'
+      });
+    }
+    
+    return res.status(401).json({ 
+      error: 'Unauthorized', 
+      message: 'Authentication failed'
+    });
+  }
+};
+
+/**
+ * Middleware to verify user ownership of resources
+ */
+exports.verifyUserOwnership = (req, res, next) => {
+  try {
+    // Make sure user is authenticated first
+    if (!req.user) {
+      return res.status(401).json({ 
+        error: 'Unauthorized', 
+        message: 'Authentication required' 
+      });
+    }
+    
+    // Check if the requested user ID matches the authenticated user
+    if (req.params.uid !== req.user.uid) {
+      return res.status(403).json({ 
+        error: 'Forbidden', 
+        message: 'You can only access your own data' 
+      });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('User ownership verification error:', error);
+    return res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'User verification failed'
+    });
+  }
+};
+
+/**
+ * Middleware to check admin roles
+ */
+exports.verifyAdmin = (req, res, next) => {
+  try {
+    // Make sure user is authenticated first
+    if (!req.user) {
+      return res.status(401).json({ 
+        error: 'Unauthorized', 
+        message: 'Authentication required' 
+      });
+    }
+    
+    // Check for admin claim in the Firebase token
+    if (!req.user.admin && !req.user.custom_claims?.admin) {
+      return res.status(403).json({ 
+        error: 'Forbidden', 
+        message: 'Admin access required'
+      });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Admin verification error:', error);
+    return res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Admin verification failed' 
+    });
+  }
+};
+```
+
+### Step 4: Create User Controller for Profile Management
+
+1. **Create User Model (if using MongoDB)**
+```javascript
+// src/models/User.js
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  uid: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  displayName: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true
+  },
+  photoURL: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now
+  },
+  wallet: {
+    balance: {
+      type: Number,
+      default: 0
+    },
+    dailyEarnings: {
+      type: Number,
+      default: 0
+    },
+    lastResetDate: {
+      type: Date,
+      default: Date.now
+    }
+  },
+  bookmarks: [{
+    resourceId: String,
+    addedAt: Date
+  }],
+  isAdmin: {
+    type: Boolean,
+    default: false
+  }
+});
+
+module.exports = mongoose.model('User', userSchema);
+```
+
+2. **Create User Controller (src/controllers/userController.js)**
+```javascript
+const User = require('../models/User');
+
+/**
+ * Get user profile
+ */
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.params.uid });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'Not Found', 
+        message: 'User profile not found' 
+      });
+    }
+    
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Failed to fetch user profile' 
+    });
+  }
+};
+
+/**
+ * Create user profile
+ */
+exports.createUserProfile = async (req, res) => {
+  try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ uid: req.user.uid });
+    
+    if (existingUser) {
+      return res.status(409).json({ 
+        error: 'Conflict', 
+        message: 'User profile already exists' 
+      });
+    }
+    
+    // Create new user
+    const newUser = new User({
+      uid: req.user.uid,
+      displayName: req.body.displayName || req.user.name || 'User',
+      email: req.user.email,
+      photoURL: req.body.photoURL || req.user.picture
+    });
+    
+    await newUser.save();
+    
+    res.status(201).json(newUser);
+  } catch (error) {
+    console.error('Error creating user profile:', error);
+    res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Failed to create user profile' 
+    });
+  }
+};
+
+/**
+ * Update user profile
+ */
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.params.uid });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'Not Found', 
+        message: 'User profile not found' 
+      });
+    }
+    
+    // Only update allowed fields
+    const allowedFields = ['displayName', 'photoURL'];
+    const updates = {};
+    
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updates[field] = req.body[field];
+      }
+    });
+    
+    // Update last login
+    updates.lastLogin = new Date();
+    
+    // Update user
+    const updatedUser = await User.findOneAndUpdate(
+      { uid: req.params.uid },
+      { $set: updates },
+      { new: true }
+    );
+    
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Failed to update user profile' 
+    });
+  }
+};
+
+/**
+ * Get user wallet
+ */
+exports.getUserWallet = async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.params.uid });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'Not Found', 
+        message: 'User wallet not found' 
+      });
+    }
+    
+    res.status(200).json(user.wallet);
+  } catch (error) {
+    console.error('Error fetching user wallet:', error);
+    res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Failed to fetch user wallet' 
+    });
+  }
+};
+```
+
+### Step 5: Update Resource Controller with User Associations
+
+1. **Update Resource Controller (src/controllers/resourceController.js)**
+```javascript
+// Add user bookmarks functionality
+exports.addBookmark = async (req, res) => {
+  try {
+    const { resourceId } = req.body;
+    
+    if (!resourceId) {
+      return res.status(400).json({ 
+        error: 'Bad Request', 
+        message: 'Resource ID is required' 
+      });
+    }
+    
+    // Find user
+    const user = await User.findOne({ uid: req.user.uid });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'Not Found', 
+        message: 'User not found' 
+      });
+    }
+    
+    // Check if bookmark already exists
+    const bookmarkExists = user.bookmarks.some(
+      bookmark => bookmark.resourceId === resourceId
+    );
+    
+    if (bookmarkExists) {
+      return res.status(409).json({ 
+        error: 'Conflict', 
+        message: 'Resource already bookmarked' 
+      });
+    }
+    
+    // Add bookmark
+    user.bookmarks.push({
+      resourceId,
+      addedAt: new Date()
+    });
+    
+    await user.save();
+    
+    res.status(201).json({ 
+      message: 'Bookmark added successfully',
+      bookmarks: user.bookmarks
+    });
+  } catch (error) {
+    console.error('Error adding bookmark:', error);
+    res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Failed to add bookmark' 
+    });
+  }
+};
+
+// Get user bookmarks
+exports.getUserBookmarks = async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.params.uid });
+    
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'Not Found', 
+        message: 'User not found' 
+      });
+    }
+    
+    // Get file details for each bookmark
+    const bookmarkedFiles = await Promise.all(
+      user.bookmarks.map(async (bookmark) => {
+        // Get file details - implement based on your file storage system
+        const file = await getFileById(bookmark.resourceId);
+        return {
+          ...file,
+          bookmarkedAt: bookmark.addedAt
+        };
+      })
+    );
+    
+    res.status(200).json({
+      bookmarks: bookmarkedFiles
+    });
+  } catch (error) {
+    console.error('Error fetching bookmarks:', error);
+    res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Failed to fetch bookmarks' 
+    });
+  }
+};
+
+// Add user tracking to file upload
+exports.uploadResource = async (req, res) => {
+  try {
+    // Handle file upload logic...
+    
+    // Associate uploaded file with user
+    const fileMetadata = {
+      // File metadata...
+      uploadedBy: req.user.uid,
+      uploadedAt: new Date()
+    };
+    
+    // Save file metadata...
+    
+    res.status(201).json({
+      message: 'File uploaded successfully',
+      file: fileMetadata
+    });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ 
+      error: 'Server Error', 
+      message: 'Failed to upload file' 
+    });
+  }
+};
+```
+
+### Step 6: Update Routes with Authentication Middleware
+
+1. **Configure User Routes (src/routes/users.js)**
+```javascript
+const express = require('express');
+const router = express.Router();
+const { verifyToken, verifyUserOwnership } = require('../middleware/auth');
+const userController = require('../controllers/userController');
+
+// Create user profile (authenticated)
+router.post('/', verifyToken, userController.createUserProfile);
+
+// Get user profile (authenticated + ownership)
+router.get('/:uid', verifyToken, verifyUserOwnership, userController.getUserProfile);
+
+// Update user profile (authenticated + ownership)
+router.put('/:uid', verifyToken, verifyUserOwnership, userController.updateUserProfile);
+
+// Get user wallet (authenticated + ownership)
+router.get('/:uid/wallet', verifyToken, verifyUserOwnership, userController.getUserWallet);
+
+module.exports = router;
+```
+
+2. **Update Resource Routes (src/routes/resources.js)**
+```javascript
+const express = require('express');
+const router = express.Router();
+const resourceController = require('../controllers/resourceController');
+const { verifyToken, verifyAdmin } = require('../middleware/auth');
+
+// Public routes (no authentication required)
+router.get('/departments', resourceController.getDepartments);
+router.get('/departments/:departmentId/branches', resourceController.getBranches);
+router.get('/departments/:departmentId/branches/:branchId/semesters', resourceController.getSemesters);
+router.get('/departments/:departmentId/branches/:branchId/sessions', resourceController.getSessions);
+router.get('/files', resourceController.getFiles);
+
+// Protected routes (authentication required)
+router.post('/upload', verifyToken, resourceController.uploadResource);
+router.post('/bookmarks', verifyToken, resourceController.addBookmark);
+router.delete('/bookmarks/:resourceId', verifyToken, resourceController.removeBookmark);
+
+// Admin routes
+router.delete('/files/:fileId', verifyToken, verifyAdmin, resourceController.deleteFile);
+router.put('/files/:fileId', verifyToken, verifyAdmin, resourceController.updateFile);
+
+module.exports = router;
+```
+
+### Step 7: Update Server Configuration (index.js)
+
+```javascript
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+
+// Load environment variables
+dotenv.config();
+
+// Import routes
+const resourceRoutes = require('./routes/resources');
+const userRoutes = require('./routes/users');
+
+// Initialize Express app
+const app = express();
+const port = process.env.PORT || 5000;
+
+// Configure CORS
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ['http://localhost:3000'];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy does not allow access from origin ${origin}`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  }
+}));
+
+// Configure body parser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch(err => {
+  console.error('MongoDB connection error:', err);
+});
+
+// Static files
+app.use('/public', express.static('public'));
+
+// Routes
+app.use('/api/resources', resourceRoutes);
+app.use('/api/users', userRoutes);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    error: 'Server Error',
+    message: process.env.NODE_ENV === 'production' 
+      ? 'An unexpected error occurred' 
+      : err.message
+  });
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+```
+
+### Step 8: Deployment Preparation
+
+1. **Create a Procfile for Heroku (if using Heroku)**
+```
+web: node index.js
+```
+
+2. **Update package.json scripts**
+```json
+"scripts": {
+  "start": "node index.js",
+  "dev": "nodemon index.js",
+  "seed": "node scripts/seed.js"
+}
+```
+
+3. **Create README.md with setup instructions**
+```markdown
+# InvertisPrep Backend
+
+## Environment Variables
+Create a .env file with the following variables:
+```
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-client-email
+FIREBASE_PRIVATE_KEY="your-private-key"
+MONGODB_URI=your-mongodb-connection-string
+PORT=5000
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:3000,https://invertisprep.vercel.app
+```
+
+## Setup Instructions
+1. Clone the repository
+2. Run `npm install`
+3. Create `.env` file with required variables
+4. Run `npm run dev` for development
+5. Run `npm start` for production
+```
+
+## Implementation Timeline
+
+### Week 1: Authentication & Database Setup
+- Day 1-2: Set up Firebase Admin SDK and authentication middleware
+- Day 3-4: Implement user model and controllers
+- Day 5: Test authentication flow with frontend
+
+### Week 2: Resource Access Control
+- Day 1-2: Update resource controller with user associations
+- Day 3-4: Implement bookmarking functionality
+- Day 5: Test resource access control with frontend
+
+### Week 3: Admin Features
+- Day 1-2: Implement admin role verification
+- Day 3-4: Add admin-only resource management endpoints
+- Day 5: Test admin features
+
+### Week 4: Testing & Deployment
+- Day 1-2: Comprehensive testing of all endpoints
+- Day 3-4: Performance optimization and security checks
+- Day 5: Deploy to production
+
+## Security Considerations
+
+1. **Token Security**
+   - Always verify Firebase tokens on the server
+   - Set proper token expiration
+   - Store tokens securely on the client (HTTP-only cookies preferred)
+
+2. **Data Validation**
+   - Validate all user inputs
+   - Use schema validation for request bodies
+   - Sanitize inputs to prevent injection attacks
+
+3. **Role-Based Access Control**
+   - Clearly define user roles (user, admin)
+   - Verify permissions for every protected operation
+   - Log all permission-related errors
+
+4. **API Rate Limiting**
+   - Implement rate limiting for all endpoints
+   - Add more strict limits for authentication endpoints
+   - Apply different limits based on user roles
+
+5. **Error Handling**
+   - Use generic error messages in production
+   - Log detailed errors server-side
+   - Never expose stack traces to clients
+</rewritten_file> 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
 import Navbar from "./components/Navbar";
@@ -15,10 +16,20 @@ import Quizzo from "@/pages/Quizzo";
 import MultiplayerQuizzo from "@/pages/MultiplayerQuizzo";
 import PYQ from "@/pages/PYQ"; 
 import ProgramDetails from "@/pages/PYQ/ProgramDetails";
+import Settings from "@/pages/Settings";
+import TransactionHistory from "@/pages/QCoins/History";
+import QCoinsPage from "@/pages/QCoins";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  
+  // Show loading state while auth is being checked
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-primary rounded-full"></div>
+    </div>;
+  }
   
   if (!user) {
     return <Navigate to="/login" />;
@@ -27,7 +38,104 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Debug component for troubleshooting
+const DebugInfo = () => {
+  const [visible, setVisible] = useState(false);
+  const { user, loading } = useAuth();
+  const [info, setInfo] = useState({
+    url: window.location.href,
+    userAgent: navigator.userAgent,
+    screen: `${window.innerWidth}x${window.innerHeight}`,
+    time: new Date().toISOString()
+  });
+  
+  return (
+    <div className="fixed bottom-0 right-0 m-2 z-50">
+      <button 
+        onClick={() => setVisible(!visible)}
+        className="bg-gray-800 text-white px-3 py-1 rounded text-xs"
+      >
+        Debug
+      </button>
+      
+      {visible && (
+        <div className="bg-white border border-gray-300 p-3 rounded shadow-lg mt-2 text-xs w-80">
+          <h3 className="font-bold">Debug Info</h3>
+          <div className="mt-2 space-y-1">
+            <p><strong>Auth:</strong> {loading ? 'Loading...' : (user ? 'Authenticated' : 'Not authenticated')}</p>
+            <p><strong>URL:</strong> {info.url}</p>
+            <p><strong>UA:</strong> {info.userAgent}</p>
+            <p><strong>Screen:</strong> {info.screen}</p>
+            <p><strong>Time:</strong> {info.time}</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-blue-500 text-white px-2 py-1 rounded text-xs mt-2"
+          >
+            Reload Page
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 function App() {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    // Mark the app as loaded after a short delay
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 200);
+
+    // Catch any unhandled errors
+    const handleError = (e: ErrorEvent) => {
+      console.error('Unhandled error:', e.error);
+      setError(e.error);
+    };
+
+    window.addEventListener('error', handleError);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
+
+  // Show a simple loading screen while initial setup happens
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin h-10 w-10 border-t-2 border-b-2 border-primary rounded-full"></div>
+      </div>
+    );
+  }
+
+  // Show error screen if an error occurred
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 space-y-4">
+          <h2 className="text-xl font-bold text-red-600">Something went wrong</h2>
+          <p className="text-gray-700">
+            The application encountered an error. Please try refreshing the page.
+          </p>
+          <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-40">
+            {error.message}
+          </pre>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
@@ -48,6 +156,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/qcoins"
+            element={
+              <ProtectedRoute>
+                <QCoinsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/qcoins/history"
+            element={
+              <ProtectedRoute>
+                <TransactionHistory />
               </ProtectedRoute>
             }
           />
@@ -75,9 +207,11 @@ function App() {
           <Route path="/quizzo/multiplayer" element={<MultiplayerQuizzo />} />
         </Routes>
         <Footer />
+        <DebugInfo />
       </div>
     </Router>
   );
 }
 
 export default App;
+

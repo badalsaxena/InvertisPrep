@@ -132,7 +132,7 @@ export default function ServerInfoDialog() {
                 <div className="flex items-center gap-2 text-yellow-700">
                   <RefreshCw className="h-5 w-5 animate-spin" />
                   <span>Checking connection to API server...</span>
-                </div>
+              </div>
               )}
             </div>
             
@@ -165,7 +165,7 @@ export default function ServerInfoDialog() {
                   <span>Checking connection to real-time server...</span>
                 </div>
               )}
-            </div>
+                </div>
             
             {serverStatus.lastChecked && (
               <div className="text-xs text-gray-500">
@@ -191,7 +191,7 @@ export default function ServerInfoDialog() {
               </ul>
             </div>
           </div>
-        </div>
+          </div>
       </DialogContent>
     </Dialog>
   );

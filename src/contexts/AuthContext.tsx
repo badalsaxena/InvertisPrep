@@ -26,12 +26,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    let unsubscribe: () => void;
+    
+    try {
+      // Add a timeout to catch if Firebase auth is hanging
+      const timeoutId = setTimeout(() => {
+        console.warn('Auth state change listener taking too long. This might indicate a problem.');
+      }, 5000);
+      
+      unsubscribe = onAuthStateChanged(
+        auth, 
+        (user) => {
+          setUser(user);
+          setLoading(false);
+          clearTimeout(timeoutId);
+          console.log('Auth state initialized:', user ? 'User authenticated' : 'No user');
+        },
+        (error) => {
+          console.error('Auth state change error:', error);
+          setLoading(false);
+          clearTimeout(timeoutId);
+        }
+      );
+    } catch (error) {
+      console.error('Error setting up auth state listener:', error);
       setLoading(false);
-    });
+    }
 
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
