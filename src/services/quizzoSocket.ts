@@ -63,8 +63,8 @@ class QuizzoSocketService {
       return import.meta.env.VITE_QUIZZO_REALTIME_URL;
     }
     
-    // We use a separate unified server deployed elsewhere
-    return 'https://quizzo-realtime.onrender.com';
+    // Fallback for development
+    return 'http://localhost:8080';
   }
   
   // Connect to socket server
@@ -111,12 +111,14 @@ class QuizzoSocketService {
   }
   
   // Join matchmaking queue with subject selection
-  joinMatchmaking(subject: string, username: string): void {
+  joinMatchmaking(subject: string, username: string, uid?: string): void {
     if (!this.socket) {
       throw new Error('Socket not connected');
     }
     
-    this.socket.emit('joinMatchmaking', { subject, username });
+    // Include uid with the matchmaking request
+    // This allows the backend to identify the user for rewards
+    this.socket.emit('joinMatchmaking', { subject, username, uid });
   }
   
   // Leave matchmaking queue

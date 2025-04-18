@@ -14,11 +14,12 @@ import Services from "@/pages/Services";
 import Resources from "@/pages/Resources";
 import Quizzo from "@/pages/Quizzo";
 import MultiplayerQuizzo from "@/pages/MultiplayerQuizzo";
+import SoloQuizzo from "@/pages/SoloQuizzo";
 import PYQ from "@/pages/PYQ"; 
 import ProgramDetails from "@/pages/PYQ/ProgramDetails";
 import Settings from "@/pages/Settings";
-import TransactionHistory from "@/pages/QCoins/History";
-import QCoinsPage from "@/pages/QCoins";
+import { handleQuizReward } from "./api/quiz-rewards";
+import { Toaster } from "@/components/ui/toaster";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -76,6 +77,65 @@ const DebugInfo = () => {
           </button>
         </div>
       )}
+    </div>
+  );
+};
+
+/**
+ * Quiz Rewards API handler component
+ * This component handles API requests to /api/quiz-rewards and returns the response
+ */
+const QuizRewardsApi = () => {
+  const [result, setResult] = useState<string>("");
+  
+  // Process the request when the component mounts
+  useEffect(() => {
+    const processRequest = async () => {
+      try {
+        // Get the payload from URL parameters
+        const searchParams = new URLSearchParams(window.location.search);
+        const payloadStr = searchParams.get('payload');
+        
+        if (!payloadStr) {
+          setResult(JSON.stringify({ error: 'Missing payload parameter' }, null, 2));
+          return;
+        }
+        
+        // Decode and parse the payload
+        const payload = JSON.parse(decodeURIComponent(payloadStr));
+        
+        // Create a Request object with the payload
+        const request = new Request(window.location.href, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': import.meta.env.VITE_QUIZZO_API_SECRET || 'development-secret-key'
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        // Process the request with our handler
+        const response = await handleQuizReward(request);
+        const data = await response.json();
+        
+        // Display the result
+        setResult(JSON.stringify(data, null, 2));
+      } catch (error) {
+        console.error('Error handling quiz rewards API:', error);
+        setResult(JSON.stringify({ 
+          error: 'Failed to process request',
+          message: error instanceof Error ? error.message : String(error)
+        }, null, 2));
+      }
+    };
+    
+    processRequest();
+  }, []);
+  
+  // This component renders a JSON response for the API
+  return (
+    <div className="p-4">
+      <pre>{result}</pre>
     </div>
   );
 };
@@ -168,46 +228,37 @@ function App() {
             }
           />
           <Route
-            path="/qcoins"
-            element={
-              <ProtectedRoute>
-                <QCoinsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/qcoins/history"
-            element={
-              <ProtectedRoute>
-                <TransactionHistory />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/"
             element={
               <main>
                 <Hero />
                 <Features />
+                <Footer />
               </main>
-            } 
+            }
           />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/pyq" element={<PYQ />} />
           <Route path="/pyq/:programId" element={<ProgramDetails />} />
-          
-          {/* Redirect old department view paths */}
-          <Route path="/resources/:departmentId" element={<Navigate to="/pyq" replace />} />
-          <Route path="/pyq/:departmentId/:branchId" element={<Navigate to="/pyq" replace />} />
-          
-          {/* Quizzo routes */}
           <Route path="/quizzo" element={<Quizzo />} />
-          <Route path="/quizzo/multiplayer" element={<MultiplayerQuizzo />} />
+          <Route 
+            path="/quizzo/multiplayer" 
+            element={<MultiplayerQuizzo />} 
+          />
+          <Route 
+            path="/quizzo/solo" 
+            element={<SoloQuizzo />} 
+          />
+          
+          {/* API endpoint for quiz rewards */}
+          <Route path="/api/quiz-rewards" element={<QuizRewardsApi />} />
+          
+          {/* Fallback route */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
-        <Footer />
-        <DebugInfo />
+        <Toaster />
       </div>
     </Router>
   );

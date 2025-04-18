@@ -1,66 +1,9 @@
-import { useState } from "react";
-// Removed unused imports
-// import React, { useState } from "react";
-// import { Navbar } from "@/components/layout/Navbar";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Clock, Trophy, Users } from "lucide-react";
+import { Trophy, Users, Clock, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// Sample quiz questions
-const sampleQuestions = [
-  {
-    id: 1,
-    question: "What is the time complexity of binary search?",
-    options: ["O(1)", "O(n)", "O(log n)", "O(n log n)"],
-    correctAnswer: 2, // Index of correct answer (0-based)
-  },
-  {
-    id: 2,
-    question: "Which of the following is not a JavaScript data type?",
-    options: ["String", "Boolean", "Character", "Number"],
-    correctAnswer: 2,
-  },
-  {
-    id: 3,
-    question: "Who is the founder of Linux?",
-    options: ["Bill Gates", "Linus Torvalds", "Steve Jobs", "Mark Zuckerberg"],
-    correctAnswer: 1,
-  },
-];
-
 export default function Quizzo() {
-  const [gameState, setGameState] = useState<'waiting' | 'playing' | 'finished'>('waiting');
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(10);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
-
-  const startGame = () => {
-    setGameState('playing');
-    setCurrentQuestion(0);
-    setScore(0);
-    setTimeLeft(10);
-    setSelectedOption(null);
-  };
-
-  const handleAnswer = (optionIndex: number) => {
-    setSelectedOption(optionIndex);
-    
-    if (optionIndex === sampleQuestions[currentQuestion].correctAnswer) {
-      setScore(score + 1);
-    }
-    
-    setTimeout(() => {
-      if (currentQuestion < sampleQuestions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setTimeLeft(10);
-        setSelectedOption(null);
-      } else {
-        setGameState('finished');
-      }
-    }, 1000);
-  };
-
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -71,126 +14,72 @@ export default function Quizzo() {
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
             Test your knowledge in quiz battles. Play solo or compete with peers in real-time matches.
           </p>
-          <div className="mt-6">
-            <Link to="/quizzo/multiplayer" className="text-indigo-600 font-medium hover:text-indigo-800">
-              Try Multiplayer Mode →
-            </Link>
-          </div>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          {gameState === 'waiting' && (
-            <div className="bg-white rounded-xl shadow-md p-8 text-center">
-              <div className="flex justify-center mb-6">
-                <Trophy className="h-16 w-16 text-indigo-600" />
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Solo Mode Card */}
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="p-8">
+              <div className="flex items-center mb-4">
+                <BookOpen className="h-8 w-8 text-indigo-600 mr-3" />
+                <h2 className="text-2xl font-bold">Solo Mode</h2>
               </div>
-              <h2 className="text-2xl font-bold mb-4">
-                Ready for a Challenge?
-              </h2>
-              <p className="text-gray-600 mb-8">
-                Test your knowledge with 10 seconds per question. Practice in solo mode or challenge others in multiplayer!
+              <p className="text-gray-600 mb-6">
+                Practice at your own pace with subject-specific quizzes. Track your progress and improve your knowledge.
               </p>
-              <div className="flex justify-center gap-4">
-                <Button
-                  onClick={startGame}
-                  className="px-6"
-                >
+              <ul className="mb-6 space-y-2">
+                <li className="flex items-center text-gray-700">
+                  <span className="inline-block bg-indigo-100 rounded-full p-1 mr-2">
+                    <Clock className="h-4 w-4 text-indigo-600" />
+                  </span>
+                  10 questions in various subjects
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <span className="inline-block bg-indigo-100 rounded-full p-1 mr-2">
+                    <Trophy className="h-4 w-4 text-indigo-600" />
+                  </span>
+                  Challenge yourself to improve your score
+                </li>
+              </ul>
+              <Link to="/quizzo/solo">
+                <Button className="w-full justify-center">
                   Start Solo Mode
                 </Button>
-                <Link to="/quizzo/multiplayer">
-                  <Button
-                    variant="outline"
-                    className="px-6 flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    Multiplayer
-                  </Button>
-                </Link>
-              </div>
+              </Link>
             </div>
-          )}
+          </div>
 
-          {gameState === 'playing' && (
-            <div className="bg-white rounded-xl shadow-md p-8">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-indigo-600" />
-                  <span className="font-medium">Solo Practice</span>
-                </div>
-                <div className="flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-medium">{timeLeft}s</span>
-                </div>
+          {/* Multiplayer Mode Card */}
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="p-8">
+              <div className="flex items-center mb-4">
+                <Users className="h-8 w-8 text-indigo-600 mr-3" />
+                <h2 className="text-2xl font-bold">Multiplayer Mode</h2>
               </div>
-              
-              <div className="mb-8">
-                <h3 className="text-xl font-bold mb-4">
-                  {sampleQuestions[currentQuestion].question}
-                </h3>
-                <div className="space-y-3">
-                  {sampleQuestions[currentQuestion].options.map((option, index) => (
-                    <button
-                      key={index}
-                      className={`w-full p-4 text-left rounded-lg border ${
-                        selectedOption === index 
-                          ? index === sampleQuestions[currentQuestion].correctAnswer
-                            ? 'bg-green-100 border-green-500'
-                            : 'bg-red-100 border-red-500'
-                          : 'border-gray-300 hover:bg-gray-50'
-                      }`}
-                      onClick={() => handleAnswer(index)}
-                      disabled={selectedOption !== null}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  Question {currentQuestion + 1} of {sampleQuestions.length}
-                </div>
-                <div className="font-medium">
-                  Score: {score}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {gameState === 'finished' && (
-            <div className="bg-white rounded-xl shadow-md p-8 text-center">
-              <div className="flex justify-center mb-6">
-                <Trophy className="h-16 w-16 text-indigo-600" />
-              </div>
-              <h2 className="text-2xl font-bold mb-4">
-                Quiz Completed!
-              </h2>
-              <p className="text-gray-600 mb-2">
-                Your score:
+              <p className="text-gray-600 mb-6">
+                Compete in real-time with other players in head-to-head quiz battles. Test your knowledge and speed!
               </p>
-              <p className="text-3xl font-bold text-indigo-600 mb-8">
-                {score} / {sampleQuestions.length}
-              </p>
-              <div className="flex justify-center gap-4">
-                <Button
-                  onClick={startGame}
-                  className="px-6"
-                >
-                  Play Again
+              <ul className="mb-6 space-y-2">
+                <li className="flex items-center text-gray-700">
+                  <span className="inline-block bg-indigo-100 rounded-full p-1 mr-2">
+                    <Users className="h-4 w-4 text-indigo-600" />
+                  </span>
+                  1v1 matchmaking with other players
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <span className="inline-block bg-indigo-100 rounded-full p-1 mr-2">
+                    <Trophy className="h-4 w-4 text-indigo-600" />
+                  </span>
+                  Win to earn 5 QCoins, participation earns 1
+                </li>
+              </ul>
+              <Link to="/quizzo/multiplayer">
+                <Button className="w-full justify-center">
+                  Play Multiplayer
                 </Button>
-                <Link to="/quizzo/multiplayer">
-                  <Button
-                    variant="outline"
-                    className="px-6 flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    Try Multiplayer
-                  </Button>
-                </Link>
-              </div>
+              </Link>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

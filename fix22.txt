@@ -1,0 +1,198 @@
+## BACKEND API CONNECTION FIX
+
+### PROBLEM SUMMARY
+- Socket.IO connection is working correctly (✅ Connected)
+- API endpoints are failing (❌ Failed):
+  - Health API
+  - Questions API
+  - Reward API
+
+### ROOT CAUSE
+The backend server is accepting WebSocket connections but required API endpoints are either:
+1. Not implemented
+2. Implemented with incorrect paths
+3. Blocked by CORS issues
+4. Not properly handling HTTP requests
+
+### SOLUTION: ADD MISSING API ENDPOINTS
+
+Add these endpoints to your backend server file (server.js):
+
+```javascript
+// Make sure these are added AFTER your middleware setup (cors, express.json, etc.)
+
+/**
+ * Health Check API
+ * Used to verify the server is running and responsive
+ */
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Quizzo backend server is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * Questions API
+ * Provides quiz questions by subject
+ */
+app.get('/questions', (req, res) => {
+  const subject = req.query.subject || 'general';
+  
+  // Sample questions - replace with actual questions from your database
+  const questions = [
+    {
+      id: '1',
+      question: 'What is the time complexity of binary search?',
+      options: ['O(1)', 'O(n)', 'O(log n)', 'O(n log n)'],
+      correctAnswer: 2
+    },
+    {
+      id: '2',
+      question: 'Which of the following is not a JavaScript data type?',
+      options: ['String', 'Boolean', 'Character', 'Number'],
+      correctAnswer: 2
+    }
+  ];
+  
+  res.json({ 
+    subject,
+    questions,
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * Subject-specific Questions API
+ * Provides quiz questions for a specific subject
+ */
+app.get('/questions/:subject', (req, res) => {
+  const subject = req.params.subject;
+  
+  // Sample questions - replace with actual questions from your database
+  const questions = [
+    {
+      id: '1',
+      question: `Sample ${subject} question 1?`,
+      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+      correctAnswer: 2
+    },
+    {
+      id: '2',
+      question: `Sample ${subject} question 2?`,
+      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+      correctAnswer: 1
+    }
+  ];
+  
+  res.json({ 
+    subject,
+    questions,
+    timestamp: new Date().toISOString()
+  });
+});
+
+/**
+ * Test API
+ * Simple endpoint to verify HTTP connectivity
+ */
+app.get('/test', (req, res) => {
+  res.json({ 
+    message: 'Backend HTTP endpoint is reachable',
+    timestamp: new Date().toISOString()
+  });
+});
+```
+
+### FIX CORS ISSUES
+
+Make sure your CORS setup is properly configured. Update your CORS configuration:
+
+```javascript
+// Add this BEFORE any API route handlers
+// Replace your existing cors middleware
+app.use(cors({
+  origin: '*',  // In production, restrict this to your frontend domain
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'Origin', 'Accept'],
+  credentials: true
+}));
+
+// Make sure you have body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Add a middleware to log all incoming requests (for debugging)
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+```
+
+### VERIFY THE SERVER IS HANDLING REQUESTS CORRECTLY
+
+Add this troubleshooting endpoint to check if the server is processing requests:
+
+```javascript
+// Add this to your server code to check if the server is handling requests
+app.get('/', (req, res) => {
+  res.send(`
+    <html>
+      <head><title>Quizzo Backend Server</title></head>
+      <body>
+        <h1>Quizzo Backend Server</h1>
+        <p>Server is running. Available endpoints:</p>
+        <ul>
+          <li><a href="/health">/health</a> - Check server health</li>
+          <li><a href="/test">/test</a> - Test connectivity</li>
+          <li><a href="/questions">/questions</a> - Get general questions</li>
+          <li><a href="/questions/javascript">/questions/javascript</a> - Get subject-specific questions</li>
+        </ul>
+        <p>Server time: ${new Date().toLocaleString()}</p>
+      </body>
+    </html>
+  `);
+});
+```
+
+### DEBUGGING STEPS
+
+After implementing these fixes:
+
+1. Restart your backend server
+2. Visit http://localhost:8080/ in your browser - you should see the HTML page above
+3. Check individual endpoints directly in browser:
+   - http://localhost:8080/health
+   - http://localhost:8080/test
+   - http://localhost:8080/questions
+
+4. If those work but frontend tests still fail, check browser console for CORS errors
+
+### ADDITIONAL CHECKLIST
+
+Make sure your server has these basic components:
+
+1. Server is listening on the correct port:
+```javascript
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`Quizzo server running on http://localhost:${PORT}`);
+});
+```
+
+2. Your environment variables are loaded:
+```javascript
+// At the top of your server file
+require('dotenv').config();
+```
+
+3. There are no route conflicts or middleware blocking your routes
+
+4. Verify that your frontend is using the correct URLs:
+```
+VITE_API_URL=http://localhost:8080
+VITE_QUIZZO_REALTIME_URL=http://localhost:8080
+```
+
+These fixes should resolve the API connectivity issues while keeping the Socket.IO connection working correctly. 

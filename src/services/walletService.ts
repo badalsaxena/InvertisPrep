@@ -111,6 +111,7 @@ export const addQCoins = async (
         // Update existing wallet
         const userData = userDoc.data();
         const currentWallet = userData.wallet || { balance: 0 };
+        const currentTransactions = currentWallet.transactions || [];
         
         // Create a new transaction
         const newTransaction = {
@@ -122,11 +123,14 @@ export const addQCoins = async (
           status: 'COMPLETED'
         };
         
+        // Add new transaction at the beginning (newest first)
+        const updatedTransactions = [newTransaction, ...currentTransactions];
+        
         // Update wallet with new balance and transaction
         transaction.update(userDocRef, {
           'wallet.balance': (currentWallet.balance || 0) + amount,
           'wallet.lastUpdated': new Date(),
-          'wallet.transactions': arrayUnion(newTransaction)
+          'wallet.transactions': updatedTransactions
         });
       }
       
@@ -165,6 +169,7 @@ export const spendQCoins = async (
       
       const userData = userDoc.data();
       const currentWallet = userData.wallet || { balance: 0 };
+      const currentTransactions = currentWallet.transactions || [];
       
       // Check if user has enough QCoins
       if ((currentWallet.balance || 0) < amount) {
@@ -175,18 +180,21 @@ export const spendQCoins = async (
       // Create a spend transaction
       const spendTransaction = {
         id: crypto.randomUUID(),
-        amount: -amount, // Negative to indicate spending
+        amount,
         type: 'SPENT',
         description,
         timestamp: new Date(),
         status: 'COMPLETED'
       };
       
+      // Add new transaction at the beginning (newest first)
+      const updatedTransactions = [spendTransaction, ...currentTransactions];
+      
       // Update wallet
       transaction.update(userDocRef, {
         'wallet.balance': (currentWallet.balance || 0) - amount,
         'wallet.lastUpdated': new Date(),
-        'wallet.transactions': arrayUnion(spendTransaction)
+        'wallet.transactions': updatedTransactions
       });
       
       return true;
@@ -209,11 +217,8 @@ export const getTransactionHistory = async (uid: string): Promise<Transaction[]>
       const userData = userDoc.data();
       const wallet = userData.wallet || { transactions: [] };
       
-      // Sort transactions by timestamp (newest first)
-      const transactions = wallet.transactions || [];
-      return transactions.sort((a: Transaction, b: Transaction) => {
-        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-      });
+      // Return transactions - they're now stored newest first in Firestore
+      return wallet.transactions || [];
     }
     
     return [];
@@ -221,4 +226,21 @@ export const getTransactionHistory = async (uid: string): Promise<Transaction[]>
     console.error('Error getting transaction history:', error);
     return [];
   }
+};
+
+/**
+ * Add QCoins as a reward for quiz activity
+ */
+export const addQuizReward = async (
+  uid: string, 
+  amount: number, 
+  isWinner: boolean,
+  quizType: 'single' | 'multiplayer',
+  subject: string
+): Promise<boolean> => {
+  const description = isWinner ? 
+    `${quizType === 'multiplayer' ? 'Multiplayer' : 'Single Player'} Quiz victory in ${subject}` : 
+    `${quizType === 'multiplayer' ? 'Multiplayer' : 'Single Player'} Quiz participation in ${subject}`;
+    
+  return addQCoins(uid, amount, 'REWARD', description);
 }; 

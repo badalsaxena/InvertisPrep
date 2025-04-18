@@ -37,8 +37,8 @@ export class QuizzoApiService {
       return import.meta.env.VITE_API_URL;
     }
     
-    // Default to unified server - same as WebSocket server
-    return 'https://quizzo-realtime.vercel.app';
+    // Fallback to development server
+    return 'http://localhost:8080';
   }
 
   /**

@@ -8,7 +8,6 @@ import { setupAuthTokenInterceptor } from './services/authService'
 
 // Try to initialize auth token interceptor
 try {
-  // Initialize the authentication token interceptor
   setupAuthTokenInterceptor();
 } catch (error) {
   console.error('Failed to setup auth token interceptor:', error);

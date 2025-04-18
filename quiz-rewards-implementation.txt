@@ -1,0 +1,138 @@
+# Quiz Rewards Implementation Plan
+
+## Overview
+
+This document outlines the implementation plan for the quiz rewards system that works directly in the frontend with minimal backend integration. The key idea is to use the existing quiz result event in the frontend to trigger the rewards instead of relying on separate API endpoints.
+
+## Approach
+
+1. The backend will send quiz results to the frontend via WebSocket
+2. The frontend will process these results and update wallets and academic progress directly
+3. No need for separate API endpoints or backend processing of rewards
+
+## Implementation Details
+
+### Backend Changes
+
+In the **quizzo-realtime** server (socket.io server):
+
+1. When a quiz ends, send all necessary data via the `quizEnd` event:
+```javascript
+// When quiz ends (in server.js)
+io.to(roomId).emit('quizEnd', {
+  myResult: {
+    userId: socket.id,
+    score: playerScore,
+    totalTime: playerTotalTime,
+    // Add these fields:
+    correctAnswers: playerCorrectAnswers,
+    totalQuestions: TOTAL_QUESTIONS
+  },
+  opponentResult: {
+    userId: opponentSocket.id,
+    score: opponentScore,
+    totalTime: opponentTotalTime
+  },
+  subject: room.subject // Include the quiz subject
+});
+```
+
+2. No need to make HTTP calls to a reward endpoint after quiz completion
+
+### Frontend Changes
+
+In the **InvertisPrep** frontend repo:
+
+1. Update `MultiplayerQuizzo.tsx` to handle quiz rewards directly:
+
+```typescript
+// Quiz end event
+quizzoSocketService.onQuizEnd((results) => {
+  console.log("Quiz ended:", results);
+  setGameResults(results);
+  setGameState('finished');
+  setOpponentScore(results.opponentResult.score);
+  
+  // Process rewards directly if user is logged in
+  if (user?.uid) {
+    const isWinner = results.myResult.score > results.opponentResult.score;
+    const coinsEarned = isWinner ? 5 : 1;
+    
+    // Set reward message for UI
+    setRewardMessage(`You earned ${coinsEarned} QCoins!`);
+    
+    // Process the reward
+    processQuizReward(
+      user.uid, 
+      coinsEarned, 
+      isWinner, 
+      'multiplayer', 
+      results.subject || 'general',
+      results.myResult.score,
+      results.myResult.correctAnswers || Math.floor(results.myResult.score / 10),
+      results.myResult.totalQuestions || 10
+    );
+  }
+});
+
+// New function to process rewards
+const processQuizReward = async (
+  uid: string,
+  amount: number,
+  isWinner: boolean,
+  quizType: string,
+  subject: string,
+  score: number,
+  correctAnswers: number,
+  totalQuestions: number
+) => {
+  try {
+    // 1. Add QCoins to wallet
+    await addQuizReward(uid, amount, isWinner, quizType, subject);
+    
+    // 2. Update academic progress
+    await updateQuizProgress(uid, {
+      subject,
+      score,
+      correctAnswers,
+      totalQuestions,
+      isWin: isWinner,
+      timeSpent: 0 // This would ideally come from the request
+    });
+    
+    // 3. Refresh wallet to show updated balance
+    setTimeout(() => {
+      refreshWallet();
+    }, 1500);
+    
+    console.log(`Successfully processed reward: ${amount} QCoins for user ${uid}`);
+  } catch (error) {
+    console.error("Failed to process quiz reward:", error);
+  }
+};
+```
+
+2. Update any other game modes (like SinglePlayerQuiz) to use the same approach
+
+## Benefits
+
+1. **Simplicity**: No need for complex API integration between services
+2. **Reliability**: Rewards are processed directly within the frontend application
+3. **Performance**: Fewer HTTP requests and reduced latency
+4. **Security**: Wallet updates only happen when users are authenticated in the frontend
+
+## Implementation Order
+
+1. Update the backend socket.io server to include all necessary data in the quizEnd event
+2. Add the processQuizReward function to MultiplayerQuizzo.tsx
+3. Update the quizEnd event handler to call processQuizReward
+4. Test the implementation with real quiz completion events
+
+## Testing
+
+1. Complete a multiplayer quiz and verify that:
+   - The wallet balance updates correctly
+   - Academic progress is properly tracked
+   - The correct reward message displays
+2. Verify that rewards work for both winning and losing scenarios
+3. Ensure the implementation works when deployed to production 

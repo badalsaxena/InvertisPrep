@@ -3,9 +3,48 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getTransactionHistory, Transaction } from '@/services/walletService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Loader2, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+
+// Custom pagination component
+const Pagination = ({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}: { 
+  currentPage: number; 
+  totalPages: number; 
+  onPageChange: (page: number) => void;
+}) => {
+  return (
+    <div className="flex items-center justify-center space-x-2 mt-4">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <ChevronLeft className="h-4 w-4" />
+        <span className="sr-only">Previous Page</span>
+      </Button>
+      
+      <span className="text-sm text-gray-600">
+        Page {currentPage} of {totalPages}
+      </span>
+      
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        <ChevronRight className="h-4 w-4" />
+        <span className="sr-only">Next Page</span>
+      </Button>
+    </div>
+  );
+};
 
 const TransactionHistory = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -14,6 +53,10 @@ const TransactionHistory = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const transactionsPerPage = 5;
 
   const loadTransactions = async () => {
     if (!user) return;
@@ -21,8 +64,11 @@ const TransactionHistory = () => {
     try {
       setLoading(true);
       setError(null);
+      // Get transactions - they are already stored newest first in Firestore
       const history = await getTransactionHistory(user.uid);
       setTransactions(history || []);
+      // Reset to first page when new data is loaded
+      setCurrentPage(1);
     } catch (error) {
       console.error('Error loading transaction history:', error);
       setError('Failed to load transaction history. Please try again later.');
@@ -109,10 +155,14 @@ const TransactionHistory = () => {
     }
   };
 
-  // Mock function to simulate export functionality
-  const handleExportCSV = () => {
-    // In real implementation, this would generate and download a CSV file
-    alert('Export functionality would download a CSV file of your transactions');
+  // Calculate pagination values
+  const totalPages = Math.max(1, Math.ceil(transactions.length / transactionsPerPage));
+  const indexOfLastTransaction = currentPage * transactionsPerPage;
+  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage;
+  const currentTransactions = transactions.slice(indexOfFirstTransaction, indexOfLastTransaction);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
 
   if (loading && !refreshing) {
@@ -164,14 +214,6 @@ const TransactionHistory = () => {
             >
               <RefreshCcw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleExportCSV}
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
             </Button>
           </div>
         </div>
@@ -231,52 +273,64 @@ const TransactionHistory = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {transactions.map((transaction) => (
-            <Card key={transaction.id} className="overflow-hidden">
-              <div className="flex items-stretch">
-                <div className={`flex items-center justify-center w-16 text-2xl ${
-                  transaction.type === 'SPENT' ? 'bg-red-100' : 'bg-green-100'
-                }`}>
-                  {getTransactionIcon(transaction.type)}
-                </div>
-                <div className="flex-1 p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">{transaction.description}</h3>
-                      <p className="text-sm text-gray-500">{formatDate(transaction.timestamp)}</p>
+        <div>
+          <div className="space-y-4">
+            {/* Show only current page transactions - already sorted newest first */}
+            {currentTransactions.map((transaction) => (
+              <Card key={transaction.id} className="overflow-hidden">
+                <div className="flex items-stretch">
+                  <div className={`flex items-center justify-center w-16 text-2xl ${
+                    transaction.type === 'SPENT' ? 'bg-red-100' : 'bg-green-100'
+                  }`}>
+                    {getTransactionIcon(transaction.type)}
+                  </div>
+                  <div className="flex-1 p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">{transaction.description}</h3>
+                        <p className="text-sm text-gray-500">{formatDate(transaction.timestamp)}</p>
+                      </div>
+                      <div className={`font-bold ${getTransactionColor(transaction.type)}`}>
+                        {transaction.type !== 'SPENT' ? '+' : ''}{transaction.amount} QCoins
+                      </div>
                     </div>
-                    <div className={`font-bold ${getTransactionColor(transaction.type)}`}>
-                      {transaction.type !== 'SPENT' ? '+' : ''}{transaction.amount} QCoins
+                    <div className="mt-2 flex justify-between">
+                      <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        ID: {transaction.id.substring(0, 8)}...
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        transaction.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
+                        transaction.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {transaction.status}
+                      </span>
                     </div>
                   </div>
-                  <div className="mt-2 flex justify-between">
-                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                      ID: {transaction.id.substring(0, 8)}...
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      transaction.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
-                      transaction.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {transaction.status}
-                    </span>
-                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))}
+          </div>
+          
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <Pagination 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              onPageChange={handlePageChange} 
+            />
+          )}
+          
+          <div className="mt-6 flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/qcoins')}
+            >
+              Manage QCoins
+            </Button>
+          </div>
         </div>
       )}
-      
-      <div className="mt-6 flex justify-center">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/qcoins')}
-        >
-          Manage QCoins
-        </Button>
-      </div>
     </div>
   );
 };

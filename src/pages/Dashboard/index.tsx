@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, PenLine, Save, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { updateProfile } from '@/services/userService';
+import { getAcademicProgress, AcademicProgress, initAcademicProgress } from '@/services/academicProgressService';
+import QuizHistoryDisplay from '@/components/QuizHistoryDisplay';
 
 export default function Dashboard() {
-  const { profile, wallet, loading, error, refreshProfile, refreshWallet, clearError } = useUser();
+  const { profile, loading, error, refreshProfile, clearError } = useUser();
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -20,6 +22,8 @@ export default function Dashboard() {
   const [course, setCourse] = useState('');
   const [updating, setUpdating] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [academicProgress, setAcademicProgress] = useState<AcademicProgress | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(false);
   
   // Create a local mock profile from the user data if profile is not available
   const displayProfile = profile || (user ? {
@@ -39,9 +43,43 @@ export default function Dashboard() {
     }
   }, [displayProfile]);
 
+  // Ensure user photo URL is updated in the database
+  useEffect(() => {
+    if (user?.photoURL && displayProfile && !displayProfile.photoURL) {
+      updateProfile(user.uid, { photoURL: user.photoURL })
+        .then(() => refreshProfile())
+        .catch(err => console.error("Error updating photo URL:", err));
+    }
+  }, [user, displayProfile]);
+
+  // Load academic progress data
+  useEffect(() => {
+    if (user?.uid) {
+      const loadProgress = async () => {
+        setLoadingProgress(true);
+        try {
+          // Initialize progress if it doesn't exist
+          await initAcademicProgress(user.uid);
+          
+          // Get the progress data
+          const progress = await getAcademicProgress(user.uid);
+          if (progress) {
+            setAcademicProgress(progress);
+          }
+        } catch (error) {
+          console.error("Error loading academic progress:", error);
+        } finally {
+          setLoadingProgress(false);
+        }
+      };
+      
+      loadProgress();
+    }
+  }, [user]);
+
   const handleRefresh = async () => {
     clearError();
-    await Promise.all([refreshProfile(), refreshWallet()]);
+    await refreshProfile();
   };
 
   const handleSaveProfile = async () => {
@@ -53,7 +91,8 @@ export default function Dashboard() {
       // Update profile with new name and course
       const result = await updateProfile(user.uid, {
         displayName,
-        course
+        course,
+        photoURL: user.photoURL // Ensure photo URL is updated
       });
       
       if (result) {
@@ -121,7 +160,7 @@ export default function Dashboard() {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Profile Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -144,19 +183,29 @@ export default function Dashboard() {
             {displayProfile ? (
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  {displayProfile.photoURL ? (
+                  {displayProfile.photoURL || user?.photoURL ? (
                     <img 
-                      src={displayProfile.photoURL} 
+                      src={displayProfile.photoURL || user?.photoURL || ''}
                       alt="Profile" 
                       className="h-16 w-16 rounded-full"
+                      referrerPolicy="no-referrer"
                       onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.style.display = 'none';
-                        // Create fallback element dynamically since we can't render conditionally here
-                        const fallback = document.createElement('div');
-                        fallback.className = 'h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center';
-                        fallback.innerHTML = `<span class="text-xl font-semibold text-gray-500">${displayProfile.displayName?.charAt(0).toUpperCase() || 'U'}</span>`;
-                        e.currentTarget.parentNode?.appendChild(fallback);
+                        const target = e.currentTarget;
+                        target.onerror = null;
+                        // Create a fallback element
+                        const container = target.parentElement;
+                        if (container) {
+                          // Hide the img that failed to load
+                          target.style.display = 'none';
+                          
+                          // Create the fallback
+                          const fallback = document.createElement('div');
+                          fallback.className = 'h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center';
+                          fallback.innerHTML = `<span class="text-xl font-semibold text-gray-500">${displayProfile.displayName?.charAt(0).toUpperCase() || 'U'}</span>`;
+                          
+                          // Add the fallback to the container
+                          container.appendChild(fallback);
+                        }
                       }}
                     />
                   ) : (
@@ -252,54 +301,6 @@ export default function Dashboard() {
           )}
         </Card>
 
-        {/* Wallet Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>QCoin Wallet</CardTitle>
-            <CardDescription>Your virtual currency balance</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {wallet ? (
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg text-center">
-                  <p className="text-sm text-blue-700 mb-1">Current Balance</p>
-                  <p className="text-3xl font-bold text-blue-700">
-                    {wallet.balance} <span className="text-sm font-normal">QCoins</span>
-                  </p>
-                </div>
-                
-                <div className="pt-4 space-y-2">
-                  <Button 
-                    className="w-full" 
-                    variant="outline"
-                    onClick={() => {
-                      if (user) {
-                        navigate('/qcoins/history');
-                      }
-                    }}
-                  >
-                    View Transaction History
-                  </Button>
-                  
-                  <Button 
-                    className="w-full" 
-                    variant="default"
-                    onClick={() => {
-                      if (user) {
-                        navigate('/qcoins');
-                      }
-                    }}
-                  >
-                    Manage QCoins
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <p className="text-center text-gray-500">Wallet information not available</p>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Stats Card */}
         <Card>
           <CardHeader>
@@ -310,13 +311,41 @@ export default function Dashboard() {
             <div className="space-y-4">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium mb-2">Quick Stats</h3>
-                <ul className="text-sm text-gray-600 space-y-2">
-                  <li>• Quizzes Completed: 0</li>
-                  <li>• Average Score: N/A</li>
-                  <li>• Rank: Beginner</li>
-                  <li>• Study Streak: 0 days</li>
-            </ul>
+                {loadingProgress ? (
+                  <div className="flex justify-center py-2">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• Quizzes Completed: {academicProgress?.quizzesCompleted || 0}</li>
+                    <li>• Average Score: {academicProgress?.accuracy ? `${academicProgress.accuracy.toFixed(1)}%` : 'N/A'}</li>
+                    <li>• Rank: {academicProgress?.rank || 'Beginner'}</li>
+                    <li>• Study Streak: {academicProgress?.streak?.current || 0} days</li>
+                  </ul>
+                )}
               </div>
+              
+              {academicProgress?.quizzesCompleted ? (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2">Achievement</h3>
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl mr-3">
+                      {academicProgress.rank === 'Beginner' && '🌱'}
+                      {academicProgress.rank === 'Novice' && '🌿'}
+                      {academicProgress.rank === 'Intermediate' && '🌲'}
+                      {academicProgress.rank === 'Advanced' && '🏆'}
+                      {academicProgress.rank === 'Expert' && '🏅'}
+                      {academicProgress.rank === 'Master' && '👑'}
+                    </div>
+                    <div>
+                      <p className="font-medium text-blue-700">{academicProgress.rank}</p>
+                      <p className="text-xs text-blue-600">
+                        {academicProgress.quizzesWon} wins / {academicProgress.quizzesLost} losses
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               
               <Button 
                 className="w-full" 
@@ -329,6 +358,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Quiz History Section */}
+      {user && (
+        <div className="mb-6">
+          <QuizHistoryDisplay userId={user.uid} />
+        </div>
+      )}
       
       <div className="mt-8 flex flex-wrap justify-center">
         <Button onClick={handleRefresh} variant="outline">
