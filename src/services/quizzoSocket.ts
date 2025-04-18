@@ -63,8 +63,8 @@ class QuizzoSocketService {
       return import.meta.env.VITE_QUIZZO_REALTIME_URL;
     }
     
-    // Fallback for development
-    return 'http://localhost:8080';
+    // Default to production URL instead of localhost
+    return 'https://quizzo-realtime.onrender.com';
   }
   
   // Connect to socket server
