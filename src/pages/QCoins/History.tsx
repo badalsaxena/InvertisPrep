@@ -142,38 +142,38 @@ const TransactionHistory = () => {
         </BreadcrumbList>
       </Breadcrumb>
       
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <div className="flex items-center mb-4 md:mb-0">
+      <div className="flex flex-col mb-6">
+        <h1 className="text-3xl font-bold mb-4">Transaction History</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <Button 
             variant="outline" 
             onClick={() => navigate('/dashboard')}
-            className="mr-4"
+            className="mb-4 md:mb-0 w-fit"
             size="sm"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold">Transaction History</h1>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
-            <RefreshCcw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleExportCSV}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCcw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExportCSV}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
         </div>
       </div>
       

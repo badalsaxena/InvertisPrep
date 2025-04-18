@@ -148,7 +148,16 @@ export default function Dashboard() {
                     <img 
                       src={displayProfile.photoURL} 
                       alt="Profile" 
-                      className="h-16 w-16 rounded-full" 
+                      className="h-16 w-16 rounded-full"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.style.display = 'none';
+                        // Create fallback element dynamically since we can't render conditionally here
+                        const fallback = document.createElement('div');
+                        fallback.className = 'h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center';
+                        fallback.innerHTML = `<span class="text-xl font-semibold text-gray-500">${displayProfile.displayName?.charAt(0).toUpperCase() || 'U'}</span>`;
+                        e.currentTarget.parentNode?.appendChild(fallback);
+                      }}
                     />
                   ) : (
                     <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
