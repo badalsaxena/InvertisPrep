@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getFirebaseConfig } from '@/utils/environment';
 
@@ -50,7 +50,7 @@ console.log('Using Firebase config with project:', firebaseConfig.projectId);
 
 // Initialize Firebase with error handling
 let app;
-let auth;
+let auth: Auth;
 let db: Firestore;
 
 try {

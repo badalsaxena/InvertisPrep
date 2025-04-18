@@ -211,7 +211,7 @@ export const getTransactionHistory = async (uid: string): Promise<Transaction[]>
       
       // Sort transactions by timestamp (newest first)
       const transactions = wallet.transactions || [];
-      return transactions.sort((a, b) => {
+      return transactions.sort((a: Transaction, b: Transaction) => {
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
       });
     }
