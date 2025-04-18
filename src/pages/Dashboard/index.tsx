@@ -92,7 +92,7 @@ export default function Dashboard() {
       const result = await updateProfile(user.uid, {
         displayName,
         course,
-        photoURL: user.photoURL // Ensure photo URL is updated
+        photoURL: user.photoURL || undefined // Fix: Ensure photoURL is never null
       });
       
       if (result) {

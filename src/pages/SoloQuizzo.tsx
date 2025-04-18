@@ -407,20 +407,16 @@ export default function SoloQuizzo() {
               
               <div className="space-y-3">
                 {questions[currentQuestionIndex].options.map((option: string, idx: number) => (
-                  <Button
+                  <Button 
                     key={idx}
+                    className="w-full justify-start mb-2"
                     variant={
-                      selectedAnswer === null
-                        ? "outline"
-                        : selectedAnswer === idx
-                          ? idx === questions[currentQuestionIndex].correctAnswer
-                            ? "default"
-                            : "destructive"
-                          : idx === questions[currentQuestionIndex].correctAnswer && answered
-                            ? "default"
-                            : "outline"
+                      answered && idx === questions[currentQuestionIndex].correctAnswer
+                        ? "default"
+                        : answered && selectedAnswer === idx
+                          ? "secondary"
+                          : "outline"
                     }
-                    className="w-full justify-start text-left p-4 h-auto"
                     onClick={() => handleSelectAnswer(idx)}
                     disabled={answered}
                   >

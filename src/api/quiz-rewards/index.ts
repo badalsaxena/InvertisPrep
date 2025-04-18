@@ -71,12 +71,14 @@ export async function handleQuizReward(request: Request): Promise<Response> {
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error processing quiz reward:', error);
     
-    // Return error response
+    // Return error response with safe error message handling
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    
     return new Response(
-      JSON.stringify({ error: 'Failed to process reward', message: error.message }),
+      JSON.stringify({ error: 'Failed to process reward', message: errorMessage }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }

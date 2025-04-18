@@ -537,37 +537,34 @@ export default function MultiplayerQuizzo() {
                 
                 <div className="space-y-3">
                   {currentQuestion.options.map((option: string, index: number) => (
-                    <button
+                    <Button
                       key={index}
                       onClick={() => handleAnswer(index)}
-                      className={`w-full text-left p-4 rounded-md transition border ${
-                        selectedOption === index 
-                          ? isCorrect === true
-                            ? 'bg-green-100 text-green-800 border-green-300'
-                            : isCorrect === false
-                              ? 'bg-red-100 text-red-800 border-red-300'
-                              : 'bg-indigo-100 text-indigo-800 border-indigo-300'
-                          : 'bg-white hover:bg-gray-50 border-gray-300'
-                      }`}
+                      className="w-full justify-start mb-2"
+                      variant={
+                        selectedOption !== null && index === currentQuestion.correctAnswer
+                          ? "default"
+                          : selectedOption === index
+                            ? "secondary"
+                            : "outline"
+                      }
                       disabled={selectedOption !== null || timeLeft === 0}
                     >
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 mr-3">
-                          <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
-                            selectedOption === index 
-                              ? isCorrect === true
-                                ? 'bg-green-200 text-green-800'
-                                : isCorrect === false
-                                  ? 'bg-red-200 text-red-800'
-                                  : 'bg-indigo-200 text-indigo-800'
-                              : 'bg-gray-200 text-gray-800'
-                          }`}>
+                        {selectedOption !== null && index === currentQuestion.correctAnswer && (
+                          <Check className="h-5 w-5 mr-2 text-green-500" />
+                        )}
+                        {selectedOption === index && index !== currentQuestion.correctAnswer && (
+                          <XCircle className="h-5 w-5 mr-2 text-red-500" />
+                        )}
+                        {(selectedOption === null || (index !== selectedOption && index !== currentQuestion.correctAnswer)) && (
+                          <div className="h-5 w-5 mr-2 flex items-center justify-center rounded-full bg-gray-200 text-gray-800 text-xs">
                             {['A', 'B', 'C', 'D'][index]}
                           </div>
-                        </div>
+                        )}
                         <span>{option}</span>
                       </div>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
