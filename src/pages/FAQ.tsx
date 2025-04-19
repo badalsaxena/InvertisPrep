@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
+import StructuredData from "@/components/StructuredData";
 import { 
   Search, 
   BookOpen, 
@@ -287,8 +289,40 @@ export default function FAQ() {
     }
   };
   
+  // Create FAQ structured data
+  const generateFAQStructuredData = () => {
+    // Flatten all questions across categories
+    const allQuestions = faqCategories.flatMap(category => 
+      category.questions.map(question => ({
+        "@type": "Question",
+        "name": question.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": typeof question.a === 'string' ? question.a : 'Please visit our website for a detailed answer.'
+        }
+      }))
+    );
+    
+    return {
+      "@type": "FAQPage",
+      "mainEntity": allQuestions
+    };
+  };
+  
+  const faqStructuredData = generateFAQStructuredData();
+  
   return (
     <>
+      {/* SEO Components */}
+      <SEO 
+        title="Frequently Asked Questions | InvertisPrep"
+        description="Find answers to common questions about InvertisPrep's platform, study resources, Quizzo, and academic offerings for Invertis University students."
+        keywords="InvertisPrep FAQ, Invertis University, academic resources, frequently asked questions, study materials, Quizzo"
+        url="https://invertisprep.vercel.app/faq"
+      />
+      
+      <StructuredData type="FAQPage" data={faqStructuredData} />
+      
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Frequently Asked Questions</h1>

@@ -26,6 +26,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import ContactUs from "@/pages/ContactUs";
 import FAQ from "@/pages/FAQ";
+import HomePage from "@/pages/HomePage";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -246,13 +247,7 @@ function App() {
           />
           <Route
             path="/"
-            element={
-              <main>
-                <Hero />
-                <Features />
-                <Footer />
-              </main>
-            }
+            element={<HomePage />}
           />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
