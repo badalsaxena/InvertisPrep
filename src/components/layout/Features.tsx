@@ -1,4 +1,5 @@
 import { BookOpen, Trophy, Users, FileText, Brain, Laptop } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Features() {
   const features = [
@@ -108,9 +109,11 @@ export function Features() {
         </div>
 
         <div className="text-center mt-10 md:mt-14">
-          <button className="px-6 py-2.5 md:px-8 md:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm md:text-base font-bold rounded-full hover:from-indigo-700 hover:to-purple-700 transition duration-300 shadow hover:shadow-indigo-400/30 transform hover:-translate-y-1 font-['Poppins']">
-            Start Learning Now
-          </button>
+          <Link to="/quizzo">
+            <button className="px-6 py-2.5 md:px-8 md:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm md:text-base font-bold rounded-full hover:from-indigo-700 hover:to-purple-700 transition duration-300 shadow hover:shadow-indigo-400/30 transform hover:-translate-y-1 font-['Poppins']">
+              Start Learning Now
+            </button>
+          </Link>
         </div>
       </div>
     </section>

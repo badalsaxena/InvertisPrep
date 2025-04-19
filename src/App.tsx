@@ -19,6 +19,9 @@ import PYQ from "@/pages/PYQ";
 import ProgramDetails from "@/pages/PYQ/ProgramDetails";
 import Settings from "@/pages/Settings";
 import TransactionHistory from "@/pages/QCoins/History";
+import BugReport from "@/pages/BugReport";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -260,6 +263,11 @@ function App() {
             path="/quizzo/solo" 
             element={<SoloQuizzo />} 
           />
+          
+          {/* Legal and Support Routes */}
+          <Route path="/bug-report" element={<BugReport />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           
           {/* API endpoint for quiz rewards */}
           <Route path="/api/quiz-rewards" element={<QuizRewardsApi />} />

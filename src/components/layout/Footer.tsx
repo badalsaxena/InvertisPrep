@@ -44,10 +44,11 @@ export function Footer() {
       { name: "Blog", path: "/blog" },
     ],
     "Support": [
-      { name: "Contact Us", path: "/contact" },
-      { name: "FAQ", path: "/faq" },
+      { name: "Bug Report", path: "/bug-report" },
       { name: "Privacy Policy", path: "/privacy" },
       { name: "Terms of Service", path: "/terms" },
+      { name: "Contact Us", path: "/contact" },
+      { name: "FAQ", path: "/faq" },
     ],
   };
 
@@ -76,6 +77,12 @@ export function Footer() {
             <p className="text-sm text-gray-400">
               Your gateway to academic excellence at Invertis University.
             </p>
+            {/* Get Started Button */}
+            <Link to="/login" className="inline-block">
+              <Button variant="default" className="bg-indigo-600 hover:bg-indigo-700">
+                Get Started
+              </Button>
+            </Link>
             {/* Newsletter */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-300">Subscribe to our newsletter</p>
@@ -178,7 +185,16 @@ export function Footer() {
         </Accordion>
 
         {/* Mobile Newsletter */}
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 space-y-6">
+          {/* Get Started Button */}
+          <div className="text-center">
+            <Link to="/login" className="inline-block w-full">
+              <Button variant="default" className="w-full bg-indigo-600 hover:bg-indigo-700">
+                Get Started
+              </Button>
+            </Link>
+          </div>
+          
           <h3 className="text-sm font-semibold text-gray-200">Subscribe to our newsletter</h3>
           <div className="flex space-x-2">
             <Input

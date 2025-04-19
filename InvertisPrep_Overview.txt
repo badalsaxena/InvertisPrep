@@ -1,0 +1,52 @@
+# InvertisPrep - Academic Excellence Platform
+
+## Overview
+InvertisPrep is a comprehensive academic platform designed specifically for students of Invertis University. It serves as a one-stop solution for educational resources, exam preparation, and interactive learning experiences.
+
+## Key Features
+
+### Previous Year Question Papers (PYQ)
+- Organized collection of previous year question papers for all programs and branches
+- Easily searchable by program, branch, semester, and session
+- Downloadable PDF format for offline access
+- Covers all departments including BTech, BCA, BSc, BCom, MBA, MTech, BBA, and MCA
+
+### Quiz Platform (Quizzo)
+- Interactive learning through quiz competitions
+- Solo mode for self-paced learning
+- Multiplayer mode for competitive learning with peers
+- Subject-specific quizzes covering various academic disciplines
+- Real-time scoring and performance tracking
+- QCoin rewards system for participation and victories
+
+### Academic Progress Tracking
+- Personalized dashboard to monitor learning journey
+- Statistics on quiz performance, accuracy, and improvement over time
+- Subject mastery visualization
+- Achievement badges and ranks based on performance
+- Streak tracking to encourage consistent learning
+
+### Resources Hub
+- Study materials categorized by subject and program
+- Notes, guides, and reference materials
+- Video tutorials and learning modules
+- Supplementary resources for enhanced understanding
+
+## Technology Stack
+- Modern React-based frontend with responsive design
+- Firebase backend for authentication, database, and storage
+- Real-time updates for multiplayer quizzing
+- Progressive Web App capabilities for cross-platform compatibility
+
+## Mission
+InvertisPrep aims to enhance the academic experience of Invertis University students by providing easy access to quality learning resources, fostering a competitive yet collaborative learning environment, and helping students track their academic progress effectively.
+
+## Target Audience
+- Current students of Invertis University across all programs and departments
+- Faculty members seeking resources for teaching and assessment
+- Alumni looking to access academic archives
+- Prospective students exploring university resources
+
+---
+Developed with ❤️ by AhqafCoder & Team
+© 2024 InvertisPrep. All rights reserved. 

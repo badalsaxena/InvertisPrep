@@ -27,18 +27,6 @@ const programs = [
     description: "3-year undergraduate program focusing on computer applications"
   },
   {
-    id: "bcom",
-    name: "BCom",
-    fullName: "Bachelor of Commerce",
-    description: "3-year undergraduate program focusing on commerce and business studies"
-  },
-  {
-    id: "bsc",
-    name: "BSc",
-    fullName: "Bachelor of Science",
-    description: "3-year undergraduate program focusing on science and its applications"
-  },
-  {
     id: "mca",
     name: "MCA",
     fullName: "Master of Computer Applications",
