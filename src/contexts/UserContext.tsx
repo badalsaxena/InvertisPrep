@@ -93,6 +93,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           createdAt: new Date().toISOString(),
           lastLogin: new Date().toISOString(),
           course: '',
+          bio: '',
+          eduLevel: '',
           wallet: { balance: 0 }
         };
         setProfile(fallbackProfile);
@@ -109,6 +111,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         course: '',
+        bio: '',
+        eduLevel: '',
         wallet: { balance: 0 }
       };
       

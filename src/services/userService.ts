@@ -68,6 +68,8 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
         createdAt: userData.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
         lastLogin: userData.lastLogin?.toDate?.()?.toISOString() || new Date().toISOString(),
         course: userData.course || '',
+        bio: userData.bio || '',
+        eduLevel: userData.eduLevel || '',
         wallet: userData.wallet || { balance: 0 }
       };
     } else {
@@ -82,6 +84,8 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         course: '',
+        bio: '',
+        eduLevel: '',
         wallet: { balance: 0 }
       };
       
@@ -111,6 +115,8 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
       course: '',
+      bio: '',
+      eduLevel: '',
       wallet: { balance: 0 }
     };
   }

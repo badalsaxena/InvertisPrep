@@ -20,6 +20,8 @@ export interface UserProfile {
   createdAt?: string;
   lastLogin?: string;
   course?: string;
+  bio?: string;
+  eduLevel?: string;
 }
 
 /**
@@ -121,6 +123,8 @@ export const syncUserProfile = async (user: User): Promise<UserProfile | null> =
       uid: user.uid,
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
+      bio: '',
+      eduLevel: '',
       wallet: { balance: 100 }
     };
   }
@@ -171,6 +175,8 @@ export const createUserProfile = async (user: User): Promise<UserProfile | null>
       uid: profileData.uid,
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
+      bio: '',
+      eduLevel: '',
       wallet: { balance: 100 }
     };
     
@@ -185,6 +191,8 @@ export const createUserProfile = async (user: User): Promise<UserProfile | null>
       uid: user.uid,
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
+      bio: '',
+      eduLevel: '',
       wallet: { balance: 100 }
     };
   }

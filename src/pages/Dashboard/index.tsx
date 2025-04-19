@@ -38,7 +38,7 @@ export default function Dashboard() {
   // Load academic progress
   useEffect(() => {
     const loadProgress = async () => {
-      if (!user) return;
+      if (!user) return null;
       
       try {
         setLoadingProgress(true);
@@ -50,8 +50,10 @@ export default function Dashboard() {
         }
         
         setAcademicProgress(progress);
+        return progress;
       } catch (error) {
         console.error('Error loading academic progress:', error);
+        return null;
       } finally {
         setLoadingProgress(false);
       }

@@ -82,36 +82,41 @@ export interface AcademicProgress {
 /**
  * Initialize academic progress for a new user
  */
-export const initAcademicProgress = async (uid: string): Promise<void> => {
-  if (!uid) return;
+export const initAcademicProgress = async (uid: string): Promise<AcademicProgress | null> => {
+  if (!uid) return null;
   
   try {
     const userRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userRef);
     
+    const defaultProgress: AcademicProgress = {
+      quizzesCompleted: 0,
+      quizzesWon: 0,
+      quizzesLost: 0,
+      totalQuestionsAnswered: 0,
+      correctAnswersCount: 0,
+      accuracy: 0,
+      lastQuizDate: new Date(),
+      subjects: {},
+      streak: {
+        current: 0,
+        max: 0,
+        lastPlayed: new Date()
+      },
+      rank: 'Beginner'
+    };
+    
     if (userDoc.exists() && !userDoc.data().academicProgress) {
       await updateDoc(userRef, {
-        academicProgress: {
-          quizzesCompleted: 0,
-          quizzesWon: 0,
-          quizzesLost: 0,
-          totalQuestionsAnswered: 0,
-          correctAnswersCount: 0,
-          accuracy: 0,
-          lastQuizDate: serverTimestamp(),
-          subjects: {},
-          streak: {
-            current: 0,
-            max: 0,
-            lastPlayed: serverTimestamp()
-          },
-          rank: 'Beginner'
-        }
+        academicProgress: defaultProgress
       });
       console.log('Academic progress initialized for user:', uid);
     }
+    
+    return defaultProgress;
   } catch (error) {
     console.error('Error initializing academic progress:', error);
+    return null;
   }
 };
 
