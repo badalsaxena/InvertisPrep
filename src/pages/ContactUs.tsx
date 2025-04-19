@@ -40,8 +40,8 @@ export default function ContactUs() {
     }));
   };
   
-  // Combined form handling
-  const handleSubmit = (e: React.FormEvent) => {
+  // Combined form handling with proper type
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     handleFormspreeSubmit(e);
   };
   
