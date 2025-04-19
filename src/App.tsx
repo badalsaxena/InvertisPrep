@@ -26,7 +26,6 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
-import { Analytics } from "@vercel/analytics/react";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -206,7 +205,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
-      <Analytics />
+        <Analytics />
         <Navbar />
         <Routes>
           <Route path="/login" element={<Login />} />
