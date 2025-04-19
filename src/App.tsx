@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
+import { Analytics } from '@vercel/analytics/react';
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -17,6 +18,7 @@ import MultiplayerQuizzo from "@/pages/MultiplayerQuizzo";
 import SoloQuizzo from "@/pages/SoloQuizzo";
 import PYQ from "@/pages/PYQ"; 
 import ProgramDetails from "@/pages/PYQ/ProgramDetails";
+import { programs, Program } from "@/pages/PYQ";
 import Settings from "@/pages/Settings";
 import TransactionHistory from "@/pages/QCoins/History";
 import BugReport from "@/pages/BugReport";
@@ -24,6 +26,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/react";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -203,6 +206,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
+      <Analytics />
         <Navbar />
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -272,10 +276,56 @@ function App() {
           {/* API endpoint for quiz rewards */}
           <Route path="/api/quiz-rewards" element={<QuizRewardsApi />} />
           
+          {/* Debug route to help with deployment issues */}
+          <Route path="/debug-routes" element={
+            <div className="container mx-auto py-12 px-4">
+              <h1 className="text-2xl font-bold mb-4">Route Debugging</h1>
+              <p className="mb-6">This page helps diagnose routing issues in deployment.</p>
+              
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-3">Available Programs:</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {programs.map(program => (
+                      <div key={program.id} className="border p-4 rounded-md">
+                        <p><strong>ID:</strong> {program.id}</p>
+                        <p><strong>Name:</strong> {program.name}</p>
+                        <a 
+                          href={`/pyq/${program.id}`} 
+                          className="text-blue-600 hover:underline block mt-2"
+                        >
+                          Test Link: /pyq/{program.id}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-amber-50 p-4 rounded-md">
+                  <h2 className="text-lg font-semibold mb-2">Server Info:</h2>
+                  <p><strong>URL:</strong> {window.location.href}</p>
+                  <p><strong>User Agent:</strong> {navigator.userAgent}</p>
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(JSON.stringify({
+                      url: window.location.href,
+                      userAgent: navigator.userAgent,
+                      time: new Date().toISOString(),
+                      programs: programs.map(p => p.id)
+                    }, null, 2))}
+                    className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-sm"
+                  >
+                    Copy Debug Info
+                  </button>
+                </div>
+              </div>
+            </div>
+          } />
+          
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Toaster />
+        <Analytics />
       </div>
     </Router>
   );

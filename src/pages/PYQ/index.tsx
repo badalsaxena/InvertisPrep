@@ -12,8 +12,16 @@ import { Button } from "@/components/ui/button";
 import { GraduationCap, ChevronRight, BookOpen } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
+// Program data with interface
+export interface Program {
+  id: string;
+  name: string;
+  fullName: string;
+  description: string;
+}
+
 // Program data
-const programs = [
+export const programs: Program[] = [
   {
     id: "btech",
     name: "BTech",
@@ -25,6 +33,18 @@ const programs = [
     name: "BCA",
     fullName: "Bachelor of Computer Applications",
     description: "3-year undergraduate program focusing on computer applications"
+  },
+  {
+    id: "bcom",
+    name: "BCom",
+    fullName: "Bachelor of Commerce",
+    description: "3-year undergraduate program focusing on commerce"
+  },
+  {
+    id: "bsc",
+    name: "BSc",
+    fullName: "Bachelor of Science",
+    description: "3-year undergraduate program focusing on science"
   },
   {
     id: "mca",
@@ -43,6 +63,12 @@ const programs = [
     name: "BBA",
     fullName: "Bachelor of Business Administration",
     description: "3-year undergraduate program focusing on business management"
+  },
+  {
+    id: "bce",
+    name: "BCE",
+    fullName: "Bachelor of Civil Engineering",
+    description: "4-year undergraduate program focusing on civil engineering"
   },
   {
     id: "mba",
