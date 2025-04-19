@@ -61,7 +61,7 @@ export function Hero() {
                 Get Started
               </Link>
               <Link
-                to="/about"
+                to={user ? "/quizzo" : "/login"}
                 className="text-sm font-semibold leading-6 text-white flex items-center justify-center font-['Poppins'] bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg px-5 py-2.5 md:px-6 md:py-3 rounded-md"
               >
                 Learn more <span aria-hidden="true" className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>

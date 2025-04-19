@@ -234,12 +234,12 @@ export function Footer() {
             <p className="mt-1 text-sm text-gray-400 flex items-center justify-center">
               Made with <span className="heart-icon mx-1">❤️</span> by{" "}
               <a 
-                href="https://github.com/AhqafCoder" 
+                href="www.ahqafali.site" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-purple-400 hover:text-purple-300 transition-colors ml-1"
               >
-                AhqafCoder
+                AhqafCoder 
               </a> & Team
             </p>
           </div>

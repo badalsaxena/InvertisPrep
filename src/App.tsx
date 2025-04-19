@@ -24,6 +24,8 @@ import TransactionHistory from "@/pages/QCoins/History";
 import BugReport from "@/pages/BugReport";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import ContactUs from "@/pages/ContactUs";
+import FAQ from "@/pages/FAQ";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -271,6 +273,8 @@ function App() {
           <Route path="/bug-report" element={<BugReport />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/faq" element={<FAQ />} />
           
           {/* API endpoint for quiz rewards */}
           <Route path="/api/quiz-rewards" element={<QuizRewardsApi />} />

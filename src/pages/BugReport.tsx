@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Footer } from "@/components/layout/Footer";
-import { Navbar } from "@/components/layout/Navbar";
+import { useForm, ValidationError } from '@formspree/react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,8 +34,8 @@ export default function BugReport() {
     deviceInfo: "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  // Initialize Formspree with your form ID
+  const [formState, handleFormspreeSubmit] = useForm("xpwpvdyk");
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
@@ -55,36 +55,12 @@ export default function BugReport() {
     }));
   };
 
-  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      // In a real application, you would send this data to your backend
-      console.log("Bug report submitted:", formData);
-      
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      setSubmitted(true);
-      setFormData({
-        name: "",
-        email: "",
-        bugType: "",
-        severity: "",
-        description: "",
-        stepsToReproduce: "",
-        deviceInfo: "",
-      });
-    } catch (err) {
-      setError("Failed to submit your report. Please try again later.");
-      console.error("Error submitting bug report:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Convert our form submit handler to match Formspree's expected types
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    // Submit the form directly to Formspree
+    handleFormspreeSubmit(e);
   };
 
   const collectDeviceInfo = () => {
@@ -100,9 +76,28 @@ Platform: ${navigator.platform}
     }));
   };
 
+  // Helper function to safely check for errors
+  const hasFormErrors = () => {
+    return formState.errors !== null && typeof formState.errors === 'object';
+  };
+
+  // Helper function to get the first error message
+  const getFirstErrorMessage = (): string => {
+    if (!hasFormErrors()) return "An error occurred with the form submission";
+    
+    const errorObj = formState.errors as Record<string, any>;
+    const firstKey = Object.keys(errorObj)[0];
+    
+    if (firstKey && Array.isArray(errorObj[firstKey])) {
+      return errorObj[firstKey][0] || "Form validation error";
+    }
+    
+    return "Form validation error";
+  };
+
   return (
     <>
-      <Navbar />
+      
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="flex flex-col items-center mb-8">
           <h1 className="text-3xl font-bold mb-4 flex items-center">
@@ -115,7 +110,7 @@ Platform: ${navigator.platform}
           </p>
         </div>
 
-        {submitted ? (
+        {formState.succeeded ? (
           <Alert className="max-w-2xl mx-auto mb-8 bg-green-50 border-green-200">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertTitle className="text-green-800">Thank you for your report!</AlertTitle>
@@ -125,7 +120,7 @@ Platform: ${navigator.platform}
             </AlertDescription>
             <Button 
               className="mt-4 w-full" 
-              onClick={() => setSubmitted(false)}
+              onClick={() => window.location.reload()}
             >
               Submit Another Report
             </Button>
@@ -146,6 +141,16 @@ Platform: ${navigator.platform}
                   <AlertDescription className="text-red-700">{error}</AlertDescription>
                 </Alert>
               )}
+              
+              {hasFormErrors() && (
+                <Alert className="mb-6 bg-red-50 border-red-200">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-800">Form Error</AlertTitle>
+                  <AlertDescription className="text-red-700">
+                    {getFirstErrorMessage()}
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,6 +164,7 @@ Platform: ${navigator.platform}
                       placeholder="John Doe"
                       required
                     />
+                    <ValidationError prefix="Name" field="name" errors={formState.errors} />
                   </div>
 
                   <div className="space-y-2">
@@ -172,6 +178,7 @@ Platform: ${navigator.platform}
                       placeholder="your@email.com"
                       required
                     />
+                    <ValidationError prefix="Email" field="email" errors={formState.errors} />
                   </div>
                 </div>
 
@@ -194,6 +201,7 @@ Platform: ${navigator.platform}
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    <ValidationError prefix="Issue Type" field="bugType" errors={formState.errors} />
                   </div>
 
                   <div className="space-y-2">
@@ -213,6 +221,7 @@ Platform: ${navigator.platform}
                         <SelectItem value="critical">Critical - Application unusable</SelectItem>
                       </SelectContent>
                     </Select>
+                    <ValidationError prefix="Severity" field="severity" errors={formState.errors} />
                   </div>
                 </div>
 
@@ -227,6 +236,7 @@ Platform: ${navigator.platform}
                     className="min-h-[100px]"
                     required
                   />
+                  <ValidationError prefix="Description" field="description" errors={formState.errors} />
                 </div>
 
                 <div className="space-y-2">
@@ -239,6 +249,7 @@ Platform: ${navigator.platform}
                     placeholder="1. Go to page X&#10;2. Click on Y&#10;3. Scroll down to Z&#10;4. Observe the issue"
                     className="min-h-[100px]"
                   />
+                  <ValidationError prefix="Steps" field="stepsToReproduce" errors={formState.errors} />
                 </div>
 
                 <div className="space-y-2">
@@ -262,25 +273,29 @@ Platform: ${navigator.platform}
                     placeholder="Browser, operating system, device type, etc."
                     className="min-h-[80px]"
                   />
+                  <ValidationError prefix="Device Info" field="deviceInfo" errors={formState.errors} />
                 </div>
+                
+                <div className="hidden">
+                  <input type="text" name="_gotcha" style={{ display: "none" }} />
+                </div>
+                
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={formState.submitting}
+                >
+                  {formState.submitting ? (
+                    <>
+                      <span className="animate-spin mr-2 h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Bug Report"
+                  )}
+                </Button>
               </form>
             </CardContent>
-            <CardFooter>
-              <Button
-                className="w-full"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="animate-spin mr-2 h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Bug Report"
-                )}
-              </Button>
-            </CardFooter>
           </Card>
         )}
       </div>
