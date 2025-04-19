@@ -1,130 +1,168 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@/contexts/UserContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { useUser } from '@/contexts/UserContext';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, PenLine, Save, X } from 'lucide-react';
+import { Loader2, PenLine, Save, X, GraduationCap, Wallet, History } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { updateProfile } from '@/services/userService';
 import { getAcademicProgress, AcademicProgress, initAcademicProgress } from '@/services/academicProgressService';
+import { getWallet, Wallet as WalletType } from '@/services/walletService';
 import QuizHistoryDisplay from '@/components/QuizHistoryDisplay';
+import { Progress } from '@/components/ui/progress';
 
 export default function Dashboard() {
-  const { profile, loading, error, refreshProfile, clearError } = useUser();
+  const { profile, loading, error, refreshProfile, clearError, refreshWallet } = useUser();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  const [editMode, setEditMode] = useState(false);
-  const [displayName, setDisplayName] = useState('');
-  const [course, setCourse] = useState('');
-  const [updating, setUpdating] = useState(false);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    displayName: '',
+    bio: '',
+    eduLevel: '',
+  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [academicProgress, setAcademicProgress] = useState<AcademicProgress | null>(null);
-  const [loadingProgress, setLoadingProgress] = useState(false);
-  
-  // Create a local mock profile from the user data if profile is not available
-  const displayProfile = profile || (user ? {
-    displayName: user.displayName || 'User',
-    email: user.email || 'user@example.com',
-    photoURL: user.photoURL || undefined,
-    uid: user.uid,
-    createdAt: new Date().toISOString(),
-    lastLogin: new Date().toISOString(),
-    course: ''
-  } : null);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+  const [wallet, setWallet] = useState<WalletType | null>(null);
+  const [loadingWallet, setLoadingWallet] = useState(true);
 
-  useEffect(() => {
-    if (displayProfile) {
-      setDisplayName(displayProfile.displayName || '');
-      setCourse(displayProfile.course || '');
-    }
-  }, [displayProfile]);
+  // State for refreshing
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Ensure user photo URL is updated in the database
+  // Load academic progress
   useEffect(() => {
-    if (user?.photoURL && displayProfile && !displayProfile.photoURL) {
-      updateProfile(user.uid, { photoURL: user.photoURL })
-        .then(() => refreshProfile())
-        .catch(err => console.error("Error updating photo URL:", err));
-    }
-  }, [user, displayProfile]);
-
-  // Load academic progress data
-  useEffect(() => {
-    if (user?.uid) {
-      const loadProgress = async () => {
-        setLoadingProgress(true);
-        try {
-          // Initialize progress if it doesn't exist
-          await initAcademicProgress(user.uid);
-          
-          // Get the progress data
-          const progress = await getAcademicProgress(user.uid);
-          if (progress) {
-            setAcademicProgress(progress);
-          }
-        } catch (error) {
-          console.error("Error loading academic progress:", error);
-        } finally {
-          setLoadingProgress(false);
-        }
-      };
+    const loadProgress = async () => {
+      if (!user) return;
       
-      loadProgress();
-    }
+      try {
+        setLoadingProgress(true);
+        let progress = await getAcademicProgress(user.uid);
+        
+        // If no progress exists, initialize it
+        if (!progress) {
+          progress = await initAcademicProgress(user.uid);
+        }
+        
+        setAcademicProgress(progress);
+      } catch (error) {
+        console.error('Error loading academic progress:', error);
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+    
+    loadProgress();
   }, [user]);
 
+  // Load wallet data
+  useEffect(() => {
+    const loadWallet = async () => {
+      if (!user) return;
+      
+      try {
+        setLoadingWallet(true);
+        const userWallet = await getWallet(user.uid);
+        setWallet(userWallet);
+      } catch (error) {
+        console.error('Error loading wallet:', error);
+      } finally {
+        setLoadingWallet(false);
+      }
+    };
+    
+    loadWallet();
+  }, [user]);
+
+  // Pre-populate form when profile is loaded
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        displayName: profile.displayName || '',
+        bio: profile.bio || '',
+        eduLevel: profile.eduLevel || '',
+      });
+    }
+  }, [profile]);
+
   const handleRefresh = async () => {
+    setRefreshing(true);
     clearError();
     await refreshProfile();
+    await refreshWallet();
+    
+    // Refresh academic progress too
+    if (user) {
+      try {
+        const progress = await getAcademicProgress(user.uid);
+        setAcademicProgress(progress);
+        
+        // Also refresh wallet
+        const userWallet = await getWallet(user.uid);
+        setWallet(userWallet);
+      } catch (err) {
+        console.error('Failed to refresh data', err);
+      }
+    }
+    setRefreshing(false);
   };
 
   const handleSaveProfile = async () => {
     if (!user) return;
     
     try {
-      setUpdating(true);
+      setSaving(true);
+      setFormError(null);
       
-      // Update profile with new name and course
-      const result = await updateProfile(user.uid, {
-        displayName,
-        course,
-        photoURL: user.photoURL || undefined // Fix: Ensure photoURL is never null
+      await updateProfile(user.uid, {
+        displayName: formData.displayName,
+        bio: formData.bio,
+        eduLevel: formData.eduLevel,
       });
       
-      if (result) {
-        // Refresh the profile data
-        await refreshProfile();
-        setUpdateSuccess(true);
-        
-        // Reset edit mode
-        setEditMode(false);
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          setUpdateSuccess(false);
-        }, 3000);
-      }
+      // Refresh profile data
+      await refreshProfile();
+      setIsEditing(false);
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error('Error updating profile:', error);
+      setFormError('Failed to update profile. Please try again.');
     } finally {
-      setUpdating(false);
+      setSaving(false);
     }
   };
 
   const cancelEdit = () => {
-    setEditMode(false);
-    // Reset to original values
-    if (displayProfile) {
-      setDisplayName(displayProfile.displayName || '');
-      setCourse(displayProfile.course || '');
+    // Reset form data to current profile
+    if (profile) {
+      setFormData({
+        displayName: profile.displayName || '',
+        bio: profile.bio || '',
+        eduLevel: profile.eduLevel || '',
+      });
+    }
+    setIsEditing(false);
+    setFormError(null);
+  };
+
+  // Function to format date
+  const formatDate = (date: any) => {
+    if (!date) return 'N/A';
+    
+    try {
+      // Convert Firebase timestamp to JS Date if needed
+      const jsDate = date.toDate ? date.toDate() : new Date(date);
+      return jsDate.toLocaleDateString();
+    } catch (error) {
+      return 'Invalid date';
     }
   };
 
-  if (loading) {
+  if (loading && !profile) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -134,231 +172,262 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Your Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
       
-      {/* Display API errors if they exist */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-          <h3 className="text-red-700 font-medium mb-1">Error Loading Data</h3>
           <p className="text-red-600">{error}</p>
-          <Button 
-            onClick={clearError}
-            variant="outline" 
-            size="sm" 
-            className="mt-2 text-red-600 border-red-200"
-          >
-            Dismiss
-          </Button>
         </div>
       )}
       
-      {/* Success message */}
-      {updateSuccess && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-          <h3 className="text-green-700 font-medium mb-1">Profile Updated</h3>
-          <p className="text-green-600">Your profile has been successfully updated.</p>
+      {formError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600">{formError}</p>
         </div>
       )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Profile Card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-            <CardTitle>Profile</CardTitle>
-              <CardDescription>Your personal information</CardDescription>
-            </div>
-            {!editMode && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setEditMode(true)}
-                className="h-8 w-8 p-0"
-              >
-                <PenLine className="h-4 w-4" />
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {displayProfile ? (
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  {displayProfile.photoURL || user?.photoURL ? (
-                    <img 
-                      src={displayProfile.photoURL || user?.photoURL || ''}
-                      alt="Profile" 
-                      className="h-16 w-16 rounded-full"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        target.onerror = null;
-                        // Create a fallback element
-                        const container = target.parentElement;
-                        if (container) {
-                          // Hide the img that failed to load
-                          target.style.display = 'none';
-                          
-                          // Create the fallback
-                          const fallback = document.createElement('div');
-                          fallback.className = 'h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center';
-                          fallback.innerHTML = `<span class="text-xl font-semibold text-gray-500">${displayProfile.displayName?.charAt(0).toUpperCase() || 'U'}</span>`;
-                          
-                          // Add the fallback to the container
-                          container.appendChild(fallback);
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-xl font-semibold text-gray-500">
-                        {displayProfile.displayName?.charAt(0).toUpperCase() || 'U'}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    {editMode ? (
-                      <div className="space-y-2">
-                        <div>
-                          <Label htmlFor="displayName">Display Name</Label>
-                          <Input
-                            id="displayName"
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            className="w-full"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="course">Course</Label>
-                          <Select value={course} onValueChange={setCourse}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select your course" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="btech">B.Tech</SelectItem>
-                              <SelectItem value="bba">BBA</SelectItem>
-                              <SelectItem value="bca">BCA</SelectItem>
-                              <SelectItem value="mca">MCA</SelectItem>
-                              <SelectItem value="ba">BA</SelectItem>
-                              <SelectItem value="ma">MA</SelectItem>
-                              <SelectItem value="mba">MBA</SelectItem>
-                              <SelectItem value="mtech">M.Tech</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <h3 className="font-semibold text-lg">{displayProfile.displayName}</h3>
-                        <p className="text-sm text-gray-500">{displayProfile.email}</p>
-                        {displayProfile.course && (
-                          <p className="text-sm text-blue-600 mt-1">
-                            Course: {displayProfile.course.toUpperCase()}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-                
-                {!editMode && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <p className="text-sm text-gray-500">
-                      Account created: {new Date(displayProfile.createdAt || Date.now()).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Last login: {new Date(displayProfile.lastLogin || Date.now()).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-            </div>
-            ) : (
-              <p className="text-center text-gray-500">Profile information not available</p>
-            )}
-          </CardContent>
-          {editMode && (
-            <CardFooter className="flex justify-end space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={cancelEdit}
-              >
-                <X className="h-4 w-4 mr-1" /> Cancel
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={handleSaveProfile}
-                disabled={updating}
-              >
-                {updating ? (
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4 mr-1" />
-                )}
-                Save
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
 
-        {/* Stats Card */}
+      {/* Profile Card */}
+      <div className="mb-6">
         <Card>
           <CardHeader>
-            <CardTitle>Academic Progress</CardTitle>
-            <CardDescription>Your learning journey</CardDescription>
+            <div className="flex justify-between items-center">
+              <CardTitle>Profile</CardTitle>
+              {!isEditing ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsEditing(true)}
+                >
+                  <PenLine className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={cancelEdit}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    Save
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium mb-2">Quick Stats</h3>
-                {loadingProgress ? (
-                  <div className="flex justify-center py-2">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  </div>
-                ) : (
-                  <ul className="text-sm text-gray-600 space-y-2">
-                    <li>• Quizzes Completed: {academicProgress?.quizzesCompleted || 0}</li>
-                    <li>• Average Score: {academicProgress?.accuracy ? `${academicProgress.accuracy.toFixed(1)}%` : 'N/A'}</li>
-                    <li>• Rank: {academicProgress?.rank || 'Beginner'}</li>
-                    <li>• Study Streak: {academicProgress?.streak?.current || 0} days</li>
-                  </ul>
-                )}
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-shrink-0 flex flex-col items-center">
+                <Avatar className="h-24 w-24 mb-2">
+                  <AvatarImage src={user?.photoURL || undefined} />
+                  <AvatarFallback>{profile?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                </Avatar>
+                <p className="text-sm text-gray-500">Member since {formatDate(profile?.createdAt)}</p>
               </div>
               
-              {academicProgress?.quizzesCompleted ? (
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-medium mb-2">Achievement</h3>
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl mr-3">
-                      {academicProgress.rank === 'Beginner' && '🌱'}
-                      {academicProgress.rank === 'Novice' && '🌿'}
-                      {academicProgress.rank === 'Intermediate' && '🌲'}
-                      {academicProgress.rank === 'Advanced' && '🏆'}
-                      {academicProgress.rank === 'Expert' && '🏅'}
-                      {academicProgress.rank === 'Master' && '👑'}
+              <div className="flex-grow space-y-4">
+                {isEditing ? (
+                  // Edit form
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="displayName">Display Name</Label>
+                      <Input 
+                        id="displayName" 
+                        value={formData.displayName}
+                        onChange={(e) => setFormData({...formData, displayName: e.target.value})}
+                        placeholder="Your name"
+                      />
                     </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bio">Bio</Label>
+                      <Input 
+                        id="bio" 
+                        value={formData.bio}
+                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                        placeholder="Tell us about yourself"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="eduLevel">Education Level</Label>
+                      <Select 
+                        value={formData.eduLevel} 
+                        onValueChange={(value) => setFormData({...formData, eduLevel: value})}
+                      >
+                        <SelectTrigger id="eduLevel">
+                          <SelectValue placeholder="Select your education level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high_school">High School</SelectItem>
+                          <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                          <SelectItem value="graduate">Graduate</SelectItem>
+                          <SelectItem value="postgraduate">Post-graduate</SelectItem>
+                          <SelectItem value="professional">Professional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                ) : (
+                  // View mode
+                  <>
+                    <h3 className="text-xl font-semibold">{profile?.displayName || 'No name set'}</h3>
+                    
                     <div>
-                      <p className="font-medium text-blue-700">{academicProgress.rank}</p>
-                      <p className="text-xs text-blue-600">
-                        {academicProgress.quizzesWon} wins / {academicProgress.quizzesLost} losses
+                      <h4 className="text-sm font-medium text-gray-500">Email</h4>
+                      <p>{user?.email || 'No email'}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Bio</h4>
+                      <p className="text-gray-700">{profile?.bio || 'No bio provided'}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-500">Education Level</h4>
+                      <p className="text-gray-700">
+                        {profile?.eduLevel === 'high_school' && 'High School'}
+                        {profile?.eduLevel === 'undergraduate' && 'Undergraduate'}
+                        {profile?.eduLevel === 'graduate' && 'Graduate'}
+                        {profile?.eduLevel === 'postgraduate' && 'Post-graduate'}
+                        {profile?.eduLevel === 'professional' && 'Professional'}
+                        {!profile?.eduLevel && 'Not specified'}
                       </p>
                     </div>
-                  </div>
-                </div>
-              ) : null}
-              
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={() => navigate('/quizzo')}
-              >
-                Take a Quiz
-              </Button>
+                  </>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
+      {/* QCoins Wallet Card */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-5 w-5 text-primary" /> QCoins Wallet
+              </CardTitle>
+              <CardDescription>Earn and spend QCoins for quiz activities</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loadingWallet ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500 mb-2">Your Balance</p>
+                  <p className="text-4xl font-bold text-primary">{wallet?.balance || 0} QCoins</p>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2">About QCoins</h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Earn QCoins by participating in quizzes and winning matches. Use them to unlock premium content and features.
+                  </p>
+                  <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                    <li>Earn 5-10 QCoins for participating in quizzes</li>
+                    <li>Earn bonus QCoins for winning multiplayer matches</li>
+                    <li>Spend QCoins on premium resources and features</li>
+                  </ul>
+                </div>
+                
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => navigate('/qcoins/history')}
+                  >
+                    <History className="h-4 w-4 mr-2" />
+                    View Transaction History
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Academic Progress Card */}
+      <div className="mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <GraduationCap className="h-5 w-5 text-primary" /> Academic Progress
+              </CardTitle>
+              <CardDescription>Track your learning journey</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loadingProgress ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex justify-between">
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 mb-1">Quizzes Taken</p>
+                    <p className="text-2xl font-bold">{academicProgress?.quizzesCompleted || 0}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 mb-1">Accuracy</p>
+                    <p className="text-2xl font-bold">{academicProgress?.accuracy ? `${academicProgress.accuracy.toFixed(1)}%` : 'N/A'}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 mb-1">Streak</p>
+                    <p className="text-2xl font-bold">{academicProgress?.streak?.current || 0} days</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium text-sm mb-2">Subject Mastery</h3>
+                  <div className="space-y-3">
+                    {Object.entries(academicProgress?.subjects || {})
+                      .sort(([, aData], [, bData]) => (bData as any).accuracy - (aData as any).accuracy)
+                      .slice(0, 3)
+                      .map(([subject, data]) => (
+                        <div key={subject}>
+                          <div className="flex justify-between items-center mb-1">
+                            <p className="text-sm font-medium">{subject}</p>
+                            <p className="text-xs">{(data as any).accuracy}%</p>
+                          </div>
+                          <Progress value={(data as any).accuracy} className="h-2" />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+                
+                <div className="flex justify-center">
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    onClick={() => navigate('/quizzo')}
+                  >
+                    Take a Quiz
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Quiz History Section */}
       {user && (
         <div className="mb-6">
@@ -367,7 +436,8 @@ export default function Dashboard() {
       )}
       
       <div className="mt-8 flex flex-wrap justify-center">
-        <Button onClick={handleRefresh} variant="outline">
+        <Button onClick={handleRefresh} variant="outline" disabled={refreshing}>
+          {refreshing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
           Refresh Data
         </Button>
       </div>

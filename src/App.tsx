@@ -18,6 +18,7 @@ import SoloQuizzo from "@/pages/SoloQuizzo";
 import PYQ from "@/pages/PYQ"; 
 import ProgramDetails from "@/pages/PYQ/ProgramDetails";
 import Settings from "@/pages/Settings";
+import TransactionHistory from "@/pages/QCoins/History";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -224,6 +225,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/qcoins/history"
+            element={
+              <ProtectedRoute>
+                <TransactionHistory />
               </ProtectedRoute>
             }
           />

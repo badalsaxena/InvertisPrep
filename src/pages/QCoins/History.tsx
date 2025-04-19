@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getTransactionHistory, Transaction } from '@/services/walletService';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, RefreshCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -183,11 +183,7 @@ const TransactionHistory = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/qcoins">QCoins</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Transaction History</BreadcrumbPage>
+            <BreadcrumbPage>QCoin Transaction History</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -263,12 +259,6 @@ const TransactionHistory = () => {
           <CardContent className="py-12">
             <div className="text-center">
               <p className="text-gray-500 mb-4">No transactions found</p>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/qcoins')}
-              >
-                Manage QCoins
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -324,9 +314,9 @@ const TransactionHistory = () => {
           <div className="mt-6 flex justify-center">
             <Button 
               variant="outline" 
-              onClick={() => navigate('/qcoins')}
+              onClick={() => navigate('/dashboard')}
             >
-              Manage QCoins
+              Back to Dashboard
             </Button>
           </div>
         </div>

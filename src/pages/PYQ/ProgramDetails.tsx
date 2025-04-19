@@ -43,6 +43,24 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
+  bcom: {
+    name: "BCom",
+    fullName: "Bachelor of Commerce",
+    branches: [
+      { id: "general", name: "General" },
+      { id: "honors", name: "Honors" }
+    ]
+  },
+  bsc: {
+    name: "BSc",
+    fullName: "Bachelor of Science",
+    branches: [
+      { id: "cs", name: "Computer Science" },
+      { id: "it", name: "Information Technology" },
+      { id: "mathematics", name: "Mathematics" },
+      { id: "physics", name: "Physics" }
+    ]
+  },
   mca: {
     name: "MCA",
     fullName: "Master of Computer Applications",

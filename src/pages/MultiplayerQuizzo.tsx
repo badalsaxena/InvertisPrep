@@ -544,9 +544,11 @@ export default function MultiplayerQuizzo() {
                       variant={
                         selectedOption !== null && index === currentQuestion.correctAnswer
                           ? "default"
-                          : selectedOption === index
-                            ? "secondary"
-                            : "outline"
+                          : selectedOption === index && isCorrect
+                            ? "default"
+                            : selectedOption === index
+                              ? "secondary"
+                              : "outline"
                       }
                       disabled={selectedOption !== null || timeLeft === 0}
                     >
@@ -554,7 +556,10 @@ export default function MultiplayerQuizzo() {
                         {selectedOption !== null && index === currentQuestion.correctAnswer && (
                           <Check className="h-5 w-5 mr-2 text-green-500" />
                         )}
-                        {selectedOption === index && index !== currentQuestion.correctAnswer && (
+                        {selectedOption === index && isCorrect && (
+                          <Check className="h-5 w-5 mr-2 text-green-500" />
+                        )}
+                        {selectedOption === index && !isCorrect && index !== currentQuestion.correctAnswer && (
                           <XCircle className="h-5 w-5 mr-2 text-red-500" />
                         )}
                         {(selectedOption === null || (index !== selectedOption && index !== currentQuestion.correctAnswer)) && (

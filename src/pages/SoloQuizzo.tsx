@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { CircleDashed, CircleCheck, CircleAlert, Timer } from "lucide-react";
 import { updateQuizProgress } from '@/services/academicProgressService';
+import { addQuizReward } from '@/services/walletService';
 import {
   Select,
   SelectContent,
@@ -180,6 +182,7 @@ const DEMO_QUESTIONS = {
 
 export default function SoloQuizzo() {
   const { user } = useAuth();
+  const { refreshWallet } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -193,6 +196,7 @@ export default function SoloQuizzo() {
   const [score, setScore] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(30);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [rewardMessage, setRewardMessage] = useState<string | null>(null);
   const [results, setResults] = useState<{
     correct: number;
     incorrect: number;
@@ -285,7 +289,11 @@ export default function SoloQuizzo() {
     // Save results if user is logged in
     if (user) {
       try {
-        // Update academic progress without QCoins
+        // Calculate QCoin reward - 3 for winners, 1 for participation
+        const coinsEarned = isWinner ? 3 : 1;
+        setRewardMessage(`You earned ${coinsEarned} QCoins!`);
+        
+        // Update academic progress
         const quizData = {
           subject,
           score: correctAnswers * 10, // 10 points per correct answer
@@ -295,7 +303,16 @@ export default function SoloQuizzo() {
           timeSpent: 0
         };
         
+        // 1. Add QCoins to wallet
+        await addQuizReward(user.uid, coinsEarned, isWinner, 'single', subject);
+        
+        // 2. Update academic progress
         await updateQuizProgress(user.uid, quizData);
+        
+        // 3. Refresh wallet to show updated balance
+        setTimeout(() => {
+          refreshWallet();
+        }, 1500);
         
         toast({
           title: "Progress Saved",
@@ -470,6 +487,13 @@ export default function SoloQuizzo() {
                     <p className="text-xl font-bold">{results.accuracy}%</p>
                   </div>
                 </div>
+                
+                {/* Show reward message if user is logged in */}
+                {rewardMessage && user && (
+                  <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg">
+                    {rewardMessage}
+                  </div>
+                )}
                 
                 <div className="flex flex-col gap-3">
                   <Button onClick={() => setGameState('setup')}>
