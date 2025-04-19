@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { BookOpen, Trophy, Users, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Hero() {
   const [isVisible, setIsVisible] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Trigger animations on component mount
@@ -53,7 +55,7 @@ export function Hero() {
 
             <div className={`mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start transition-all duration-700 delay-700 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <Link
-                to="/pyq"
+                to={user ? "/pyq" : "/login"}
                 className="rounded-md bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-2.5 md:px-6 md:py-3 text-center text-sm font-semibold text-white shadow-lg hover:shadow-indigo-500/30 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 transform hover:-translate-y-1 font-['Poppins']"
               >
                 Get Started
