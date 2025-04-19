@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getQuizHistory, QuizHistoryItem } from '@/services/academicProgressService';
-import { Loader2, Trophy, BookOpen, Trophy as TrophyIcon, XCircle, Clock } from 'lucide-react';
+import { getQuizHistory, QuizHistoryItem, updateQuizProgress } from '@/services/academicProgressService';
+import { Loader2, Trophy, BookOpen, Trophy as TrophyIcon, XCircle, Clock, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 
 interface QuizHistoryDisplayProps {
   userId: string;
@@ -13,24 +14,101 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
   const [history, setHistory] = useState<QuizHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const fetchHistory = async () => {
+    setLoading(true);
+    try {
+      console.log('Fetching quiz history for userId:', userId);
+      const historyData = await getQuizHistory(userId, expanded ? 10 : 5);
+      console.log('Quiz history data retrieved:', historyData.length, 'records');
+      setHistory(historyData);
+    } catch (error) {
+      console.error('Error fetching quiz history:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load quiz history. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   useEffect(() => {
-    const fetchHistory = async () => {
-      setLoading(true);
-      try {
-        const historyData = await getQuizHistory(userId, expanded ? 10 : 5);
-        setHistory(historyData);
-      } catch (error) {
-        console.error('Error fetching quiz history:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     if (userId) {
       fetchHistory();
     }
   }, [userId, expanded]);
+  
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchHistory();
+    setRefreshing(false);
+  };
+  
+  // Add sample test data for testing purposes
+  const addSampleData = async () => {
+    try {
+      setLoading(true);
+      
+      // Create a few sample quiz results
+      const subjects = ['Mathematics', 'Science', 'ComputerScience', 'History'];
+      const now = new Date();
+      
+      // Add first test quiz result
+      await updateQuizProgress(userId, {
+        subject: subjects[0],
+        score: 85,
+        correctAnswers: 17,
+        totalQuestions: 20,
+        isWin: true,
+        timeSpent: 180,
+      });
+      
+      // Add second test quiz result
+      await updateQuizProgress(userId, {
+        subject: subjects[1],
+        score: 60,
+        correctAnswers: 6,
+        totalQuestions: 10,
+        isWin: false,
+        timeSpent: 120,
+      });
+      
+      // Add multiplayer test result
+      await updateQuizProgress(userId, {
+        subject: subjects[2],
+        score: 90,
+        correctAnswers: 9,
+        totalQuestions: 10,
+        isWin: true,
+        timeSpent: 150,
+        opponent: {
+          uid: 'test-user-123',
+          name: 'Test Opponent',
+          score: 70
+        }
+      });
+      
+      toast({
+        title: 'Success',
+        description: 'Sample quiz history data has been added.',
+      });
+      
+      // Refresh history to show new data
+      await fetchHistory();
+    } catch (error) {
+      console.error('Error adding sample data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add sample data. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const formatDateTime = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -54,9 +132,20 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
   
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Quiz History</CardTitle>
-        <CardDescription>Your recent quiz activities</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Quiz History</CardTitle>
+          <CardDescription>Your recent quiz activities</CardDescription>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -68,6 +157,14 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
             <BookOpen className="h-12 w-12 mx-auto mb-2 text-gray-400" />
             <p>No quizzes taken yet</p>
             <p className="text-sm">Start a quiz to begin tracking your progress</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-4"
+              onClick={addSampleData}
+            >
+              Add Sample Data
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">

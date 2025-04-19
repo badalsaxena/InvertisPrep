@@ -78,11 +78,7 @@ export function Footer() {
               Your gateway to academic excellence at Invertis University.
             </p>
             {/* Get Started Button */}
-            <Link to="/login" className="inline-block">
-              <Button variant="default" className="bg-indigo-600 hover:bg-indigo-700">
-                Get Started
-              </Button>
-            </Link>
+            
             {/* Newsletter */}
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-300">Subscribe to our newsletter</p>
@@ -123,11 +119,15 @@ export function Footer() {
 
         {/* Bottom Section */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <p className="text-sm text-gray-400">
+            © {new Date().getFullYear()} InvertisPrep. All rights reserved.
+          </p>
+          
           <div className="text-sm text-gray-400">
             <p className="flex items-center">
               Made with <span className="heart-icon mx-1">❤️</span> by{" "}
               <a 
-                href="https://github.com/AhqafCoder" 
+                href="https://www.ahqafali.site" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-purple-400 hover:text-purple-300 transition-colors ml-1"
@@ -135,25 +135,6 @@ export function Footer() {
                 AhqafCoder
               </a> & Team
             </p>
-          </div>
-          
-          <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} InvertisPrep. All rights reserved.
-          </p>
-          
-          <div className="flex space-x-4">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                className="text-gray-400 hover:text-purple-400 transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={social.label}
-              >
-                <social.icon className="h-5 w-5" />
-              </a>
-            ))}
           </div>
         </div>
       </div>
@@ -212,21 +193,6 @@ export function Footer() {
 
         {/* Mobile Bottom Section */}
         <div className="space-y-4">
-          <div className="flex justify-center space-x-4">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                className="text-gray-400 hover:text-purple-400 transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={social.label}
-              >
-                <social.icon className="h-5 w-5" />
-              </a>
-            ))}
-          </div>
-          
           <div className="text-center">
             <p className="text-sm text-gray-400">
               © {new Date().getFullYear()} InvertisPrep. All rights reserved.
@@ -234,7 +200,7 @@ export function Footer() {
             <p className="mt-1 text-sm text-gray-400 flex items-center justify-center">
               Made with <span className="heart-icon mx-1">❤️</span> by{" "}
               <a 
-                href="www.ahqafali.site" 
+                href="https://www.ahqafali.site" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-purple-400 hover:text-purple-300 transition-colors ml-1"
