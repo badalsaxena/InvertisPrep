@@ -4,49 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, Download, Eye, FileText, AlertCircle } from "lucide-react";
 
-// Update backend URL to point to localhost
-const BACKEND_URL = 'https://invertisprepbackend.vercel.app'; // Local development server
-
-// We'll keep mock data for non-btech categories during development
-const mockFiles = {
-  "programming": [
-    {
-      id: "notes/programming/python-basics.pdf",
-      name: "Python Programming Basics",
-      filename: "python-basics.pdf",
-      size: 1800000,
-      uploadDate: "2023-10-10T09:15:00Z",
-      path: "/resources/notes/programming/python-basics.pdf"
-    },
-    {
-      id: "notes/programming/java-tutorial.pdf",
-      name: "Java Complete Tutorial",
-      filename: "java-tutorial.pdf",
-      size: 5200000,
-      uploadDate: "2023-08-18T11:20:00Z",
-      path: "/resources/notes/programming/java-tutorial.pdf"
-    }
-  ],
-  "cheatsheets": [
-    {
-      id: "notes/cheatsheets/git-commands.pdf",
-      name: "Git Commands Cheatsheet",
-      filename: "git-commands.pdf",
-      size: 950000,
-      uploadDate: "2023-09-05T16:30:00Z",
-      path: "/resources/notes/cheatsheets/git-commands.pdf"
-    }
-  ]
-};
-
-interface FileData {
-  id: string;
-  name: string;
-  filename: string;
-  size: number;
-  uploadDate: string;
-  path: string;
-}
+// Set backend URL based on environment
+// When running locally (dev mode), use localhost, otherwise use production
+const isDevelopment = window.location.hostname === 'localhost';
+const BACKEND_URL = isDevelopment 
+  ? 'http://localhost:3000'
+  : 'https://invertisprepbackend.vercel.app';
 
 // Define interface for the debug attempt data
 interface DebugAttempt {
@@ -64,6 +27,15 @@ interface DebugAttempt {
 interface DebugInfo {
   attempts: DebugAttempt[];
   lastError: string | null;
+}
+
+interface FileData {
+  id: string;
+  name: string;
+  filename: string;
+  size: number;
+  uploadDate: string;
+  path: string;
 }
 
 export default function CategoryPage() {
@@ -86,88 +58,88 @@ export default function CategoryPage() {
       setDebugInfo(null);
       
       try {
-        // For BTech category, fetch real data from backend
-        if (categoryId === "btech") {
-          let debugData: DebugInfo = {
-            attempts: [],
-            lastError: null
-          };
+        // Special handling for cheatsheets category (API uses singular form)
+        const apiCategoryId = categoryId === "cheatsheets" ? "cheatsheet" : categoryId;
+        
+        console.log(`Fetching files for category: ${categoryId} from ${BACKEND_URL} (API parameter: ${apiCategoryId})`);
+        let debugData: DebugInfo = {
+          attempts: [],
+          lastError: null
+        };
+        
+        // Try to get from the notes API endpoint first
+        try {
+          const resourceUrl = `${BACKEND_URL}/api/notes/files?category=${apiCategoryId}`;
+          console.log(`Trying primary API endpoint: ${resourceUrl}`);
+          debugData.attempts.push({ type: 'notes', url: resourceUrl, time: new Date().toISOString() });
           
-          // First try to get from the notes API endpoint - this seems to be working from console logs
+          const response = await fetch(resourceUrl);
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Primary API call failed with status: ${response.status} ${response.statusText}`);
+            console.error(`Response text: ${errorText}`);
+            debugData.attempts[0].status = response.status;
+            debugData.attempts[0].statusText = response.statusText;
+            debugData.attempts[0].responseText = errorText;
+            throw new Error(`Could not fetch from notes API: ${response.status} ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          console.log(`Primary API returned data:`, data);
+          debugData.attempts[0].success = true;
+          setFiles(data.files || []);
+        } catch (resourceError) {
+          console.error(`Failed to fetch ${categoryId} from notes API:`, resourceError);
+          debugData.attempts[0].success = false;
+          debugData.attempts[0].error = (resourceError as Error).message;
+          
+          // Try fallback paths
           try {
-            const resourceUrl = `${BACKEND_URL}/api/notes/files?category=${categoryId}`;
-            console.log("Fetching from notes API:", resourceUrl);
-            debugData.attempts.push({ type: 'notes', url: resourceUrl, time: new Date().toISOString() });
+            // Try direct resources API endpoint as fallback
+            const fallbackUrl = `${BACKEND_URL}/api/resources/${apiCategoryId}/files`;
+            console.log(`Trying fallback URL: ${fallbackUrl}`);
+            debugData.attempts.push({ type: 'fallback', url: fallbackUrl, time: new Date().toISOString() });
             
-            const response = await fetch(resourceUrl);
+            const response = await fetch(fallbackUrl);
             
             if (!response.ok) {
               const errorText = await response.text();
-              debugData.attempts[0].status = response.status;
-              debugData.attempts[0].statusText = response.statusText;
-              debugData.attempts[0].responseText = errorText;
-              throw new Error(`Could not fetch from notes API: ${response.status} ${response.statusText}`);
+              console.error(`Fallback API call failed with status: ${response.status} ${response.statusText}`);
+              console.error(`Response text: ${errorText}`);
+              debugData.attempts[1].status = response.status;
+              debugData.attempts[1].statusText = response.statusText;
+              debugData.attempts[1].responseText = errorText;
+              throw new Error(`Could not fetch from fallback API: ${response.status} ${response.statusText}`);
             }
             
             const data = await response.json();
-            debugData.attempts[0].success = true;
-            setFiles(data.files || []);
-          } catch (resourceError) {
-            console.error("Failed to fetch from notes API, trying alternative paths", resourceError);
-            debugData.attempts[0].success = false;
-            debugData.attempts[0].error = (resourceError as Error).message;
+            console.log(`Fallback API returned data:`, data);
+            debugData.attempts[1].success = true;
             
-            // Try fallback paths
-            try {
-              // Try direct resources API endpoint as fallback
-              const fallbackUrl = `${BACKEND_URL}/api/resources/btech/files`;
-              console.log("Trying fallback URL:", fallbackUrl);
-              debugData.attempts.push({ type: 'fallback', url: fallbackUrl, time: new Date().toISOString() });
-              
-              const response = await fetch(fallbackUrl);
-              
-              if (!response.ok) {
-                const errorText = await response.text();
-                debugData.attempts[1].status = response.status;
-                debugData.attempts[1].statusText = response.statusText;
-                debugData.attempts[1].responseText = errorText;
-                throw new Error(`Could not fetch from fallback API: ${response.status} ${response.statusText}`);
-              }
-              
-              const data = await response.json();
-              debugData.attempts[1].success = true;
-              
-              // Transform data to match expected format
-              const transformedFiles = Array.isArray(data.files) ? data.files.map((file: any) => ({
-                id: `btech/${file.filename || file.name}`,
-                name: file.name || file.filename?.replace('.pdf', '').replace(/-/g, ' ') || 'Unknown',
-                filename: file.filename || `${file.name}.pdf`,
-                size: file.size || 0,
-                uploadDate: file.uploadDate || new Date().toISOString(),
-                path: file.url || file.path || `/api/notes/download/btech/${file.filename || file.name}`
-              })) : [];
-              
-              setFiles(transformedFiles);
-            } catch (fallbackError) {
-              console.error("Failed to fetch from all sources", fallbackError);
-              debugData.attempts[1].success = false;
-              debugData.attempts[1].error = (fallbackError as Error).message;
-              debugData.lastError = (fallbackError as Error).message;
-              setError('Failed to fetch BTech files from any source. Your local server might be using different API paths than expected. Check console for details.');
-            }
-          }
-          
-          setDebugInfo(debugData);
-        } else {
-          // For other categories, use mock data during development
-          if (mockFiles[categoryId as keyof typeof mockFiles]) {
-            setFiles(mockFiles[categoryId as keyof typeof mockFiles]);
-          } else {
-            setError("Category not found");
+            // Transform data to match expected format
+            const transformedFiles = Array.isArray(data.files) ? data.files.map((file: any) => ({
+              id: `${apiCategoryId}/${file.filename || file.name}`,
+              name: file.name || file.filename?.replace('.pdf', '').replace(/-/g, ' ') || 'Unknown',
+              filename: file.filename || `${file.name}.pdf`,
+              size: file.size || 0,
+              uploadDate: file.uploadDate || new Date().toISOString(),
+              path: file.url || file.path || `/api/notes/download/${apiCategoryId}/${file.filename || file.name}`
+            })) : [];
+            
+            setFiles(transformedFiles);
+          } catch (fallbackError) {
+            console.error(`Failed to fetch ${categoryId} files from all sources:`, fallbackError);
+            debugData.attempts[1].success = false;
+            debugData.attempts[1].error = (fallbackError as Error).message;
+            debugData.lastError = (fallbackError as Error).message;
+            setError(`Failed to fetch ${categoryName} files from any source. Check console for details.`);
           }
         }
+        
+        setDebugInfo(debugData);
       } catch (err) {
-        console.error("Error fetching files:", err);
+        console.error(`General error fetching files for ${categoryId}:`, err);
         setError((err as Error).message || "Failed to load files");
       } finally {
         setLoading(false);
@@ -175,7 +147,7 @@ export default function CategoryPage() {
     };
     
     fetchFiles();
-  }, [categoryId]);
+  }, [categoryId, categoryName]);
 
   const formatName = (id: string): string => {
     if (!id) return "";
@@ -203,25 +175,23 @@ export default function CategoryPage() {
   };
 
   const handleDownload = (fileId: string): void => {
-    if (categoryId === "btech") {
-      // For BTech, use the API endpoint that we know works (notes API)
-      window.open(`${BACKEND_URL}/api/notes/download/${fileId}`, '_blank');
-    } else {
-      // For other categories in development
-      alert(`Download triggered for file: ${fileId}`);
-    }
+    // Extract just the file part, not the category prefix
+    const filePart = fileId.includes('/') ? fileId.split('/')[1] : fileId;
+    
+    // Special handling for cheatsheets category (API uses singular form)
+    const apiCategoryId = categoryId === "cheatsheets" ? "cheatsheet" : categoryId;
+    
+    // Use the API endpoint for all categories
+    window.open(`${BACKEND_URL}/api/notes/download/${apiCategoryId}/${filePart}`, '_blank');
   };
 
   const handleViewPdf = (path: string): void => {
-    if (categoryId === "btech" && path.startsWith('http')) {
+    if (path.startsWith('http')) {
       // If it's a real URL, open it directly
       window.open(path, '_blank');
-    } else if (categoryId === "btech") {
-      // For BTech local paths, convert to full URL
-      window.open(`${BACKEND_URL}${path}`, '_blank');
     } else {
-      // For other categories in development
-      alert(`View triggered for path: ${path}`);
+      // For local paths, convert to full URL
+      window.open(`${BACKEND_URL}${path}`, '_blank');
     }
   };
 
@@ -254,44 +224,76 @@ export default function CategoryPage() {
           </Button>
         </div>
 
-        {categoryId === "btech" && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md flex items-start">
-            <AlertCircle className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm text-blue-700">
-                Trying to fetch BTech PDF files from the /api/notes/ endpoint. Based on console logs, this seems to be the working endpoint.
-              </p>
-            </div>
-          </div>
-        )}
-
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-indigo-600 rounded-full"></div>
           </div>
         ) : error ? (
-          <div className="text-center py-12 text-red-600">
-            <p>Error: {error}</p>
-            <Button onClick={() => window.location.reload()} className="mt-4">
+          <div className="text-center py-12">
+            <p className="text-red-600 text-lg font-medium mb-2">Error: {error}</p>
+            <p className="text-gray-600 mb-4">
+              Backend URL: {BACKEND_URL}
+              {isDevelopment && (
+                <span className="ml-2 text-yellow-600 font-semibold">(Development Mode)</span>
+              )}
+            </p>
+            <Button onClick={() => window.location.reload()} className="mt-2">
               Try Again
             </Button>
-            {debugInfo && categoryId === "btech" && (
-              <div className="mt-6 p-4 bg-gray-50 border border-gray-300 rounded-md text-left">
+            
+            {debugInfo && (
+              <div className="mt-6 p-4 bg-gray-50 border border-gray-300 rounded-md text-left max-w-3xl mx-auto">
                 <details>
-                  <summary className="cursor-pointer text-sm font-medium text-gray-700">Debug Information (click to expand)</summary>
-                  <div className="mt-2 text-xs overflow-auto max-h-64 text-gray-800">
-                    <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+                  <summary className="cursor-pointer text-sm font-medium text-gray-700 pb-2">
+                    Debug Information (click to expand)
+                  </summary>
+                  
+                  <div className="mt-4 space-y-4">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-800">API Request Attempts:</h3>
+                      {debugInfo.attempts.map((attempt, index) => (
+                        <div key={index} className="mt-2 p-3 bg-white border rounded-md">
+                          <p className="font-medium text-sm">
+                            Attempt {index + 1}: {attempt.type} API
+                            <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${attempt.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {attempt.success ? 'Success' : 'Failed'}
+                            </span>
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">URL: {attempt.url}</p>
+                          <p className="text-xs text-gray-500">Time: {new Date(attempt.time).toLocaleTimeString()}</p>
+                          
+                          {!attempt.success && (
+                            <div className="mt-2 p-2 bg-red-50 rounded-md text-xs">
+                              <p className="text-red-700">Status: {attempt.status || 'N/A'} {attempt.statusText || ''}</p>
+                              {attempt.error && <p className="text-red-700 mt-1">Error: {attempt.error}</p>}
+                              {attempt.responseText && (
+                                <details className="mt-1">
+                                  <summary className="cursor-pointer text-red-700">Response Text</summary>
+                                  <pre className="mt-1 p-1 bg-red-100 rounded text-red-800 overflow-auto text-xs max-h-32">
+                                    {attempt.responseText}
+                                  </pre>
+                                </details>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <h3 className="text-sm font-medium text-yellow-800">Troubleshooting Tips:</h3>
+                      <ul className="mt-2 text-xs text-yellow-700 list-disc pl-5 space-y-1">
+                        <li>{isDevelopment ? 
+                          "Make sure your backend server is running on localhost:3000" : 
+                          "Check that the backend server is online and accessible"}</li>
+                        <li>Check that you have PDF files for the {categoryName} category on your backend</li>
+                        <li>Verify that the API endpoints match your backend implementation</li>
+                        <li>Check browser network tab to see the exact API calls and responses</li>
+                        {isDevelopment && <li>Try the production site to verify if it's a local environment issue</li>}
+                      </ul>
+                    </div>
                   </div>
                 </details>
-                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <h3 className="text-sm font-medium text-yellow-800">Troubleshooting Tips:</h3>
-                  <ul className="mt-2 text-xs text-yellow-700 list-disc pl-5 space-y-1">
-                    <li>Make sure your backend server is running on port 3000</li>
-                    <li>Check that you have PDF files in the proper location on your backend</li>
-                    <li>Verify the API endpoints in your plan match your actual backend implementation</li>
-                    <li>Check browser network tab to see the exact API calls and responses</li>
-                  </ul>
-                </div>
               </div>
             )}
           </div>
