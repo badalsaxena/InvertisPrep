@@ -48,6 +48,24 @@ interface FileData {
   path: string;
 }
 
+// Define interface for the debug attempt data
+interface DebugAttempt {
+  type: string;
+  url: string;
+  time: string;
+  status?: number;
+  statusText?: string;
+  responseText?: string;
+  success?: boolean;
+  error?: string;
+}
+
+// Define interface for debug info
+interface DebugInfo {
+  attempts: DebugAttempt[];
+  lastError: string | null;
+}
+
 export default function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
@@ -55,7 +73,7 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
 
   useEffect(() => {
     // Format category name for display
@@ -70,7 +88,7 @@ export default function CategoryPage() {
       try {
         // For BTech category, fetch real data from backend
         if (categoryId === "btech") {
-          let debugData = {
+          let debugData: DebugInfo = {
             attempts: [],
             lastError: null
           };
@@ -135,7 +153,7 @@ export default function CategoryPage() {
               debugData.attempts[1].success = false;
               debugData.attempts[1].error = (fallbackError as Error).message;
               debugData.lastError = (fallbackError as Error).message;
-              throw new Error('Failed to fetch BTech files from any source. Your local server might be using different API paths than expected. Check console for details.');
+              setError('Failed to fetch BTech files from any source. Your local server might be using different API paths than expected. Check console for details.');
             }
           }
           
