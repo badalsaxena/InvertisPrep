@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ChevronLeft, Download, Eye, FileText, AlertCircle } from "lucide-react";
 
 // Update backend URL to point to localhost
-const BACKEND_URL = 'http://localhost:3000'; // Local development server
+const BACKEND_URL = 'https://invertisprepbackend.vercel.app'; // Local development server
 
 // We'll keep mock data for non-btech categories during development
 const mockFiles = {
