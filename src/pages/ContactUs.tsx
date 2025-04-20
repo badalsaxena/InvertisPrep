@@ -83,8 +83,8 @@ export default function ContactUs() {
               title: "Call Us",
               description: "Mon-Fri from 8am to 5pm.",
               icon: <Phone className="h-6 w-6 text-purple-500" />,
-              contact: "+91 (123) 456-7890",
-              action: "tel:+911234567890",
+              contact: "+91 (708) 408-9921",
+              action: "tel:+917084089921",
               color: "bg-purple-50"
             }
           ].map((item, index) => (

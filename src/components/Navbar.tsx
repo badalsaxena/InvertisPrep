@@ -18,7 +18,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 export default function Navbar() {
@@ -48,6 +48,13 @@ export default function Navbar() {
     { name: "Quizzo", path: "/quizzo" },
     { name: "About", path: "/about" },
   ];
+
+  // Format user name for display
+  const formatDisplayName = () => {
+    if (!user) return "";
+    if (user.displayName) return user.displayName.split(" ")[0];
+    return user.email?.split("@")[0] || "";
+  };
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -95,22 +102,27 @@ export default function Navbar() {
             </Button>
           </div>
 
-          {/* Desktop Auth Menu */}
-          <div className="hidden sm:flex sm:items-center sm:space-x-4">
+          {/* Styled User Box (Desktop) */}
+          <div className="hidden sm:flex sm:items-center">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 border border-purple-100 shadow-sm hover:shadow-md transition-all"
+                  >
+                    <Avatar className="h-7 w-7">
                       <AvatarImage 
                         src={user.photoURL || undefined} 
                         alt={user.displayName || "User"}
                         referrerPolicy="no-referrer"
                       />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-purple-400 text-white text-xs">
                         {user.displayName ? getInitials(user.displayName) : "U"}
                       </AvatarFallback>
                     </Avatar>
+                    <span className="font-medium text-gray-700">{formatDisplayName()}</span>
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end">
@@ -173,7 +185,7 @@ export default function Navbar() {
                     alt={user.displayName || "User"}
                     referrerPolicy="no-referrer"
                   />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-purple-400 text-white">
                     {user.displayName ? getInitials(user.displayName) : "U"}
                   </AvatarFallback>
                 </Avatar>

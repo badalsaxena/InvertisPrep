@@ -1,9 +1,5 @@
-import { BookOpen, Trophy, Users, FileText, Brain, Laptop, ArrowRight } from "lucide-react";
+import { BookOpen, Trophy, Users, FileText, Brain, Laptop } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
 
 export function Features() {
   const features = [
@@ -12,42 +8,36 @@ export function Features() {
       title: "Previous Year Papers",
       description:
         "Access a comprehensive collection of previous year question papers from all semesters and departments.",
-      link: "/pyq"
     },
     {
       icon: FileText,
       title: "Study Notes",
       description:
         "Get access to detailed study notes created by top students and faculty members.",
-      link: "/resources"
     },
     {
       icon: Trophy,
       title: "Quizzo Battles",
       description:
         "Compete with peers in real-time 1v1 quiz battles with 10-second timer per question.",
-      link: "/quizzo"
     },
     {
       icon: Users,
       title: "Community Uploads",
       description:
         "Share your notes and resources with the community and get recognition for your contributions.",
-      link: "/resources"
     },
     {
       icon: Brain,
       title: "Personalized Learning",
       description:
         "Track your progress, identify weak areas, and get personalized recommendations.",
-      link: "/dashboard"
     },
     {
       icon: Laptop,
       title: "Anywhere, Anytime",
       description:
         "Access all resources on any device, anytime, anywhere. Study on your schedule.",
-      link: "/resources"
     },
   ];
 
@@ -60,18 +50,23 @@ export function Features() {
     "text-indigo-500",
   ];
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    })
-  };
+  const bgGradients = [
+    "bg-gradient-to-br from-purple-50 to-purple-100",
+    "bg-gradient-to-br from-pink-50 to-pink-100",
+    "bg-gradient-to-br from-amber-50 to-amber-100",
+    "bg-gradient-to-br from-emerald-50 to-emerald-100",
+    "bg-gradient-to-br from-blue-50 to-blue-100",
+    "bg-gradient-to-br from-indigo-50 to-indigo-100",
+  ];
+
+  const borderColors = [
+    "border-purple-200",
+    "border-pink-200",
+    "border-amber-200",
+    "border-emerald-200",
+    "border-blue-200",
+    "border-indigo-200",
+  ];
 
   return (
     <section
@@ -80,73 +75,44 @@ export function Features() {
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-8 md:mb-14">
-          <Badge variant="secondary" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold mb-4 hover:from-indigo-700 hover:to-purple-700">
+          <span className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs sm:text-sm font-bold px-4 py-1 sm:px-5 sm:py-1.5 rounded-full mb-3 shadow">
             KEY FEATURES
-          </Badge>
-          
+          </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 font-['Montserrat']">
             Everything You Need to Excel
           </h2>
-          
           <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-gray-700 font-['Poppins'] px-2">
             InvertisPrep combines academic resources with interactive learning to create
             the ultimate platform for Invertis University students.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {features.map((feature, index) => (
-            <motion.div
+            <div
               key={index}
-              custom={index}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={cardVariants}
+              className={`group p-3 md:p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border ${borderColors[index % borderColors.length]} ${bgGradients[index % bgGradients.length]} backdrop-blur-sm`}
             >
-              <Card className="h-full border shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div className={`rounded-lg p-2.5 ${iconColors[index % iconColors.length]} bg-white shadow-sm`}>
-                      <feature.icon className="h-5 w-5 md:h-6 md:w-6" />
-                    </div>
-                    <Badge variant="outline" className={`${iconColors[index % iconColors.length]} border-current bg-transparent`}>
-                      Featured
-                    </Badge>
-                  </div>
-                  <CardTitle className="mt-4 text-lg font-semibold font-['Montserrat']">
-                    {feature.title}
-                  </CardTitle>
-                </CardHeader>
-                
-                <CardContent>
-                  <CardDescription className="text-gray-600 font-['Poppins'] text-sm">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-                
-                <CardFooter className="pt-0">
-                  <Link to={feature.link} className="w-full">
-                    <Button 
-                      variant="ghost" 
-                      className={`w-full justify-start p-0 hover:bg-transparent ${iconColors[index % iconColors.length]} transition-all duration-300 opacity-70 hover:opacity-100 group-hover:translate-x-1`}
-                    >
-                      Learn more
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            </motion.div>
+              <div
+                className={`inline-flex items-center justify-center p-2 md:p-3 rounded-lg mb-2 md:mb-3 transition-transform transform group-hover:scale-105 bg-white/80 shadow`}
+              >
+                <feature.icon className={`h-5 w-5 md:h-6 md:w-6 ${iconColors[index % iconColors.length]}`} />
+              </div>
+              <h3 className={`text-base md:text-lg font-semibold mb-1 md:mb-2 font-['Montserrat'] ${iconColors[index % iconColors.length]}`}>
+                {feature.title}
+              </h3>
+              <p className="text-gray-700 font-['Poppins'] text-xs md:text-sm leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
           ))}
         </div>
 
         <div className="text-center mt-10 md:mt-14">
           <Link to="/quizzo">
-            <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg px-6 py-5 rounded-full transition-all duration-300 transform hover:-translate-y-1 font-['Poppins']">
+            <button className="px-6 py-2.5 md:px-8 md:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm md:text-base font-bold rounded-full hover:from-indigo-700 hover:to-purple-700 transition duration-300 shadow hover:shadow-indigo-400/30 transform hover:-translate-y-1 font-['Poppins']">
               Start Learning Now
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
+            </button>
           </Link>
         </div>
       </div>

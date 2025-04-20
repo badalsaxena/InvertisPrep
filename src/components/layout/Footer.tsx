@@ -167,15 +167,8 @@ export function Footer() {
 
         {/* Mobile Newsletter */}
         <div className="mt-6 space-y-6">
-          {/* Get Started Button */}
-          <div className="text-center">
-            <Link to="/login" className="inline-block w-full">
-              <Button variant="default" className="w-full bg-indigo-600 hover:bg-indigo-700">
-                Get Started
-              </Button>
-            </Link>
-          </div>
           
+        
           <h3 className="text-sm font-semibold text-gray-200">Subscribe to our newsletter</h3>
           <div className="flex space-x-2">
             <Input
