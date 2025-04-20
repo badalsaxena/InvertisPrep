@@ -177,12 +177,12 @@ export function Footer() {
 
         <Separator className="my-6 bg-gray-800" />
 
-        {/* Mobile Bottom Section */}
-        <div className="flex flex-row justify-between items-center">
-          <p className="text-sm text-gray-400">
+        {/* Mobile Bottom Section - Updated for better responsiveness */}
+        <div className="flex flex-col space-y-3">
+          <p className="text-sm text-gray-400 text-center">
             © {new Date().getFullYear()} InvertisPrep. All rights reserved.
           </p>
-          <p className="text-sm text-gray-400 flex items-center">
+          <p className="text-sm text-gray-400 flex items-center justify-center flex-wrap">
             Made with <span className="heart-icon mx-1">❤️</span> by{" "}
             <a 
               href="https://www.ahqafali.site" 
