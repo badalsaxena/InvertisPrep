@@ -4,19 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, Download, Eye, FileText } from "lucide-react";
 
+// Define types for file data
+interface FileData {
+  id: string;
+  name: string;
+  size: number;
+  uploadDate: string;
+  path: string;
+}
+
 export default function FilesPage() {
-  const { categoryId, subcategoryId } = useParams();
+  const { categoryId, subcategoryId } = useParams<{ categoryId: string; subcategoryId: string }>();
   const navigate = useNavigate();
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<FileData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
   const [subcategoryName, setSubcategoryName] = useState("");
 
   useEffect(() => {
     // Format names for display
-    setCategoryName(formatName(categoryId));
-    setSubcategoryName(formatName(subcategoryId));
+    if (categoryId) setCategoryName(formatName(categoryId));
+    if (subcategoryId) setSubcategoryName(formatName(subcategoryId));
     
     // Fetch files
     const fetchFiles = async () => {
@@ -27,7 +36,7 @@ export default function FilesPage() {
         const data = await response.json();
         setFiles(data.files);
       } catch (err) {
-        setError(err.message);
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }
@@ -36,12 +45,12 @@ export default function FilesPage() {
     fetchFiles();
   }, [categoryId, subcategoryId]);
 
-  const formatName = (id) => {
+  const formatName = (id: string): string => {
     if (!id) return "";
     return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
   };
 
-  const formatBytes = (bytes) => {
+  const formatBytes = (bytes: number): string => {
     if (!bytes || bytes === 0) return '0 Bytes';
     
     const k = 1024;
@@ -51,7 +60,7 @@ export default function FilesPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const formatDate = (date) => {
+  const formatDate = (date: string): string => {
     if (!date) return 'Unknown date';
     
     return new Date(date).toLocaleDateString('en-US', {
@@ -61,11 +70,11 @@ export default function FilesPage() {
     });
   };
 
-  const handleDownload = (fileId) => {
+  const handleDownload = (fileId: string): void => {
     window.open(`/api/resources/download/${fileId}`, '_blank');
   };
 
-  const handleViewPdf = (path) => {
+  const handleViewPdf = (path: string): void => {
     window.open(path, '_blank');
   };
 

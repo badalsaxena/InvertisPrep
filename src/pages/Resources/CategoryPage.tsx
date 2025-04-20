@@ -4,17 +4,26 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Folder, ChevronLeft, FileText } from "lucide-react";
 
+// Define types for subcategory data
+interface Subcategory {
+  id: string;
+  name: string;
+  fileCount: number;
+}
+
 export default function CategoryPage() {
-  const { categoryId } = useParams();
+  const { categoryId } = useParams<{ categoryId: string }>();
   const navigate = useNavigate();
-  const [subcategories, setSubcategories] = useState([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
 
   useEffect(() => {
     // Format category name for display
-    setCategoryName(formatName(categoryId));
+    if (categoryId) {
+      setCategoryName(formatName(categoryId));
+    }
     
     // Fetch subcategories
     const fetchSubcategories = async () => {
@@ -25,7 +34,7 @@ export default function CategoryPage() {
         const data = await response.json();
         setSubcategories(data.subcategories);
       } catch (err) {
-        setError(err.message);
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }
@@ -34,7 +43,7 @@ export default function CategoryPage() {
     fetchSubcategories();
   }, [categoryId]);
 
-  const formatName = (id) => {
+  const formatName = (id: string): string => {
     if (!id) return "";
     return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
   };
