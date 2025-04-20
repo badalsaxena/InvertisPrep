@@ -422,7 +422,7 @@ export default function PrivacyPolicy() {
             </p>
           </div>
         </div>
-            </div>
+      </div>
           </CardContent>
         </Card>
       </div>

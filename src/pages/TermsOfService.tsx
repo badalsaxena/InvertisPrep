@@ -491,7 +491,7 @@ export default function TermsOfService() {
             </p>
           </div>
         </div>
-            </div>
+      </div>
           </CardContent>
         </Card>
       </div>

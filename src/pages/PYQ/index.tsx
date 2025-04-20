@@ -65,12 +65,6 @@ export const programs: Program[] = [
     description: "3-year undergraduate program focusing on business management"
   },
   {
-    id: "bce",
-    name: "BCE",
-    fullName: "Bachelor of Civil Engineering",
-    description: "4-year undergraduate program focusing on civil engineering"
-  },
-  {
     id: "mba",
     name: "MBA",
     fullName: "Master of Business Administration",

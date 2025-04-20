@@ -260,7 +260,6 @@ function App() {
           {/* Resources Routes */}
           <Route path="/resources" element={<Resources />} />
           <Route path="/resources/:categoryId" element={<CategoryPage />} />
-          <Route path="/resources/:categoryId/:subcategoryId" element={<FilesPage />} />
           
           {/* PYQ Routes */}
           <Route path="/pyq" element={<PYQ />} />
