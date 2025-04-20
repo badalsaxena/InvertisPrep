@@ -495,7 +495,7 @@ export default function TermsOfService() {
           </CardContent>
         </Card>
       </div>
-      <Footer />
+      
     </>
   );
 } 

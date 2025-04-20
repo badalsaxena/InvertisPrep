@@ -299,7 +299,7 @@ Platform: ${navigator.platform}
           </Card>
         )}
       </div>
-      <Footer />
+      
     </>
   );
 } 

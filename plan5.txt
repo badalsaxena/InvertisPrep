@@ -1,0 +1,774 @@
+# PLAN5.TXT - RESOURCES PAGE IMPLEMENTATION PLAN
+
+## 1. OVERVIEW
+This plan details the extension of the InvertisPrep backend and frontend to support a comprehensive Resources page that will include study notes, programming resources, cheatsheets, and other educational materials beyond the existing PYQ system.
+
+## 2. BACKEND EXTENSIONS
+
+### 2.1 Extended File Structure
+Extend the existing file-based storage to include new resource types:
+```
+public/resources/
+  ├── pyq/                 # Existing structure
+  │   ├── [department]/
+  │   │   └── [branch]/
+  │   │       └── [session]/
+  │   │           └── semester-[number]/
+  │   │               └── [filename].pdf
+  │
+  └── notes/               # New structure for notes and other resources
+      ├── btech/           # Category: BTech resources
+      │   ├── algorithms/  # Subcategory
+      │   ├── programming/
+      │   └── mathematics/
+      │
+      ├── programming/     # Category: Programming resources
+      │   ├── python/
+      │   ├── java/
+      │   └── javascript/
+      │
+      └── cheatsheets/     # Category: Quick reference materials
+          ├── git/
+          ├── sql/
+          └── data-structures/
+```
+
+### 2.2 New API Endpoints
+
+#### 2.2.1 Resource Categories Endpoints
+```
+GET /api/resources/categories
+```
+Returns all main resource categories (btech, programming, cheatsheets).
+
+#### 2.2.2 Subcategories Endpoint
+```
+GET /api/resources/categories/:categoryId/subcategories
+```
+Returns all subcategories within a specified category.
+
+#### 2.2.3 Files Endpoint
+```
+GET /api/resources/files?category=programming&subcategory=python
+```
+Returns all files in the specified category and subcategory.
+
+#### 2.2.4 File Download Endpoint
+```
+GET /api/resources/download/:fileId
+```
+Where fileId is encoded as `notes/[category]/[subcategory]/[filename]`.
+
+### 2.3 Implementation Details
+
+#### 2.3.1 API Route Handlers (NextJS API Routes)
+Create new API routes in the `pages/api/resources` directory:
+
+**pages/api/resources/categories.js**
+```javascript
+import fs from 'fs-extra';
+import path from 'path';
+
+const RESOURCE_BASE_PATH = path.join(process.cwd(), 'public/resources/notes');
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    const items = await fs.readdir(RESOURCE_BASE_PATH, { withFileTypes: true });
+    const categories = items
+      .filter(item => item.isDirectory())
+      .map(item => ({
+        id: item.name,
+        name: formatName(item.name),
+        path: `/resources/notes/${item.name}`
+      }));
+    
+    res.status(200).json({ categories });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ message: 'Failed to fetch categories', error: error.message });
+  }
+}
+
+function formatName(name) {
+  return name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+}
+```
+
+**pages/api/resources/categories/[categoryId]/subcategories.js**
+```javascript
+import fs from 'fs-extra';
+import path from 'path';
+
+const RESOURCE_BASE_PATH = path.join(process.cwd(), 'public/resources/notes');
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  const { categoryId } = req.query;
+
+  try {
+    const categoryPath = path.join(RESOURCE_BASE_PATH, categoryId);
+    
+    // Check if category exists
+    if (!(await fs.pathExists(categoryPath))) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+    
+    const items = await fs.readdir(categoryPath, { withFileTypes: true });
+    const subcategories = await Promise.all(items
+      .filter(item => item.isDirectory())
+      .map(async (item) => {
+        const subcategoryPath = path.join(categoryPath, item.name);
+        const files = await fs.readdir(subcategoryPath);
+        const pdfCount = files.filter(file => file.endsWith('.pdf')).length;
+        
+        return {
+          id: item.name,
+          name: formatName(item.name),
+          path: `/resources/notes/${categoryId}/${item.name}`,
+          fileCount: pdfCount
+        };
+      }));
+    
+    res.status(200).json({ subcategories });
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    res.status(500).json({ message: 'Failed to fetch subcategories', error: error.message });
+  }
+}
+
+function formatName(name) {
+  return name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+}
+```
+
+**pages/api/resources/files.js**
+```javascript
+import fs from 'fs-extra';
+import path from 'path';
+
+const RESOURCE_BASE_PATH = path.join(process.cwd(), 'public/resources/notes');
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  const { category, subcategory } = req.query;
+  
+  if (!category || !subcategory) {
+    return res.status(400).json({ message: 'Category and subcategory are required' });
+  }
+
+  try {
+    const directoryPath = path.join(RESOURCE_BASE_PATH, category, subcategory);
+    
+    // Check if path exists
+    if (!(await fs.pathExists(directoryPath))) {
+      return res.status(404).json({ message: 'Path not found' });
+    }
+    
+    const fileItems = await fs.readdir(directoryPath, { withFileTypes: true });
+    
+    const files = await Promise.all(fileItems
+      .filter(item => item.isFile() && path.extname(item.name).toLowerCase() === '.pdf')
+      .map(async (item) => {
+        const filePath = path.join(directoryPath, item.name);
+        const stats = await fs.stat(filePath);
+        
+        return {
+          id: `notes/${category}/${subcategory}/${item.name}`,
+          name: item.name.replace('.pdf', ''),
+          filename: item.name,
+          size: stats.size,
+          uploadDate: stats.mtime,
+          path: `/resources/notes/${category}/${subcategory}/${item.name}`
+        };
+      }));
+    
+    res.status(200).json({ files });
+  } catch (error) {
+    console.error('Error fetching files:', error);
+    res.status(500).json({ message: 'Failed to fetch files', error: error.message });
+  }
+}
+```
+
+**pages/api/resources/download/[...fileId].js**
+```javascript
+import fs from 'fs';
+import path from 'path';
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    // fileId will be an array like ['notes', 'category', 'subcategory', 'filename.pdf']
+    const fileIdArray = req.query.fileId;
+    
+    if (!fileIdArray || fileIdArray.length < 4) {
+      return res.status(400).json({ message: 'Invalid file ID format' });
+    }
+    
+    const [resourceType, category, subcategory, ...filenameParts] = fileIdArray;
+    const filename = filenameParts.join('/'); // Handle filenames with slashes
+    
+    const filePath = path.join(
+      process.cwd(),
+      'public/resources',
+      resourceType,
+      category,
+      subcategory,
+      filename
+    );
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'File not found' });
+    }
+    
+    // Get file stats
+    const stat = fs.statSync(filePath);
+    
+    // Set appropriate headers
+    res.setHeader('Content-Length', stat.size);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${encodeURIComponent(filename)}`);
+    
+    // Stream the file
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    res.status(500).json({ message: 'Failed to download file', error: error.message });
+  }
+}
+```
+
+## 3. FRONTEND IMPLEMENTATION
+
+### 3.1 Page Components
+
+#### 3.1.1 Main Resources Page (src/pages/Resources.tsx)
+```jsx
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Folder, FileText, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+
+export default function Resources() {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    // Fetch categories from API
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/resources/categories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        const data = await response.json();
+        setCategories(data.categories);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const filteredCategories = categories.filter(category => 
+    category.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            Academic Resources
+          </h1>
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            Access notes, study materials, and other academic resources all in one place.
+          </p>
+          
+          <div className="mt-8 max-w-md mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search categories..."
+                className="pl-10 pr-4 py-2 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-indigo-600 rounded-full"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-600">
+            <p>Error: {error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Try Again
+            </Button>
+          </div>
+        ) : filteredCategories.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCategories.map((category) => (
+              <Link key={category.id} to={`/resources/${category.id}`} className="no-underline">
+                <Card className="h-full transition-all hover:shadow-md hover:scale-105">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 bg-indigo-100 rounded-full">
+                        <Folder className="h-6 w-6 text-indigo-600" />
+                      </div>
+                    </div>
+                    <CardTitle className="mt-4">{category.name}</CardTitle>
+                    <CardDescription>
+                      Browse {category.name.toLowerCase()} resources
+                    </CardDescription>
+                  </CardHeader>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full">
+                      Explore Resources
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-600">
+            <FileText className="h-16 w-16 mx-auto text-gray-400" />
+            <p className="mt-4 text-lg">No categories match your search</p>
+            {searchQuery && (
+              <Button 
+                variant="outline" 
+                onClick={() => setSearchQuery("")}
+                className="mt-4"
+              >
+                Clear Search
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+#### 3.1.2 Category Page (src/pages/Resources/[categoryId].tsx)
+```jsx
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Folder, ChevronLeft, FileText } from "lucide-react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@/components/ui/breadcrumb";
+
+export default function CategoryPage() {
+  const { categoryId } = useParams();
+  const navigate = useNavigate();
+  const [subcategories, setSubcategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [categoryName, setCategoryName] = useState("");
+
+  useEffect(() => {
+    // Format category name for display
+    setCategoryName(formatName(categoryId));
+    
+    // Fetch subcategories
+    const fetchSubcategories = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/resources/categories/${categoryId}/subcategories`);
+        if (!response.ok) throw new Error('Failed to fetch subcategories');
+        const data = await response.json();
+        setSubcategories(data.subcategories);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubcategories();
+  }, [categoryId]);
+
+  const formatName = (id) => {
+    if (!id) return "";
+    return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Breadcrumb className="mb-8">
+          <BreadcrumbItem>
+            <BreadcrumbLink as={Link} to="/resources">Resources</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink>{categoryName}</BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
+        
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">{categoryName} Resources</h1>
+          <Button variant="outline" onClick={() => navigate('/resources')}>
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Back to All Resources
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-indigo-600 rounded-full"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-600">
+            <p>Error: {error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Try Again
+            </Button>
+          </div>
+        ) : subcategories.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {subcategories.map((subcategory) => (
+              <Link key={subcategory.id} to={`/resources/${categoryId}/${subcategory.id}`} className="no-underline">
+                <Card className="h-full transition-all hover:shadow-md hover:scale-105">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="p-2 bg-indigo-100 rounded-full">
+                        <Folder className="h-6 w-6 text-indigo-600" />
+                      </div>
+                    </div>
+                    <CardTitle className="mt-4">{subcategory.name}</CardTitle>
+                    <CardDescription>
+                      {subcategory.fileCount} {subcategory.fileCount === 1 ? 'file' : 'files'} available
+                    </CardDescription>
+                  </CardHeader>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full">
+                      Browse Files
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-600">
+            <FileText className="h-16 w-16 mx-auto text-gray-400" />
+            <p className="mt-4 text-lg">No subcategories found for {categoryName}</p>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/resources')}
+              className="mt-4"
+            >
+              Back to Resources
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+#### 3.1.3 Files Page (src/pages/Resources/[categoryId]/[subcategoryId].tsx)
+```jsx
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@/components/ui/breadcrumb";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChevronLeft, Download, Eye, FileText } from "lucide-react";
+import { formatBytes, formatDate } from "@/lib/utils";
+
+export default function FilesPage() {
+  const { categoryId, subcategoryId } = useParams();
+  const navigate = useNavigate();
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [categoryName, setCategoryName] = useState("");
+  const [subcategoryName, setSubcategoryName] = useState("");
+
+  useEffect(() => {
+    // Format names for display
+    setCategoryName(formatName(categoryId));
+    setSubcategoryName(formatName(subcategoryId));
+    
+    // Fetch files
+    const fetchFiles = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/resources/files?category=${categoryId}&subcategory=${subcategoryId}`);
+        if (!response.ok) throw new Error('Failed to fetch files');
+        const data = await response.json();
+        setFiles(data.files);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFiles();
+  }, [categoryId, subcategoryId]);
+
+  const formatName = (id) => {
+    if (!id) return "";
+    return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+  };
+
+  const handleDownload = (fileId) => {
+    window.open(`/api/resources/download/${fileId}`, '_blank');
+  };
+
+  const handleViewPdf = (path) => {
+    window.open(path, '_blank');
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Breadcrumb className="mb-8">
+          <BreadcrumbItem>
+            <BreadcrumbLink as={Link} to="/resources">Resources</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink as={Link} to={`/resources/${categoryId}`}>{categoryName}</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <BreadcrumbLink>{subcategoryName}</BreadcrumbLink>
+          </BreadcrumbItem>
+        </Breadcrumb>
+        
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">{subcategoryName}</h1>
+          <Button variant="outline" onClick={() => navigate(`/resources/${categoryId}`)}>
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Back to {categoryName}
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-indigo-600 rounded-full"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-600">
+            <p>Error: {error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4">
+              Try Again
+            </Button>
+          </div>
+        ) : files.length > 0 ? (
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Upload Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {files.map((file) => (
+                  <TableRow key={file.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center">
+                        <FileText className="h-4 w-4 mr-2 text-indigo-600" />
+                        {file.name}
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatBytes(file.size)}</TableCell>
+                    <TableCell>{formatDate(file.uploadDate)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => handleViewPdf(file.path)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleDownload(file.id)}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Download
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-600">
+            <FileText className="h-16 w-16 mx-auto text-gray-400" />
+            <p className="mt-4 text-lg">No files found in this subcategory</p>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate(`/resources/${categoryId}`)}
+              className="mt-4"
+            >
+              Back to {categoryName}
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+### 3.2 Utility Functions (src/lib/utils.ts)
+
+```typescript
+// Format byte sizes for display
+export function formatBytes(bytes: number, decimals = 2): string {
+  if (!bytes || bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+// Format dates for display
+export function formatDate(date: string | Date): string {
+  if (!date) return 'Unknown date';
+  
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+// Format category/subcategory names for display
+export function formatName(name: string): string {
+  if (!name) return "";
+  return name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, ' ');
+}
+```
+
+### 3.3 Route Configuration (App.tsx)
+Add these routes to your React Router configuration:
+
+```jsx
+<Routes>
+  {/* Existing routes */}
+  <Route path="/resources" element={<Resources />} />
+  <Route path="/resources/:categoryId" element={<CategoryPage />} />
+  <Route path="/resources/:categoryId/:subcategoryId" element={<FilesPage />} />
+</Routes>
+```
+
+## 4. IMPLEMENTATION STEPS
+
+### 4.1 Backend Implementation Steps
+1. Create the directory structure for resources on the server:
+   ```
+   public/resources/notes/btech/...
+   public/resources/notes/programming/...
+   public/resources/notes/cheatsheets/...
+   ```
+
+2. Upload initial PDFs to these directories to populate the system
+
+3. Implement the NextJS API routes:
+   - `/api/resources/categories.js`
+   - `/api/resources/categories/[categoryId]/subcategories.js`
+   - `/api/resources/files.js`
+   - `/api/resources/download/[...fileId].js`
+
+4. Test the API endpoints using tools like Postman or Thunder Client
+
+### 4.2 Frontend Implementation Steps
+1. Create the necessary React components:
+   - Main Resources page
+   - Category page
+   - Files page
+
+2. Add utility functions for formatting data
+
+3. Update React Router configuration
+
+4. Test the complete flow from the main resources page to file download
+
+## 5. TESTING CHECKLIST
+
+### 5.1 Backend Tests
+- [ ] API endpoint for categories returns correct data
+- [ ] API endpoint for subcategories returns correct data
+- [ ] API endpoint for files returns correct data with metadata
+- [ ] File download endpoint correctly streams PDF files
+- [ ] Error handling works for invalid requests
+
+### 5.2 Frontend Tests
+- [ ] Resources page loads and displays categories
+- [ ] Navigation to subcategories works
+- [ ] File listing displays correctly
+- [ ] PDF viewing and downloading works
+- [ ] Breadcrumb navigation functions correctly
+- [ ] UI is responsive across device sizes
+
+## 6. DEPLOYMENT PROCESS
+
+1. Prepare the directory structure on the production server
+2. Upload sample PDF resources to the directories
+3. Deploy the updated NextJS API routes
+4. Deploy the updated frontend components
+5. Verify all functionality in the production environment
+
+## 7. FUTURE ENHANCEMENTS
+
+1. **User Uploads**: Allow authenticated users to contribute resources
+2. **Resource Rating**: Add rating system for quality assessment
+3. **Search Functionality**: Implement full-text search across resources
+4. **Resource Collections**: Allow users to create personal collections
+5. **Preview Generation**: Create thumbnails for PDF resources
+6. **Analytics**: Track popular resources and user engagement
+
+## 8. RESOURCES REQUIRED
+
+1. Sample PDF files for each category/subcategory
+2. Server storage capacity for PDF files
+3. React frontend components (Cards, Tables, Breadcrumbs, etc.)
+4. React PDF viewer library
+
+## 9. CONCLUSION
+
+This plan builds upon your existing backend architecture for PYQs and extends it to support a comprehensive resources section with notes, programming materials, and cheatsheets. The implementation follows the same file-based approach, maintaining consistency with your current system while adding new functionality. 

@@ -45,19 +45,12 @@ export function Footer() {
     ],
     "Support": [
       { name: "Bug Report", path: "/bug-report" },
-      { name: "Privacy Policy", path: "/privacy" },
-      { name: "Terms of Service", path: "/terms" },
-      { name: "Contact Us", path: "/contact" },
+      { name: "Privacy Policy", path: "/privacy-policy" },
+      { name: "Terms of Service", path: "/terms-of-service" },
+      { name: "Contact Us", path: "/contact-us" },
       { name: "FAQ", path: "/faq" },
     ],
   };
-
-  const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "Youtube" },
-  ];
 
   return (
     <footer className="bg-gray-900 text-gray-200">
@@ -185,23 +178,21 @@ export function Footer() {
         <Separator className="my-6 bg-gray-800" />
 
         {/* Mobile Bottom Section */}
-        <div className="space-y-4">
-          <div className="text-center">
-            <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} InvertisPrep. All rights reserved.
-            </p>
-            <p className="mt-1 text-sm text-gray-400 flex items-center justify-center">
-              Made with <span className="heart-icon mx-1">❤️</span> by{" "}
-              <a 
-                href="https://www.ahqafali.site" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 transition-colors ml-1"
-              >
-                AhqafCoder 
-              </a> & Team
-            </p>
-          </div>
+        <div className="flex flex-row justify-between items-center">
+          <p className="text-sm text-gray-400">
+            © {new Date().getFullYear()} InvertisPrep. All rights reserved.
+          </p>
+          <p className="text-sm text-gray-400 flex items-center">
+            Made with <span className="heart-icon mx-1">❤️</span> by{" "}
+            <a 
+              href="https://www.ahqafali.site" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-purple-400 hover:text-purple-300 transition-colors ml-1"
+            >
+              AhqafCoder 
+            </a> & Team
+          </p>
         </div>
       </div>
     </footer>

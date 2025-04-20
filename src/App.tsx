@@ -12,6 +12,8 @@ import { Footer } from "@/components/layout/Footer";
 import About from "@/pages/About";
 import Services from "@/pages/Services";
 import Resources from "@/pages/Resources";
+import CategoryPage from "@/pages/Resources/CategoryPage";
+import FilesPage from "@/pages/Resources/FilesPage";
 import Quizzo from "@/pages/Quizzo";
 import MultiplayerQuizzo from "@/pages/MultiplayerQuizzo";
 import SoloQuizzo from "@/pages/SoloQuizzo";
@@ -22,6 +24,8 @@ import TransactionHistory from "@/pages/QCoins/History";
 import BugReport from "@/pages/BugReport";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import FAQ from "@/pages/FAQ";
+import ContactUs from "@/pages/ContactUs";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -252,23 +256,27 @@ function App() {
           />
           <Route path="/about" element={<About /> } />
           <Route path="/services" element={<Services />} />
+          
+          {/* Resources Routes */}
           <Route path="/resources" element={<Resources />} />
+          <Route path="/resources/:categoryId" element={<CategoryPage />} />
+          <Route path="/resources/:categoryId/:subcategoryId" element={<FilesPage />} />
+          
+          {/* PYQ Routes */}
           <Route path="/pyq" element={<PYQ />} />
           <Route path="/pyq/:programId" element={<ProgramDetails />} />
+          
+          {/* Quizzo Routes */}
           <Route path="/quizzo" element={<Quizzo />} />
-          <Route 
-            path="/quizzo/multiplayer" 
-            element={<MultiplayerQuizzo />} 
-          />
-          <Route 
-            path="/quizzo/solo" 
-            element={<SoloQuizzo />} 
-          />
+          <Route path="/quizzo/multiplayer" element={<MultiplayerQuizzo />} />
+          <Route path="/quizzo/solo" element={<SoloQuizzo />} />
           
           {/* Legal and Support Routes */}
           <Route path="/bug-report" element={<BugReport />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/contact-us" element={<ContactUs />} />
           
           {/* API endpoint for quiz rewards */}
           <Route path="/api/quiz-rewards" element={<QuizRewardsApi />} />

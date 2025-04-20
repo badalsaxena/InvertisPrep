@@ -426,7 +426,7 @@ export default function PrivacyPolicy() {
           </CardContent>
         </Card>
       </div>
-      <Footer />
+      
     </>
   );
 } 

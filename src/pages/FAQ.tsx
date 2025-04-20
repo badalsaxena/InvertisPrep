@@ -486,7 +486,7 @@ export default function FAQ() {
           </Card>
         </div>
       </div>
-      <Footer />
+      
     </>
   );
 } 

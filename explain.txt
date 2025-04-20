@@ -1,0 +1,338 @@
+# InvertisPrep Complete System Architecture & Implementation Guide
+
+## System Overview
+
+InvertisPrep is a platform designed to provide educational resources, particularly previous year question papers (PYQs), organized hierarchically by department, branch, semester, and academic session. The system has been developed in phases, with the initial implementation focusing on resource management and subsequent phases adding user profiles, authentication, and virtual economy features.
+
+## Data Storage Architecture
+
+### Resource Data Storage (File-Based)
+
+Resource data (PDFs of previous year questions) is stored in the **file system** using a hierarchical folder structure:
+
+```
+public/resources/pyq/[department]/[branch]/[session]/semester-[number]/[filename].pdf
+```
+
+For example:
+```
+public/resources/pyq/btech/cse/2023-24/semester-1/MATHEMATICS_I.pdf
+```
+
+This file-based approach provides:
+- Direct file serving without database overhead
+- Simplified organization that matches the logical hierarchy
+- Easy management of large binary files (PDFs)
+- Natural organization by academic parameters
+
+### User Data Storage (Planned: Firestore)
+
+While the current implementation primarily uses file-based storage, the plan for user profiles and economy features involves using **Firebase Firestore**, a NoSQL cloud database. This would store:
+
+- User profiles and authentication information
+- Virtual currency (QCoins) balances
+- Transaction history
+- Achievements and game statistics
+
+## Backend Architecture
+
+### Core Components
+
+1. **Express.js Server**
+   - Handles all HTTP requests
+   - Manages API endpoints
+   - Serves static files (PDFs)
+   - Implements CORS for cross-origin requests
+
+2. **Middleware Layer**
+   - CORS configuration for security
+   - Body parsing for request handling
+   - Rate limiting to prevent abuse
+
+3. **Resource Management System**
+   - File system utilities for directory operations
+   - PDF file handling and organization
+   - Metadata extraction and formatting
+
+4. **Deployment Configuration**
+   - Vercel-specific setup for serverless deployment
+   - Static file serving configuration
+   - Environment variable management
+
+### API Endpoints
+
+The system exposes a RESTful API with the following key endpoints:
+
+#### Resource Endpoints
+
+1. **Get Departments**
+   ```
+   GET /api/resources/departments
+   ```
+   Returns a list of available departments.
+
+2. **Get Branches by Department**
+   ```
+   GET /api/resources/departments/:departmentId/branches
+   ```
+   Returns branches available for a specific department.
+
+3. **Get Semesters by Department and Branch**
+   ```
+   GET /api/resources/departments/:departmentId/branches/:branchId/semesters
+   ```
+   Returns semesters available for a specific department and branch.
+
+4. **Get Sessions by Department and Branch**
+   ```
+   GET /api/resources/departments/:departmentId/branches/:branchId/sessions
+   ```
+   Returns academic sessions available for a specific department and branch.
+
+5. **Get Files with Filters**
+   ```
+   GET /api/resources/files?department=btech&branch=cse&semester=1&session=2023-24
+   ```
+   Returns PDF files matching the specified filters.
+
+6. **Upload File**
+   ```
+   POST /api/resources/upload
+   Content-Type: multipart/form-data
+   ```
+   Uploads a new PDF file with appropriate metadata.
+
+#### User Profile Endpoints (Planned)
+
+1. **Create/Update User Profile**
+   ```
+   POST /api/users/profile
+   ```
+   Creates or updates a user profile after authentication.
+
+2. **Get User Profile**
+   ```
+   GET /api/users/:uid/profile
+   ```
+   Retrieves a user's profile information.
+
+3. **Update User Profile**
+   ```
+   PUT /api/users/:uid/profile
+   ```
+   Updates specific fields in a user's profile.
+
+4. **Get Wallet Info**
+   ```
+   GET /api/users/:uid/wallet
+   ```
+   Retrieves wallet information including QCoin balance.
+
+5. **Get Achievements**
+   ```
+   GET /api/users/:uid/achievements
+   ```
+   Retrieves a user's achievements.
+
+## Authentication & Security
+
+### Current Implementation
+
+The current system implements basic security measures:
+- CORS configuration to allow specific origins
+- Rate limiting for API endpoints
+- File type validation for uploads
+- Error handling with appropriate HTTP status codes
+
+### Planned Authentication System
+
+The planned Firebase Authentication integration would provide:
+- JWT token-based authentication
+- User ownership verification for protected resources
+- Role-based access control for administrative functions
+- Cross-server authentication with HMAC request signing
+
+## Implementation Details
+
+### File System Operations
+
+The system uses `fs-extra` for enhanced file system operations:
+```javascript
+const getDirectories = async (directoryPath) => {
+  try {
+    const items = await fs.readdir(directoryPath, { withFileTypes: true });
+    return items
+      .filter(item => item.isDirectory())
+      .map(item => item.name);
+  } catch (error) {
+    console.error(`Error reading directories:`, error);
+    return [];
+  }
+};
+```
+
+### API Response Formatting
+
+All API responses follow a consistent format:
+```javascript
+res.json({ 
+  departments: formattedDepartments 
+});
+```
+
+For error handling:
+```javascript
+res.status(500).json({ 
+  message: 'Failed to fetch departments', 
+  error: error.message 
+});
+```
+
+### File Upload Process
+
+1. **Multer** handles file uploads with storage configuration
+2. Directory path is generated based on metadata
+3. File is saved to the appropriate location
+4. Response includes file metadata and access path
+
+```javascript
+// Create directory if needed
+const targetDir = path.join(RESOURCE_BASE_PATH, department, branch, session, semesterDir);
+await ensureDirectory(targetDir);
+
+// Generate file access path
+const filePath = `/resources/pyq/${department}/${branch}/${session}/${semesterDir}/${filename}`;
+```
+
+## Deployment & Environment Setup
+
+### Vercel Deployment
+
+The system is configured for Vercel serverless deployment using `vercel.json`:
+```json
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/resources/(.*)",
+      "dest": "/public/resources/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.js"
+    }
+  ]
+}
+```
+
+### Environment Variables
+
+Key environment variables include:
+- `PORT`: Server port (default: 5000)
+- `NODE_ENV`: Environment (development/production)
+- `GOOGLE_APPLICATION_CREDENTIALS`: Path to Firebase service account (for planned auth)
+- `SERVER_SECRET_KEY`: Secret for server-to-server communication (for planned auth)
+
+## Future Expansion: User Profiles & Economy
+
+### Phase 1: Authentication Integration (Planned)
+
+1. **Firebase Authentication** integration for secure user management
+2. Token-based authentication between frontend and backend
+3. User profile database implementation in Firestore
+4. Cross-server authentication for secure service communication
+
+### Phase 2: Economy System (Planned)
+
+1. Virtual currency (QCoins) implementation with transaction validation
+2. Reward mechanics for participation and victories
+3. Wallet management for balance tracking and history
+4. Anti-fraud measures and earning caps
+
+### Phase 3: Payment Integration (Planned)
+
+1. Integration with payment gateways for real-money transactions
+2. Secure payment processing with compliance standards
+3. Transaction history and receipts
+4. Security measures for fraud prevention
+
+### Phase 4: Leaderboards & Social Features (Planned)
+
+1. Leaderboard implementation with real-time updates
+2. Category-specific competitions
+3. Social sharing capabilities
+4. Achievement notifications
+
+## Database Structure Design (Planned)
+
+The planned Firestore database would follow this structure:
+```
+users/
+  ├── {uid}/
+  │     ├── profile
+  │     │     ├── displayName
+  │     │     ├── email
+  │     │     ├── photoURL
+  │     │     ├── createdAt
+  │     │     └── lastLogin
+  │     │
+  │     ├── wallet
+  │     │     ├── balance
+  │     │     ├── pendingTransactions
+  │     │     ├── dailyEarnings
+  │     │     └── transactions/
+  │     │
+  │     └── achievements/
+  │           └── {achievementId}/
+  │                 ├── name
+  │                 ├── description
+  │                 └── unlockedAt
+```
+
+## Integration with Frontend
+
+The frontend interacts with this backend through:
+1. API calls to fetch resource metadata
+2. Direct file URLs for accessing PDFs
+3. Hierarchical user interface that mirrors the data structure
+4. Authentication flow using Firebase Auth (planned)
+
+## Development & Extension Guide
+
+### Adding New Resource Types
+
+To add a new resource type (beyond PYQs):
+1. Create a new folder structure in `public/resources/[resource-type]/`
+2. Add corresponding controller functions
+3. Create new API endpoints in routes
+4. Update frontend to support the new resource type
+
+### Adding Authentication
+
+To implement the planned authentication:
+1. Create a Firebase project and enable Authentication
+2. Generate a service account key
+3. Save it as `firebase-service-account.json` (or set as environment variable)
+4. Implement the middleware/auth.js module
+5. Add user routes and controllers
+
+### Setting Up Virtual Economy
+
+To implement the QCoin system:
+1. Set up Firestore database with the wallet schema
+2. Implement transaction validation and idempotency
+3. Add wallet endpoints and controllers
+4. Implement transaction history and balance tracking
+5. Add earning mechanisms tied to user activities
+
+## Summary
+
+The InvertisPrep backend currently provides a robust system for managing and serving educational resources using a hierarchical file system approach. The planned expansions will add user management, virtual economy, and social features using Firebase services for authentication and database storage.
+
+Currently, data is managed through the file system for resources (PDFs), with planned user data to be stored in Firebase Firestore when authentication and economy features are implemented. 
