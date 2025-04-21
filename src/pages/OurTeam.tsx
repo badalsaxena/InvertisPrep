@@ -1,7 +1,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,7 +16,7 @@ interface TeamMember {
   social: {
     github?: string;
     linkedin?: string;
-    twitter?: string;
+    portfolio?: string;
   };
 }
 
@@ -31,8 +31,8 @@ const teamMembers: TeamMember[] = [
     category: 'leadership',
     social: {
       linkedin: "https://www.linkedin.com/in/ahqaf-ali/",
-      twitter: "https://twitter.com/abhishek",
-      github: "https://github.com/ahqafcoder"
+      github: "https://github.com/ahqafcoder",
+      portfolio: "https://ahqafali.site"
     }
   },
   {
@@ -43,8 +43,8 @@ const teamMembers: TeamMember[] = [
     image: "badal.jpg",
     category: 'leadership',
     social: {
-      linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/",
-      twitter: "https://twitter.com/priyanka"
+      github: "https://github.com/badalsaxena",
+      linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/"
     }
   },
   
@@ -57,7 +57,7 @@ const teamMembers: TeamMember[] = [
     image: "pratyaksh.jpg",
     category: 'development',
     social: {
-      linkedin: "https://linkedin.com/in/rahul-kumar",
+      linkedin: "https://www.linkedin.com/in/pratyaksh-parashari-696454343/",
       github: "https://github.com/rahul"
     }
   },
@@ -70,8 +70,7 @@ const teamMembers: TeamMember[] = [
     category: 'development',
     social: {
       linkedin: "https://linkedin.com/in/neha-singh",
-      github: "https://github.com/neha",
-      twitter: "https://twitter.com/neha"
+      github: "https://github.com/neha"
     }
   },
   {
@@ -82,8 +81,9 @@ const teamMembers: TeamMember[] = [
     image: "vivek.jpg",
     category: 'development',
     social: {
-      linkedin: "https://linkedin.com/in/vikas-gupta",
-      github: "https://github.com/vikas"
+      linkedin: "https://www.linkedin.com/in/vivek-vishwakarma-953697321/",
+      portfolio: "https://vivek-my-portfolio.netlify.app/",
+      github: "https://github.com/v45cfghh"
     }
   },
   
@@ -96,8 +96,7 @@ const teamMembers: TeamMember[] = [
     image: "shashank.jpg",
     category: 'design',
     social: {
-      linkedin: "https://linkedin.com/in/ananya-reddy",
-      twitter: "https://twitter.com/ananya"
+      linkedin: "https://linkedin.com/in/ananya-reddy"
     }
   },
   
@@ -240,15 +239,15 @@ const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
             </a>
           )}
           
-          {member.social.twitter && (
+          {member.social.portfolio && (
             <a 
-              href={member.social.twitter} 
+              href={member.social.portfolio} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-gray-500 hover:text-primary transition-colors"
-              aria-label={`${member.name}'s Twitter`}
+              aria-label={`${member.name}'s Portfolio`}
             >
-              <Twitter className="h-5 w-5" />
+              <Globe className="h-5 w-5" />
             </a>
           )}
         </div>
