@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getQuizHistory, QuizHistoryItem, updateQuizProgress } from '@/services/academicProgressService';
 import { Loader2, Trophy, BookOpen, Trophy as TrophyIcon, XCircle, Clock, RefreshCw } from 'lucide-react';
@@ -15,16 +15,28 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
+    if (!userId) {
+      console.log('No user ID provided for quiz history');
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
+    setError(null);
+    
     try {
       console.log('Fetching quiz history for userId:', userId);
-      const historyData = await getQuizHistory(userId, expanded ? 10 : 5);
-      console.log('Quiz history data retrieved:', historyData.length, 'records');
+      const limit = expanded ? 10 : 5;
+      const historyData = await getQuizHistory(userId, limit);
+      console.log('Quiz history data retrieved:', historyData.length, 'records', historyData);
       setHistory(historyData);
     } catch (error) {
+      const errorMessage = (error as Error).message || 'Unknown error';
       console.error('Error fetching quiz history:', error);
+      setError(errorMessage);
       toast({
         title: 'Error',
         description: 'Failed to load quiz history. Please try again later.',
@@ -33,13 +45,11 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, expanded]);
   
   useEffect(() => {
-    if (userId) {
-      fetchHistory();
-    }
-  }, [userId, expanded]);
+    fetchHistory();
+  }, [fetchHistory]);
   
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -57,6 +67,7 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
       const now = new Date();
       
       // Add first test quiz result
+      console.log('Adding sample quiz result 1...');
       await updateQuizProgress(userId, {
         subject: subjects[0],
         score: 85,
@@ -66,7 +77,11 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
         timeSpent: 180,
       });
       
+      // Short delay to ensure proper order
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Add second test quiz result
+      console.log('Adding sample quiz result 2...');
       await updateQuizProgress(userId, {
         subject: subjects[1],
         score: 60,
@@ -76,7 +91,11 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
         timeSpent: 120,
       });
       
+      // Short delay to ensure proper order
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Add multiplayer test result
+      console.log('Adding sample multiplayer quiz result...');
       await updateQuizProgress(userId, {
         subject: subjects[2],
         score: 90,
@@ -151,6 +170,20 @@ export default function QuizHistoryDisplay({ userId }: QuizHistoryDisplayProps) 
         {loading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">
+            <XCircle className="h-12 w-12 mx-auto mb-2" />
+            <p>Error loading quiz history</p>
+            <p className="text-sm">{error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-4"
+              onClick={handleRefresh}
+            >
+              Try Again
+            </Button>
           </div>
         ) : history.length === 0 ? (
           <div className="text-center py-8 text-gray-500">

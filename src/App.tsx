@@ -26,6 +26,10 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import FAQ from "@/pages/FAQ";
 import ContactUs from "@/pages/ContactUs";
+import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/Blog/BlogPost";
+import OurMentors from "@/pages/OurMentors";
+import OurTeam from "@/pages/OurTeam";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -254,8 +258,16 @@ function App() {
               </main>
             }
           />
-          <Route path="/about" element={<About /> } />
+          <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
+          
+          {/* Our Team Routes */}
+          <Route path="/our-mentors" element={<OurMentors />} />
+          <Route path="/our-team" element={<OurTeam />} />
+          
+          {/* Blog Routes */}
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
           
           {/* Resources Routes */}
           <Route path="/resources" element={<Resources />} />

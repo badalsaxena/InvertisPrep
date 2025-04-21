@@ -14,7 +14,8 @@ import {
   query,
   orderBy,
   limit as limitQuery,
-  getDocs
+  getDocs,
+  Timestamp
 } from 'firebase/firestore';
 
 /**
@@ -64,7 +65,7 @@ export interface AcademicProgress {
   totalQuestionsAnswered: number;
   correctAnswersCount: number;
   accuracy: number;
-  lastQuizDate: Date;
+  lastQuizDate: Date | Timestamp;
   subjects: Record<string, {
     completed: number;
     correct: number;
@@ -74,9 +75,10 @@ export interface AcademicProgress {
   streak: {
     current: number;
     max: number;
-    lastPlayed: Date;
+    lastPlayed: Date | Timestamp;
   };
   rank: string;
+  lastUpdated?: Timestamp;
 }
 
 /**
@@ -96,14 +98,15 @@ export const initAcademicProgress = async (uid: string): Promise<AcademicProgres
       totalQuestionsAnswered: 0,
       correctAnswersCount: 0,
       accuracy: 0,
-      lastQuizDate: new Date(),
+      lastQuizDate: Timestamp.now(),
       subjects: {},
       streak: {
         current: 0,
         max: 0,
-        lastPlayed: new Date()
+        lastPlayed: Timestamp.now()
       },
-      rank: 'Beginner'
+      rank: 'Beginner',
+      lastUpdated: Timestamp.now()
     };
     
     if (userDoc.exists() && !userDoc.data().academicProgress) {
@@ -127,14 +130,22 @@ export const getAcademicProgress = async (uid: string): Promise<AcademicProgress
   if (!uid) return null;
   
   try {
+    console.log('Fetching academic progress for user:', uid);
     const userRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userRef);
     
     if (userDoc.exists()) {
       const data = userDoc.data();
-      return data.academicProgress || null;
+      if (data.academicProgress) {
+        console.log('Academic progress found:', data.academicProgress);
+        return data.academicProgress;
+      } else {
+        console.log('No academic progress found, initializing...');
+        return await initAcademicProgress(uid);
+      }
     }
     
+    console.log('User document not found');
     return null;
   } catch (error) {
     console.error('Error getting academic progress:', error);
@@ -149,13 +160,20 @@ export const updateQuizProgress = async (uid: string, quizData: QuizResultData):
   if (!uid) return false;
   
   try {
+    console.log('Updating quiz progress for user:', uid, 'Data:', quizData);
     const userRef = doc(db, 'users', uid);
+    
+    // Create a history document reference
+    const historyCollection = collection(db, `quizHistory/${uid}/history`);
+    const historyRef = doc(historyCollection);
+    const now = Timestamp.now();
     
     // Use transaction for safe updates
     return await runTransaction(db, async (transaction) => {
       const userDoc = await transaction.get(userRef);
       
       if (!userDoc.exists()) {
+        console.error('User document not found during progress update');
         throw new Error('User document not found');
       }
       
@@ -167,14 +185,15 @@ export const updateQuizProgress = async (uid: string, quizData: QuizResultData):
         totalQuestionsAnswered: 0,
         correctAnswersCount: 0,
         accuracy: 0,
-        lastQuizDate: new Date(),
+        lastQuizDate: now,
         subjects: {},
         streak: {
           current: 0,
           max: 0,
-          lastPlayed: new Date()
+          lastPlayed: now
         },
-        rank: 'Beginner'
+        rank: 'Beginner',
+        lastUpdated: now
       };
       
       // Update general stats
@@ -197,7 +216,8 @@ export const updateQuizProgress = async (uid: string, quizData: QuizResultData):
       }
       
       // Update last quiz date
-      progress.lastQuizDate = new Date();
+      progress.lastQuizDate = now;
+      progress.lastUpdated = now;
       
       // Update subject-specific stats
       if (!progress.subjects) {
@@ -224,40 +244,55 @@ export const updateQuizProgress = async (uid: string, quizData: QuizResultData):
       progress.subjects[quizData.subject] = subjectStats;
       
       // Update streak
-      const now = new Date();
       const lastPlayed = progress.streak.lastPlayed instanceof Date 
         ? progress.streak.lastPlayed 
-        : new Date(progress.streak.lastPlayed);
+        : progress.streak.lastPlayed instanceof Timestamp
+          ? progress.streak.lastPlayed.toDate()
+          : new Date(progress.streak.lastPlayed);
+      
+      const nowDate = now.toDate();
       
       if (lastPlayed) {
-        // Check if last played was yesterday or today
+        // Calculate day difference accounting for timezone
+        const lastPlayedDate = new Date(lastPlayed);
+        lastPlayedDate.setHours(0, 0, 0, 0);
+        const nowDateDay = new Date(nowDate);
+        nowDateDay.setHours(0, 0, 0, 0);
+        
         const dayDiff = Math.floor(
-          (now.getTime() - lastPlayed.getTime()) / (1000 * 60 * 60 * 24)
+          (nowDateDay.getTime() - lastPlayedDate.getTime()) / (1000 * 60 * 60 * 24)
         );
         
-        if (dayDiff <= 1) {
-          // Streak continues
+        console.log(`Streak check: Last played ${lastPlayedDate}, now ${nowDateDay}, diff ${dayDiff} days`);
+        
+        if (dayDiff === 0) {
+          // Same day, streak stays the same
+          console.log('Same day, streak remains at:', progress.streak.current);
+        } else if (dayDiff === 1) {
+          // Next day, streak continues
           progress.streak.current += 1;
+          console.log('Next day, streak increased to:', progress.streak.current);
           if (progress.streak.current > progress.streak.max) {
             progress.streak.max = progress.streak.current;
           }
         } else {
-          // Streak resets
+          // More than one day, reset streak
+          console.log('Streak reset from', progress.streak.current, 'to 1');
           progress.streak.current = 1;
         }
       } else {
         // First streak day
         progress.streak.current = 1;
-        progress.streak.max = 1;
+        console.log('First streak day');
       }
       
+      // Update streak last played
       progress.streak.lastPlayed = now;
       
-      // Update rank based on criteria
+      // Update rank based on progress
       progress.rank = calculateRank(progress);
       
-      // Save quiz history in subcollection
-      const historyRef = doc(db, `quizHistory/${uid}/history`, `quiz_${Date.now()}`);
+      // Save quiz history - this is what shows in the QuizHistoryDisplay component
       await setDoc(historyRef, {
         id: historyRef.id,
         type: quizData.opponent ? "multiplayer" : "single",
@@ -270,6 +305,9 @@ export const updateQuizProgress = async (uid: string, quizData: QuizResultData):
         timeSpent: quizData.timeSpent,
         opponent: quizData.opponent || null
       });
+      
+      console.log('Quiz history saved with ID:', historyRef.id);
+      console.log('Updated progress:', progress);
       
       // Update the document
       transaction.update(userRef, { 

@@ -47,6 +47,8 @@ export default function Navbar() {
     { name: "PYQ", path: "/pyq" },
     { name: "Quizzo", path: "/quizzo" },
     { name: "About", path: "/about" },
+    { name: "Blog", path: "/blog" },
+    { name: "Contact", path: "/contact-us" },
   ];
 
   // Format user name for display
@@ -82,6 +84,32 @@ export default function Navbar() {
                     </Link>
                   </NavigationMenuItem>
                 ))}
+                
+                {/* More Dropdown */}
+                <NavigationMenuItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className={navigationMenuTriggerStyle()}>
+                        More <ChevronDown className="h-4 w-4 ml-1" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link to="/our-mentors" className="w-full">Our Mentors</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/our-team" className="w-full">Our Team</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/bug-report" className="w-full">Report Bug</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/terms-of-service" className="w-full">Terms of Service</Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
           </div>
@@ -174,6 +202,39 @@ export default function Navbar() {
               {link.name}
             </Link>
           ))}
+          
+          {/* Mobile More Menu */}
+          <div className="border-t border-gray-200 pt-2">
+            <div className="px-3 py-2 text-base font-medium text-gray-700">More</div>
+            <Link
+              to="/our-mentors"
+              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Our Mentors
+            </Link>
+            <Link
+              to="/our-team"
+              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Our Team
+            </Link>
+            <Link
+              to="/bug-report"
+              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Report Bug
+            </Link>
+            <Link
+              to="/terms-of-service"
+              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Terms of Service
+            </Link>
+          </div>
           
           {/* Mobile Auth Menu */}
           {user ? (

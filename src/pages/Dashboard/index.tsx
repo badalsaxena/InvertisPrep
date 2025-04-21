@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, PenLine, Save, X, GraduationCap, Wallet, History } from 'lucide-react';
+import { Loader2, PenLine, Save, X, GraduationCap, Wallet, History, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { updateProfile } from '@/services/userService';
 import { getAcademicProgress, AcademicProgress, initAcademicProgress } from '@/services/academicProgressService';
 import { getWallet, Wallet as WalletType } from '@/services/walletService';
 import QuizHistoryDisplay from '@/components/QuizHistoryDisplay';
 import { Progress } from '@/components/ui/progress';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Dashboard() {
   const { profile, loading, error, refreshProfile, clearError, refreshWallet } = useUser();
@@ -42,13 +43,16 @@ export default function Dashboard() {
       
       try {
         setLoadingProgress(true);
+        console.log('Loading academic progress for user:', user.uid);
         let progress = await getAcademicProgress(user.uid);
         
         // If no progress exists, initialize it
         if (!progress) {
+          console.log('No academic progress found, initializing...');
           progress = await initAcademicProgress(user.uid);
         }
         
+        console.log('Academic progress loaded:', progress);
         setAcademicProgress(progress);
         return progress;
       } catch (error) {
@@ -95,22 +99,51 @@ export default function Dashboard() {
   const handleRefresh = async () => {
     setRefreshing(true);
     clearError();
+    
+    console.log('Refreshing all user data...');
+    
+    // First refresh basic profile data
     await refreshProfile();
+    
+    // Then refresh wallet data
     await refreshWallet();
     
-    // Refresh academic progress too
+    // Finally refresh academic progress
     if (user) {
       try {
+        console.log('Refreshing academic progress...');
         const progress = await getAcademicProgress(user.uid);
-        setAcademicProgress(progress);
+        if (progress) {
+          console.log('Updated academic progress:', progress);
+          setAcademicProgress(progress);
+        } else {
+          console.log('No academic progress found during refresh');
+        }
         
         // Also refresh wallet
+        console.log('Refreshing wallet...');
         const userWallet = await getWallet(user.uid);
-        setWallet(userWallet);
+        if (userWallet) {
+          console.log('Updated wallet:', userWallet);
+          setWallet(userWallet);
+        }
+        
+        toast({
+          title: 'Refresh Complete',
+          description: 'Your dashboard data has been refreshed',
+          duration: 3000
+        });
       } catch (err) {
         console.error('Failed to refresh data', err);
+        toast({
+          title: 'Refresh Failed',
+          description: 'Could not refresh some dashboard data',
+          variant: 'destructive',
+          duration: 3000
+        });
       }
     }
+    
     setRefreshing(false);
   };
 
@@ -365,22 +398,30 @@ export default function Dashboard() {
       </div>
 
       {/* Academic Progress Card */}
-      <div className="mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <GraduationCap className="h-5 w-5 text-primary" /> Academic Progress
-              </CardTitle>
-              <CardDescription>Track your learning journey</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loadingProgress ? (
-              <div className="flex justify-center py-4">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      {!loadingProgress && academicProgress && (
+        <div className="mb-6">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center">
+                  <GraduationCap className="h-5 w-5 mr-2 text-primary" />
+                  Academic Progress
+                </CardTitle>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
               </div>
-            ) : (
+              <CardDescription>
+                Your learning journey stats
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-6">
                 <div className="flex justify-between">
                   <div className="text-center">
@@ -425,17 +466,15 @@ export default function Dashboard() {
                   </Button>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quiz History Section */}
-      {user && (
-        <div className="mb-6">
-          <QuizHistoryDisplay userId={user.uid} />
+            </CardContent>
+          </Card>
         </div>
       )}
+
+      {/* Quiz History Section */}
+      <div className="mb-6">
+        {user && <QuizHistoryDisplay userId={user.uid} />}
+      </div>
       
       <div className="mt-8 flex flex-wrap justify-center">
         <Button onClick={handleRefresh} variant="outline" disabled={refreshing}>
