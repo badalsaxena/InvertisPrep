@@ -14,7 +14,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1000&auto=format&fit=crop",
     category: "Study Tips",
     author: "Dr. Sharma",
-    date: "May 10, 2024",
+    date: "April 21, 2025",
     readTime: "8 min read",
     tags: ["Exams", "Study Techniques", "Time Management"],
     content: `
@@ -75,7 +75,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1000&auto=format&fit=crop",
     category: "Campus Guide",
     author: "Ravi Kumar",
-    date: "April 25, 2024",
+    date: "April 21, 2025",
     readTime: "6 min read",
     tags: ["Campus", "Resources", "Facilities"],
     content: `
@@ -141,7 +141,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1000&auto=format&fit=crop",
     category: "Programming",
     author: "Anjali Mehta",
-    date: "April 12, 2024",
+    date: "April 21, 2025",
     readTime: "12 min read",
     tags: ["Coding", "Algorithms", "Contests"],
     content: `<p>Sample content for Programming article</p>`
@@ -153,7 +153,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?q=80&w=1000&auto=format&fit=crop",
     category: "Career",
     author: "Priya Singh",
-    date: "March 28, 2024",
+    date: "April 21, 2025",
     readTime: "9 min read",
     tags: ["Internships", "Career", "Job Hunt"],
     content: `<p>Sample content for Internship article</p>`
@@ -165,7 +165,7 @@ const blogPosts = [
     image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1000&auto=format&fit=crop",
     category: "Portfolio",
     author: "Vishal Joshi",
-    date: "March 15, 2024",
+    date: "April 21, 2025",
     readTime: "10 min read",
     tags: ["Portfolio", "Projects", "Skills"],
     content: `<p>Sample content for Portfolio article</p>`

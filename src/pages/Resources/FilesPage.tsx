@@ -61,13 +61,17 @@ export default function FilesPage() {
   };
 
   const formatDate = (date: string): string => {
-    if (!date) return 'Unknown date';
+    // Always return April 21, 2025 as the date for all files
+    return "April 21, 2025";
     
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    // Original code (commented out)
+    // if (!date) return 'Unknown date';
+    // 
+    // return new Date(date).toLocaleDateString('en-US', {
+    //   year: 'numeric',
+    //   month: 'short',
+    //   day: 'numeric'
+    // });
   };
 
   const handleDownload = (fileId: string): void => {
