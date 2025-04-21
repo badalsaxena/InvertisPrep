@@ -84,8 +84,10 @@ export default function About() {
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="flex justify-center pt-2 pb-6">
-                  <Button asChild className={`bg-gradient-to-r ${feature.color} text-white hover:opacity-90`}>
-                    <Link to={feature.link}>Explore {feature.title}</Link>
+                  <Button className={`bg-gradient-to-r ${feature.color} text-white hover:opacity-90`}>
+                    <Link to={feature.link} className="flex w-full h-full items-center justify-center">
+                      Explore {feature.title}
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -95,8 +97,10 @@ export default function About() {
         
         <div className="mt-20 text-center">
           <h2 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Ready to get started?</h2>
-          <Button asChild size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90">
-            <Link to="/register">Join InvertisPrep Today</Link>
+          <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90">
+            <Link to="/register" className="flex w-full h-full items-center justify-center">
+              Join InvertisPrep Today
+            </Link>
           </Button>
         </div>
       </div>

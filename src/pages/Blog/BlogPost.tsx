@@ -185,8 +185,8 @@ export default function BlogPost() {
       <div className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-3xl font-bold mb-4">Blog Post Not Found</h1>
         <p className="mb-6">Sorry, the blog post you're looking for doesn't exist.</p>
-        <Button asChild>
-          <Link to="/blog">Back to Blog</Link>
+        <Button>
+          <Link to="/blog" className="flex items-center justify-center w-full h-full">Back to Blog</Link>
         </Button>
       </div>
     );
@@ -196,8 +196,8 @@ export default function BlogPost() {
     <div className="container mx-auto px-4 py-12">
       {/* Back to Blog */}
       <div className="mb-8">
-        <Button variant="ghost" asChild>
-          <Link to="/blog" className="flex items-center">
+        <Button variant="ghost">
+          <Link to="/blog" className="flex items-center w-full h-full">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Blog
           </Link>

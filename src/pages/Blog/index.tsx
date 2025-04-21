@@ -98,8 +98,8 @@ export default function Blog() {
                 <Clock className="h-4 w-4 mr-1" />
                 <span>{blogPosts[0].readTime}</span>
               </div>
-              <Button className="w-fit" asChild>
-                <Link to={`/blog/${blogPosts[0].id}`}>
+              <Button className="w-fit">
+                <Link to={`/blog/${blogPosts[0].id}`} className="flex items-center w-full h-full">
                   Read Article <ChevronRight className="h-4 w-4 ml-1" />
                 </Link>
               </Button>
@@ -139,8 +139,8 @@ export default function Blog() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full" asChild>
-                <Link to={`/blog/${post.id}`}>
+              <Button variant="outline" className="w-full">
+                <Link to={`/blog/${post.id}`} className="flex items-center justify-center w-full h-full">
                   Read Article
                 </Link>
               </Button>
