@@ -40,7 +40,7 @@ const teamMembers: TeamMember[] = [
     name: "Mr. Badal Saxena",
     role: "UI/UX Designer, Fontend Developer",
     bio: "Mr. Badal Saxena has made the UI/UX of InvertisPrep. He is a good frontend developer and a UI/UX designer.",
-    image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3",
+    image: "badal.jpg",
     category: 'leadership',
     social: {
       linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/",
@@ -54,7 +54,7 @@ const teamMembers: TeamMember[] = [
     name: "Mr. Pratyaksh Parashari",
     role: "Resource Head ",
     bio: "Mr. Pratyaksh Parashari leads our Resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
-    image: "https://images.unsplash.com/photo-1600486913747-55e5470d6f40?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3",
+    image: "pratyaksh.jpg",
     category: 'development',
     social: {
       linkedin: "https://linkedin.com/in/rahul-kumar",
@@ -66,7 +66,7 @@ const teamMembers: TeamMember[] = [
     name: "Mr. Kamal Yadav",
     role: "Resource Team",
     bio: "Mr. Kamal Yadav is a part of resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3",
+    image: "kamal.jpg",
     category: 'development',
     social: {
       linkedin: "https://linkedin.com/in/neha-singh",
@@ -79,7 +79,7 @@ const teamMembers: TeamMember[] = [
     name: "Mr. Vivek Vishwakarma",
     role: "Cyber Security Head & Testing Expert",
     bio: "Mr. Vivek Vishwakarma is responsible for the Cyber Security of the InvertisPrep platform. He is a good cyber security expert and a testing expert.",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3",
+    image: "vivek.jpg",
     category: 'development',
     social: {
       linkedin: "https://linkedin.com/in/vikas-gupta",
@@ -93,7 +93,7 @@ const teamMembers: TeamMember[] = [
     name: "Mr. Shashank Mishra",
     role: "Resource Team",
     bio: "Mr. Shashank Mishra has done a great job in the resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
-    image: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3",
+    image: "shashank.jpg",
     category: 'design',
     social: {
       linkedin: "https://linkedin.com/in/ananya-reddy",
