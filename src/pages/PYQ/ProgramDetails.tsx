@@ -21,7 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AuthRequiredDialog from "@/components/AuthRequiredDialog";
 
 // Backend URL - can be moved to environment variable
-const BACKEND_URL = "https://invertisprepbackend.vercel.app";
+const BACKEND_URL = "https://invertisprepbackend.onrender.com/";
 
 // Define program data with branches
 const programsData = {
