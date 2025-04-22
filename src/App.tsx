@@ -33,6 +33,7 @@ import OurTeam from "@/pages/OurTeam";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from '@vercel/analytics/react';
+import AdminLogin from "./pages/Admin/AdminLogin";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -232,6 +233,14 @@ function App() {
               <ProtectedRoute>
                 <Profile />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              
+                <AdminLogin />
+              
             }
           />
           <Route

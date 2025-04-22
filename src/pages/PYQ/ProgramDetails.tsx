@@ -21,7 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import AuthRequiredDialog from "@/components/AuthRequiredDialog";
 
 // Backend URL - can be moved to environment variable
-const BACKEND_URL = "https://invertisprepbackend.onrender.com/";
+const BACKEND_URL = "https://invertisprepbackend.onrender.com";
 
 // Define program data with branches
 const programsData = {
@@ -88,6 +88,65 @@ const programsData = {
     fullName: "Master of Business Administration",
     branches: [
       { id: "general", name: "General" }
+    ]
+  },
+  pharmacy: {
+    name: "Pharmacy",
+    fullName: "Bachelor of Pharmacy",
+    branches: [
+      { id: "general", name: "General" }
+    ]
+  },
+  ba: {
+    name: "BA",
+    fullName: "Bachelor of Arts",
+    branches: [
+      { id: "general", name: "General" },
+      { id: "economics", name: "Economics" },
+      { id: "english", name: "English" },
+      { id: "history", name: "History" },
+      { id: "political_science", name: "Political Science" }
+    ]
+  },
+  bjmc: {
+    name: "BJMC",
+    fullName: "Bachelor of Journalism & Mass Communication",
+    branches: [
+      { id: "general", name: "General" }
+    ]
+  },
+  fashion_design: {
+    name: "Fashion Design",
+    fullName: "Bachelor of Design in Fashion",
+    branches: [
+      { id: "general", name: "General" },
+      { id: "textile", name: "Textile Design" }
+    ]
+  },
+  education: {
+    name: "Education",
+    fullName: "Bachelor of Education",
+    branches: [
+      { id: "general", name: "General" }
+    ]
+  },
+  applied_science: {
+    name: "Applied Science",
+    fullName: "Bachelor of Applied Sciences",
+    branches: [
+      { id: "general", name: "General" },
+      { id: "biotechnology", name: "Biotechnology" },
+      { id: "food_tech", name: "Food Technology" }
+    ]
+  },
+  msc: {
+    name: "MSc",
+    fullName: "Master of Science",
+    branches: [
+      { id: "physics", name: "Physics" },
+      { id: "chemistry", name: "Chemistry" },
+      { id: "mathematics", name: "Mathematics" },
+      { id: "computer_science", name: "Computer Science" }
     ]
   }
 };
