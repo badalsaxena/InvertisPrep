@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,22 +11,10 @@ const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    console.log('AdminLogin component mounted');
-    const isAdmin = localStorage.getItem('admin_authenticated') === 'true';
-    console.log('Is admin authenticated?', isAdmin);
-    
-    if (isAdmin) {
-      console.log('Admin is authenticated, navigating to dashboard');
-      navigate('/admin/dashboard');
-    }
-  }, [navigate]);
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!username || !password) {
@@ -34,26 +22,15 @@ const AdminLogin: React.FC = () => {
       return;
     }
     
-    try {
-      setLoading(true);
-      setError(null);
-      
-      console.log('Attempting login with:', { username });
-      
-      // Simple hardcoded authentication
-      if (username === 'admin' && password === '5555') {
-        console.log('Authentication successful');
-        // Store admin session in localStorage
-        localStorage.setItem('admin_authenticated', 'true');
-        console.log('Navigating to dashboard');
-        navigate('/admin/dashboard');
-      } else {
-        setError('Invalid username or password');
-      }
-    } catch (err: any) {
-      console.error('AdminLogin error:', err);
-      setError('Failed to login. Please try again.');
-    } finally {
+    setLoading(true);
+    setError(null);
+    
+    // Simple hardcoded authentication
+    if (username === 'admin' && password === '5555') {
+      localStorage.setItem('admin_authenticated', 'true');
+      navigate('/admin/dashboard');
+    } else {
+      setError('Invalid username or password');
       setLoading(false);
     }
   };

@@ -34,6 +34,10 @@ import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from '@vercel/analytics/react';
 import AdminLogin from "./pages/Admin/AdminLogin";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminRouteWrapper from "./pages/Admin/AdminRouteWrapper";
+import ErrorBoundary from "./components/ErrorBoundary";
+import TestPage from "./pages/TestPage";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -155,162 +159,112 @@ const QuizRewardsApi = () => {
 };
 
 function App() {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    // Mark the app as loaded after a short delay
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 200);
-
-    // Catch any unhandled errors
-    const handleError = (e: ErrorEvent) => {
-      console.error('Unhandled error:', e.error);
-      setError(e.error);
-    };
-
-    window.addEventListener('error', handleError);
-    
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('error', handleError);
-    };
-  }, []);
-
-  // Show a simple loading screen while initial setup happens
-  if (!isLoaded) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin h-10 w-10 border-t-2 border-b-2 border-primary rounded-full"></div>
-      </div>
-    );
-  }
-
-  // Show error screen if an error occurred
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 space-y-4">
-          <h2 className="text-xl font-bold text-red-600">Something went wrong</h2>
-          <p className="text-gray-700">
-            The application encountered an error. Please try refreshing the page.
-          </p>
-          <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto max-h-40">
-            {error.message}
-          </pre>
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <Analytics />
-        
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              
-                <AdminLogin />
-              
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/qcoins/history"
-            element={
-              <ProtectedRoute>
-                <TransactionHistory />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/"
-            element={
-              <main>
-                <Hero />
-                <Features />
-              
-              </main>
-            }
-          />
-          <Route path="/about" element={<About />} />
-          <Route path="/services" element={<Services />} />
+    <ErrorBoundary>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Navbar />
+          <Analytics />
           
-          {/* Our Team Routes */}
-          <Route path="/our-mentors" element={<OurMentors />} />
-          <Route path="/our-team" element={<OurTeam />} />
-          
-          {/* Blog Routes */}
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
-          
-          {/* Resources Routes */}
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/resources/:categoryId" element={<CategoryPage />} />
-          
-          {/* PYQ Routes */}
-          <Route path="/pyq" element={<PYQ />} />
-          <Route path="/pyq/:programId" element={<ProgramDetails />} />
-          
-          {/* Quizzo Routes */}
-          <Route path="/quizzo" element={<Quizzo />} />
-          <Route path="/quizzo/multiplayer" element={<MultiplayerQuizzo />} />
-          <Route path="/quizzo/solo" element={<SoloQuizzo />} />
-          
-          {/* Legal and Support Routes */}
-          <Route path="/bug-report" element={<BugReport />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/contact-us" element={<ContactUs />} />
-          
-          {/* API endpoint for quiz rewards */}
-          <Route path="/api/quiz-rewards" element={<QuizRewardsApi />} />
-          
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" />} />
-          
-        </Routes>
-        <Toaster />
-        <Footer />
-      </div>
-    </Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route
+              path="/admin/dashboard/*"
+              element={
+                <AdminRouteWrapper>
+                  <AdminDashboard />
+                </AdminRouteWrapper>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/qcoins/history"
+              element={
+                <ProtectedRoute>
+                  <TransactionHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/"
+              element={
+                <main>
+                  <Hero />
+                  <Features />
+                </main>
+              }
+            />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            
+            {/* Our Team Routes */}
+            <Route path="/our-mentors" element={<OurMentors />} />
+            <Route path="/our-team" element={<OurTeam />} />
+            
+            {/* Blog Routes */}
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogPost />} />
+            
+            {/* Resources Routes */}
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/resources/:categoryId" element={<CategoryPage />} />
+            
+            {/* PYQ Routes */}
+            <Route path="/pyq" element={<PYQ />} />
+            <Route path="/pyq/:programId" element={<ProgramDetails />} />
+            
+            {/* Quizzo Routes */}
+            <Route path="/quizzo" element={<Quizzo />} />
+            <Route path="/quizzo/multiplayer" element={<MultiplayerQuizzo />} />
+            <Route path="/quizzo/solo" element={<SoloQuizzo />} />
+            
+            {/* Legal and Support Routes */}
+            <Route path="/bug-report" element={<BugReport />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact-us" element={<ContactUs />} />
+            
+            {/* API endpoint for quiz rewards */}
+            <Route path="/api/quiz-rewards" element={<QuizRewardsApi />} />
+            
+            {/* Test Page */}
+            <Route path="/test" element={<TestPage />} />
+            
+            {/* Fallback route */}
+            <Route path="*" element={<Navigate to="/" />} />
+            
+          </Routes>
+          <Toaster />
+          <Footer />
+        </div>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

@@ -20,8 +20,28 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthRequiredDialog from "@/components/AuthRequiredDialog";
 
-// Backend URL - can be moved to environment variable
+// Backend URLs - can be moved to environment variables
 const BACKEND_URL = "https://invertisprepbackend.onrender.com";
+const VERCEL_BACKEND_URL = "https://invertisprepbackend.vercel.app";
+
+// Helper function to try different backend URLs
+const fetchWithFallback = async (path: string) => {
+  try {
+    // Try Render backend first
+    const response = await fetch(`${BACKEND_URL}${path}`);
+    if (response.ok) {
+      return response;
+    }
+    
+    console.log(`Render backend failed for: ${path}, trying Vercel`);
+    // If Render fails, try Vercel backend
+    return await fetch(`${VERCEL_BACKEND_URL}${path}`);
+  } catch (error) {
+    console.error(`Error with Render backend, trying Vercel:`, error);
+    // If Render throws an error, try Vercel
+    return await fetch(`${VERCEL_BACKEND_URL}${path}`);
+  }
+};
 
 // Define program data with branches
 const programsData = {
@@ -205,7 +225,7 @@ function ProgramDetails() {
       setFetchingOptions(true);
       try {
         // Using the API endpoint described in the documentation
-        const response = await fetch(`${BACKEND_URL}/api/resources/departments/${programId}/branches`);
+        const response = await fetchWithFallback(`/api/resources/departments/${programId}/branches`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch branches: ${response.status}`);
@@ -247,7 +267,7 @@ function ProgramDetails() {
       setFetchingOptions(true);
       try {
         // Using the API endpoint described in the documentation
-        const response = await fetch(`${BACKEND_URL}/api/resources/departments/${programId}/branches/${selectedBranch}/semesters`);
+        const response = await fetchWithFallback(`/api/resources/departments/${programId}/branches/${selectedBranch}/semesters`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch semesters: ${response.status}`);
@@ -293,7 +313,7 @@ function ProgramDetails() {
       setFetchingOptions(true);
       try {
         // Using the API endpoint described in the documentation
-        const response = await fetch(`${BACKEND_URL}/api/resources/departments/${programId}/branches/${selectedBranch}/sessions`);
+        const response = await fetchWithFallback(`/api/resources/departments/${programId}/branches/${selectedBranch}/sessions`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch sessions: ${response.status}`);
@@ -352,46 +372,33 @@ function ProgramDetails() {
   }
   
   const handleSearch = async () => {
-    if (!selectedBranch || !selectedSemester || !selectedSession) {
-      setError("Please select all options to search for papers.");
+    if (!programId || !selectedBranch) {
+      setError("Please select a branch first");
       return;
     }
-    
+
     setLoading(true);
     setError(null);
-    
+    setSearchResults([]);
+
     try {
-      // Using the API endpoint described in the documentation for files
-      const queryParams = new URLSearchParams({
-        department: programId || '',
-        branch: selectedBranch,
-        semester: selectedSemester,
-        session: selectedSession
-      });
+      let url = `/api/resources/files?department=${programId}&branch=${selectedBranch}`;
       
-      const apiUrl = `${BACKEND_URL}/api/resources/files?${queryParams.toString()}`;
-      console.log("Requesting files from:", apiUrl);
+      if (selectedSemester) {
+        url += `&semester=${selectedSemester}`;
+      }
       
-      const response = await fetch(apiUrl);
+      if (selectedSession) {
+        url += `&session=${selectedSession}`;
+      }
+
+      const response = await fetchWithFallback(url);
       
       if (!response.ok) {
-        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        throw new Error(`Failed to fetch files: ${response.status}`);
       }
-      
-      // Parse the response
-      let data;
-      try {
-        const text = await response.text();
-        if (text.includes('<!doctype') || text.includes('<html')) {
-          throw new Error("Unexpected token '<', \"<!doctype \"... is not valid JSON");
-        }
-        data = JSON.parse(text);
-      } catch (parseErr) {
-        console.error("JSON parsing error:", parseErr);
-        throw new Error(`Failed to parse response: ${parseErr instanceof Error ? parseErr.message : 'Unknown error'}`);
-      }
-      
-      console.log("Fetched papers:", data);
+
+      const data = await response.json();
       
       if (data.files && Array.isArray(data.files) && data.files.length > 0) {
         setSearchResults(data.files);
@@ -668,6 +675,7 @@ function PaperCard({ paper }: { paper: Paper }) {
       setIsAuthDialogOpen(true);
       return;
     }
+    
     // Allow default link behavior if authenticated
   };
 

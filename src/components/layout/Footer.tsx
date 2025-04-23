@@ -42,6 +42,7 @@ export function Footer() {
       { name: "Previous Year Papers", path: "/pyq" },
       { name: "Quiz Battles", path: "/quizzo" },
       { name: "Blog", path: "/blog" },
+      { name: "Admin Panel", path: "/admin" },
     ],
     "Support": [
       { name: "Bug Report", path: "/bug-report" },
