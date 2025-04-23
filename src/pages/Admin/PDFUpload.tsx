@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertCircle, Check, X, Upload, Loader2, FileText } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-// Backend URL
+// Backend URLs
 const BACKEND_URL = "https://invertisprepbackend.onrender.com";
+const VERCEL_BACKEND_URL = "https://invertisprepbackend.vercel.app";
 
 interface UploadFormState {
   title: string;
@@ -20,6 +21,7 @@ interface UploadFormState {
   session: string;
   subject: string;
   description?: string;
+  resourceType: string;
 }
 
 const PDFUpload: React.FC = () => {
@@ -37,7 +39,16 @@ const PDFUpload: React.FC = () => {
     session: '',
     subject: '',
     description: '',
+    resourceType: 'notes'
   });
+  
+  // Resource types
+  const resourceTypes = [
+    { id: 'notes', name: 'Study Notes' },
+    { id: 'pyq', name: 'Previous Year Questions' },
+    { id: 'assignments', name: 'Assignments' },
+    { id: 'syllabus', name: 'Syllabus' }
+  ];
   
   // Data for dropdowns
   const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
@@ -70,31 +81,40 @@ const PDFUpload: React.FC = () => {
   // Loading states
   const [fetchingOptions, setFetchingOptions] = useState(false);
   const [recentUploads, setRecentUploads] = useState<any[]>([]);
+  const [loadingRecentUploads, setLoadingRecentUploads] = useState(false);
   
   // Fetch departments on mount
   useEffect(() => {
     const fetchDepartments = async () => {
-      setFetchingOptions(true);
-      
-      // Mock data for example
-      setTimeout(() => {
+      try {
+        setFetchingOptions(true);
+        
+        const response = await fetchWithFallback('/api/departments');
+        if (response.ok) {
+          const data = await response.json();
+          setDepartments(data);
+        } else {
+          console.error('Failed to fetch departments');
+          // Fallback to mock data if both backends fail
+          setDepartments([
+            { id: 'btech', name: 'Bachelor of Technology' },
+            { id: 'mtech', name: 'Master of Technology' },
+            { id: 'bca', name: 'Bachelor of Computer Applications' },
+            { id: 'mca', name: 'Master of Computer Applications' },
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+        // Fallback to mock data
         setDepartments([
           { id: 'btech', name: 'Bachelor of Technology' },
-          { id: 'bca', name: 'Bachelor of Computer Applications' },
-          { id: 'bcom', name: 'Bachelor of Commerce' },
-          { id: 'bsc', name: 'Bachelor of Science' },
-          { id: 'mca', name: 'Master of Computer Applications' },
           { id: 'mtech', name: 'Master of Technology' },
-          { id: 'bba', name: 'Bachelor of Business Administration' },
-          { id: 'mba', name: 'Master of Business Administration' },
-          { id: 'msc', name: 'Master of Science' },
-          { id: 'pharmacy', name: 'Pharmacy' },
-          { id: 'fashion-design', name: 'Fashion Design' },
-          { id: 'education', name: 'Education' },
-          { id: 'bjmc', name: 'Bachelor of Journalism & Mass Communication' }
+          { id: 'bca', name: 'Bachelor of Computer Applications' },
+          { id: 'mca', name: 'Master of Computer Applications' },
         ]);
+      } finally {
         setFetchingOptions(false);
-      }, 800);
+      }
     };
     
     fetchDepartments();
@@ -109,30 +129,35 @@ const PDFUpload: React.FC = () => {
     }
     
     const fetchBranches = async () => {
-      setFetchingOptions(true);
-      
-      // Mock data based on selected department
-      setTimeout(() => {
-        if (formData.department === 'btech') {
+      try {
+        setFetchingOptions(true);
+        
+        const response = await fetchWithFallback(`/api/departments/${formData.department}/branches`);
+        if (response.ok) {
+          const data = await response.json();
+          setBranches(data);
+        } else {
+          console.error('Failed to fetch branches');
+          // Fallback to mock data if both backends fail
           setBranches([
             { id: 'cse', name: 'Computer Science Engineering' },
-            { id: 'ai', name: 'Artificial Intelligence' },
+            { id: 'ece', name: 'Electronics & Communication Engineering' },
             { id: 'me', name: 'Mechanical Engineering' },
-            { id: 'ee', name: 'Electrical Engineering' },
-            { id: 'ce', name: 'Civil Engineering' }
-          ]);
-        } else if (formData.department === 'bca') {
-          setBranches([
-            { id: 'general', name: 'General' }
-          ]);
-        } else {
-          setBranches([
-            { id: 'general', name: 'General' },
-            { id: 'honors', name: 'Honors' }
+            { id: 'ce', name: 'Civil Engineering' },
           ]);
         }
+      } catch (error) {
+        console.error('Error fetching branches:', error);
+        // Fallback to mock data
+        setBranches([
+          { id: 'cse', name: 'Computer Science Engineering' },
+          { id: 'ece', name: 'Electronics & Communication Engineering' },
+          { id: 'me', name: 'Mechanical Engineering' },
+          { id: 'ce', name: 'Civil Engineering' },
+        ]);
+      } finally {
         setFetchingOptions(false);
-      }, 800);
+      }
     };
     
     fetchBranches();
@@ -146,19 +171,25 @@ const PDFUpload: React.FC = () => {
     }
     
     const fetchSemesters = async () => {
-      setFetchingOptions(true);
-      
-      // Mock data
-      setTimeout(() => {
-        if (formData.department === 'btech') {
-          setSemesters(['1', '2', '3', '4', '5', '6', '7', '8']);
-        } else if (formData.department === 'bca' || formData.department === 'bba') {
-          setSemesters(['1', '2', '3', '4', '5', '6']);
+      try {
+        setFetchingOptions(true);
+        
+        const response = await fetchWithFallback(`/api/departments/${formData.department}/branches/${formData.branch}/semesters`);
+        if (response.ok) {
+          const data = await response.json();
+          setSemesters(data);
         } else {
-          setSemesters(['1', '2', '3', '4']);
+          console.error('Failed to fetch semesters');
+          // Fallback to mock data if both backends fail
+          setSemesters(['1', '2', '3', '4', '5', '6', '7', '8']);
         }
+      } catch (error) {
+        console.error('Error fetching semesters:', error);
+        // Fallback to mock data
+        setSemesters(['1', '2', '3', '4', '5', '6', '7', '8']);
+      } finally {
         setFetchingOptions(false);
-      }, 800);
+      }
     };
     
     fetchSemesters();
@@ -172,19 +203,35 @@ const PDFUpload: React.FC = () => {
     }
     
     const fetchSessions = async () => {
-      setFetchingOptions(true);
-      
-      // Mock data
-      setTimeout(() => {
+      try {
+        setFetchingOptions(true);
+        
+        const response = await fetchWithFallback('/api/sessions');
+        if (response.ok) {
+          const data = await response.json();
+          setSessions(data);
+        } else {
+          console.error('Failed to fetch sessions');
+          // Fallback to mock data if both backends fail
+          const currentYear = new Date().getFullYear();
+          setSessions([
+            `${currentYear}-${currentYear + 1}`,
+            `${currentYear - 1}-${currentYear}`,
+            `${currentYear - 2}-${currentYear - 1}`,
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching sessions:', error);
+        // Fallback to mock data
+        const currentYear = new Date().getFullYear();
         setSessions([
-          '2023-24',
-          '2022-23',
-          '2021-22',
-          '2020-21',
-          '2019-20'
+          `${currentYear}-${currentYear + 1}`,
+          `${currentYear - 1}-${currentYear}`,
+          `${currentYear - 2}-${currentYear - 1}`,
         ]);
+      } finally {
         setFetchingOptions(false);
-      }, 800);
+      }
     };
     
     fetchSessions();
@@ -192,50 +239,94 @@ const PDFUpload: React.FC = () => {
 
   // Fetch recent uploads
   const fetchRecentUploads = async () => {
-    // Mock data
-    setTimeout(() => {
+    try {
+      setLoadingRecentUploads(true);
+      
+      const response = await fetchWithFallback('/api/uploads/recent');
+      if (response.ok) {
+        const data = await response.json();
+        // Format received data - assuming the API returns { uploads: [] }
+        const uploads = Array.isArray(data) ? data : (data.uploads || []);
+        setRecentUploads(uploads.map((upload: any) => ({
+          ...upload,
+          // Ensure consistent property names
+          id: upload.id || upload._id,
+          title: upload.title || upload.name || upload.fileName?.replace('.pdf', '') || 'Untitled',
+          filename: upload.filename || upload.fileName || 'document.pdf',
+          departmentName: upload.departmentName || getDepartmentName(upload.department),
+          branchName: upload.branchName || getBranchName(upload.branch),
+          uploadedAt: upload.uploadedAt || upload.uploadDate || new Date().toISOString()
+        })));
+      } else {
+        console.error('Failed to fetch recent uploads');
+        // Fallback to mock data if both backends fail
+        setRecentUploads([
+          {
+            id: '1',
+            title: 'Artificial Intelligence Notes',
+            filename: 'CSE-Sem6-AI-2022-23.pdf',
+            department: 'btech',
+            departmentName: 'B.Tech',
+            branch: 'cse',
+            branchName: 'Computer Science',
+            semester: '6',
+            subject: 'Artificial Intelligence',
+            session: '2022-23',
+            resourceType: 'notes',
+            uploadedAt: '2023-05-10'
+          },
+          {
+            id: '2',
+            title: 'Web Development Previous Year Questions',
+            filename: 'BCA-Sem4-WebDev-2022-23.pdf',
+            department: 'bca',
+            departmentName: 'BCA',
+            branch: 'general',
+            branchName: 'General',
+            semester: '4',
+            subject: 'Web Development',
+            session: '2022-23',
+            resourceType: 'pyq',
+            uploadedAt: '2023-05-09'
+          }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error fetching recent uploads:', error);
+      // Fallback to mock data
       setRecentUploads([
         {
           id: '1',
-          title: 'Data Structures and Algorithms',
-          filename: 'DSA_Midterm_2023.pdf',
+          title: 'Artificial Intelligence Notes',
+          filename: 'CSE-Sem6-AI-2022-23.pdf',
           department: 'btech',
-          departmentName: 'Bachelor of Technology',
+          departmentName: 'B.Tech',
           branch: 'cse',
-          branchName: 'Computer Science Engineering',
-          semester: '3',
-          session: '2023-24',
-          uploadedAt: '2023-11-20T14:30:00',
-          fileSize: '2.4MB'
+          branchName: 'Computer Science',
+          semester: '6',
+          subject: 'Artificial Intelligence',
+          session: '2022-23',
+          resourceType: 'notes',
+          uploadedAt: '2023-05-10'
         },
         {
           id: '2',
-          title: 'Computer Networks',
-          filename: 'CN_Final_2023.pdf',
-          department: 'btech',
-          departmentName: 'Bachelor of Technology',
-          branch: 'cse',
-          branchName: 'Computer Science Engineering',
-          semester: '5',
-          session: '2023-24',
-          uploadedAt: '2023-11-18T10:15:00',
-          fileSize: '3.1MB'
-        },
-        {
-          id: '3',
-          title: 'Operating Systems',
-          filename: 'OS_Midterm_2023.pdf',
-          department: 'btech',
-          departmentName: 'Bachelor of Technology',
-          branch: 'cse',
-          branchName: 'Computer Science Engineering',
+          title: 'Web Development Previous Year Questions',
+          filename: 'BCA-Sem4-WebDev-2022-23.pdf',
+          department: 'bca',
+          departmentName: 'BCA',
+          branch: 'general',
+          branchName: 'General',
           semester: '4',
+          subject: 'Web Development',
           session: '2022-23',
-          uploadedAt: '2023-11-15T09:45:00',
-          fileSize: '1.8MB'
+          resourceType: 'pyq',
+          uploadedAt: '2023-05-09'
         }
       ]);
-    }, 1000);
+    } finally {
+      setLoadingRecentUploads(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -275,68 +366,76 @@ const PDFUpload: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleUpload = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file) {
-      setStatusMessage('Please select a file to upload');
-      setUploadStatus('error');
-      return;
-    }
-    
-    // Check required fields
-    const requiredFields: (keyof UploadFormState)[] = ['department', 'branch', 'semester', 'session', 'subject'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    
-    if (missingFields.length > 0) {
-      setStatusMessage(`Please fill in all required fields: ${missingFields.join(', ')}`);
+    if (!formData.department || !formData.branch || !formData.semester || !formData.subject || !formData.session || !formData.resourceType || !file) {
+      setStatusMessage('Please fill in all required fields and select a file.');
       setUploadStatus('error');
       return;
     }
 
     setUploadStatus('uploading');
+    setStatusMessage('');
     setUploadProgress(0);
     
     // Simulate upload progress
     const progressInterval = setInterval(() => {
       setUploadProgress(prev => {
-        if (prev >= 95) {
-          clearInterval(progressInterval);
-          return prev;
-        }
-        return prev + 5;
+        const newProgress = prev + Math.floor(Math.random() * 10);
+        return newProgress >= 95 ? 95 : newProgress;
       });
-    }, 200);
+    }, 300);
     
-    // Simulate upload completion
-    setTimeout(() => {
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      uploadData.append('title', formData.title);
+      uploadData.append('department', formData.department);
+      uploadData.append('branch', formData.branch);
+      uploadData.append('semester', formData.semester);
+      uploadData.append('subject', formData.subject);
+      uploadData.append('session', formData.session);
+      uploadData.append('resourceType', formData.resourceType);
+      if (formData.description) {
+        uploadData.append('description', formData.description);
+      }
+      
+      const response = await fetchWithFallback('/api/uploads', {
+        method: 'POST',
+        body: uploadData,
+      });
+      
       clearInterval(progressInterval);
       setUploadProgress(100);
       
-      setTimeout(() => {
+      if (response.ok) {
         setUploadStatus('success');
         setStatusMessage('File uploaded successfully!');
-        
-        // Reset form after successful upload
-        setFile(null);
         setFormData({
           title: '',
           department: '',
           branch: '',
           semester: '',
-          session: '',
           subject: '',
+          session: '',
           description: '',
+          resourceType: 'notes'
         });
-        
-        // Reset file input
-        const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-        
-        // Refresh recent uploads
+        setFile(null);
+        // Refresh the recent uploads list
         fetchRecentUploads();
-      }, 500);
-    }, 3000);
+      } else {
+        const data = await response.json();
+        setStatusMessage(data.message || 'Failed to upload file. Please try again.');
+        setUploadStatus('error');
+      }
+    } catch (error) {
+      clearInterval(progressInterval);
+      console.error('Error uploading file:', error);
+      setStatusMessage('An error occurred while uploading. Please try again later.');
+      setUploadStatus('error');
+    }
   };
   
   const getDepartmentName = (id: string) => {
@@ -361,6 +460,31 @@ const PDFUpload: React.FC = () => {
     });
   };
 
+  // Get resource type name
+  const getResourceTypeName = (id: string) => {
+    const type = resourceTypes.find(t => t.id === id);
+    return type ? type.name : id;
+  };
+
+  // Helper function to try different backend URLs
+  const fetchWithFallback = async (path: string, options = {}) => {
+    try {
+      // Try Render backend first
+      const response = await fetch(`${BACKEND_URL}${path}`, options);
+      if (response.ok) {
+        return response;
+      }
+      
+      console.log(`Render backend failed for: ${path}, trying Vercel`);
+      // If Render fails, try Vercel backend
+      return await fetch(`${VERCEL_BACKEND_URL}${path}`, options);
+    } catch (error) {
+      console.error(`Error with Render backend, trying Vercel:`, error);
+      // If Render throws an error, try Vercel
+      return await fetch(`${VERCEL_BACKEND_URL}${path}`, options);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -378,7 +502,7 @@ const PDFUpload: React.FC = () => {
               <CardTitle>Upload PDF Document</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleUpload} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* File Upload Area */}
                 <div className="space-y-2">
                   <Label htmlFor="pdf-upload">PDF File</Label>
@@ -601,6 +725,26 @@ const PDFUpload: React.FC = () => {
                     </div>
                   </div>
                   
+                  {/* Resource Type */}
+                  <div className="space-y-2">
+                    <Label htmlFor="resourceType">Resource Type</Label>
+                    <Select
+                      value={formData.resourceType}
+                      onValueChange={(value) => handleSelectChange('resourceType', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select resource type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {resourceTypes.map(type => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
                   {/* Description */}
                   <div className="space-y-2">
                     <Label htmlFor="description">Description (Optional)</Label>
@@ -625,7 +769,8 @@ const PDFUpload: React.FC = () => {
                     !formData.branch || 
                     !formData.semester || 
                     !formData.session || 
-                    !formData.subject
+                    !formData.subject ||
+                    !formData.resourceType
                   }
                   className="w-full mt-4"
                 >
@@ -653,7 +798,11 @@ const PDFUpload: React.FC = () => {
               <CardTitle>Recent Uploads</CardTitle>
             </CardHeader>
             <CardContent>
-              {recentUploads.length === 0 ? (
+              {loadingRecentUploads ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : recentUploads.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>No recent uploads</p>
@@ -661,15 +810,21 @@ const PDFUpload: React.FC = () => {
               ) : (
                 <ul className="space-y-4">
                   {recentUploads.map(upload => (
-                    <li key={upload.id} className="border p-3 rounded-md">
+                    <li key={upload.id} className="border p-3 rounded-md hover:bg-slate-50 transition-colors">
                       <div className="flex items-start gap-3">
                         <FileText className="h-5 w-5 mt-0.5 text-primary" />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm truncate">{upload.title}</h4>
                           <p className="text-xs text-muted-foreground truncate">{upload.filename}</p>
+                          <div className="mt-1 flex flex-wrap gap-1 text-xs">
+                            <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5">
+                              {getResourceTypeName(upload.resourceType)}
+                            </span>
+                          </div>
                           <div className="mt-1 flex flex-wrap gap-1 text-xs text-muted-foreground">
-                            <span>{upload.departmentName} • </span>
+                            <span>{upload.departmentName || upload.department} • </span>
                             <span>Sem {upload.semester} • </span>
+                            <span>{upload.subject} • </span>
                             <span>{upload.session}</span>
                           </div>
                           <p className="text-xs mt-1 text-muted-foreground">

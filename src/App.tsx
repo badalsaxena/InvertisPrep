@@ -38,6 +38,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminRouteWrapper from "./pages/Admin/AdminRouteWrapper";
 import ErrorBoundary from "./components/ErrorBoundary";
 import TestPage from "./pages/TestPage";
+import PDFUpload from "./pages/Admin/PDFUpload";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -191,6 +192,16 @@ function App() {
               element={
                 <AdminRouteWrapper>
                   <AdminDashboard />
+                </AdminRouteWrapper>
+              }
+            />
+            <Route
+              path="/admin/upload"
+              element={
+                <AdminRouteWrapper>
+                  <div className="container mx-auto py-8">
+                    <PDFUpload />
+                  </div>
                 </AdminRouteWrapper>
               }
             />

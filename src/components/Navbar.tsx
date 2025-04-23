@@ -164,6 +164,12 @@ export default function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link to="/profile" className="w-full">Profile</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings" className="w-full">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/dashboard" className="w-full">Admin Dashboard</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     Log out
@@ -267,6 +273,20 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Profile
+              </Link>
+              <Link
+                to="/settings"
+                className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Settings
+              </Link>
+              <Link
+                to="/admin/dashboard"
+                className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Admin Dashboard
               </Link>
               <button
                 onClick={() => {
