@@ -1,7 +1,26 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@/contexts/UserContext';
 import AuthRequiredDialog from '@/components/AuthRequiredDialog';
 import SelectionForm from './SelectionForm';
+import { BookOpen, Coins, Loader2, AlertCircle, CreditCard, Trophy, CheckCircle } from 'lucide-react';
+import { spendQCoins } from '@/services/walletService';
+import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface PYQBrowserProps {
   // Add any props you need
@@ -12,8 +31,16 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
+  const [solutionAuthDialogOpen, setSolutionAuthDialogOpen] = useState(false);
   const [currentPaperUrl, setCurrentPaperUrl] = useState('');
+  const [currentSolutionUrl, setCurrentSolutionUrl] = useState('');
+  const [isPurchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
+  const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [selectedPaper, setSelectedPaper] = useState<any | null>(null);
   const { user } = useAuth();
+  const { wallet, refreshWallet } = useUser();
+  const navigate = useNavigate();
 
   const handleFormSubmit = async (department: string, branch: string, semester: string, session?: string) => {
     setLoading(true);
@@ -58,6 +85,90 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
     // Allow default behavior if authenticated
   };
 
+  const handleSolutionDownload = (e: React.MouseEvent, paper: any) => {
+    e.preventDefault();
+    
+    if (!user) {
+      setCurrentSolutionUrl(generateSolutionUrl(paper.downloadUrl));
+      setSolutionAuthDialogOpen(true);
+      return;
+    }
+    
+    // Show purchase dialog instead of direct download
+    setSelectedPaper(paper);
+    setPurchaseDialogOpen(true);
+  };
+
+  // Helper function to generate solution URL
+  const generateSolutionUrl = (paperUrl: string) => {
+    return paperUrl.replace('/resources/pyq/', '/resources/pyqsolution/');
+  };
+  
+  const handlePurchase = async () => {
+    if (!user || !selectedPaper) return;
+    
+    const SOLUTION_COST = 20; // Cost in QCoins
+    
+    // Check if user has enough coins
+    if ((wallet?.balance || 0) < SOLUTION_COST) {
+      setPurchaseError("You don't have enough QCoins. Each solution costs 20 QCoins.");
+      return;
+    }
+    
+    try {
+      setPurchaseStatus('loading');
+      setPurchaseError(null);
+      
+      // Spend QCoins
+      const solutionUrl = generateSolutionUrl(selectedPaper.downloadUrl);
+      const success = await spendQCoins(
+        user.uid, 
+        SOLUTION_COST,
+        `Premium solution: ${selectedPaper.title || 'Question Paper'}`
+      );
+      
+      if (success) {
+        setPurchaseStatus('success');
+        // Refresh wallet to update balance
+        if (refreshWallet) await refreshWallet();
+        
+        // Redirect to solution in a new tab after short delay
+        setTimeout(() => {
+          const pdfWindow = window.open(solutionUrl, '_blank');
+          // Ensure the window was opened successfully
+          if (pdfWindow) {
+            pdfWindow.focus();
+          } else {
+            console.error("Failed to open PDF in new window - popup might be blocked");
+          }
+          setPurchaseDialogOpen(false);
+          setPurchaseStatus('idle');
+        }, 1000);
+      } else {
+        setPurchaseStatus('error');
+        setPurchaseError("Failed to purchase solution. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error purchasing solution:", error);
+      setPurchaseStatus('error');
+      setPurchaseError("An unexpected error occurred. Please try again.");
+    }
+  };
+  
+  const handleTopUpNavigation = () => {
+    setPurchaseDialogOpen(false);
+    // Navigate to QCoins page
+    navigate('/qcoins');
+  };
+
+  const handleQuizzoNavigation = () => {
+    setPurchaseDialogOpen(false);
+    // Navigate to Quizzo page
+    navigate('/quizzo');
+  };
+  
+  const hasInsufficientFunds = (wallet?.balance || 0) < 20;
+
   return (
     <div className="container mx-auto py-8">
       <SelectionForm onSubmit={handleFormSubmit} />
@@ -79,21 +190,44 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
           <h3 className="text-xl font-bold mb-4">Available Papers</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {results.map((paper, index) => (
-              <div key={index} className="border rounded-md p-4 hover:shadow-md transition-shadow">
-                <h4 className="font-medium mb-2">{paper.title || `Paper ${index + 1}`}</h4>
-                {paper.description && (
-                  <p className="text-sm text-gray-600 mb-3">{paper.description}</p>
-                )}
-                <a 
-                  href={paper.downloadUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  onClick={(e) => handleDownload(e, paper.downloadUrl)}
-                  className="inline-block bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary/90"
-                >
-                  Download
-                </a>
-              </div>
+              <Card key={index} className="overflow-hidden hover:shadow-md transition-all">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base font-medium">
+                    {paper.title || `Paper ${index + 1}`}
+                  </CardTitle>
+                  {paper.description && (
+                    <p className="text-sm text-gray-600">{paper.description}</p>
+                  )}
+                </CardHeader>
+                <CardContent className="pt-0 pb-4">
+                  <div className="flex gap-3 justify-end">
+                    <Button 
+                      size="sm"
+                      variant="default"
+                      onClick={(e) => handleDownload(e, paper.downloadUrl)}
+                      className="flex items-center gap-1.5"
+                      asChild
+                    >
+                      <a 
+                        href={paper.downloadUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        Download
+                      </a>
+                    </Button>
+                    <Button 
+                      size="sm"
+                      variant="secondary"
+                      className="flex items-center gap-1.5 bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200"
+                      onClick={(e) => handleSolutionDownload(e, paper)}
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Premium Solution
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
@@ -105,6 +239,141 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
         setIsOpen={setIsAuthDialogOpen}
         returnPath="/pyq"
       />
+      
+      {/* Auth Required Dialog for Solutions */}
+      <AuthRequiredDialog 
+        isOpen={solutionAuthDialogOpen}
+        setIsOpen={setSolutionAuthDialogOpen}
+        returnPath="/pyq"
+      />
+      
+      {/* Purchase confirmation dialog */}
+      <Dialog open={isPurchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Purchase Premium Solution</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Access the step-by-step solution for this question paper.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            {/* Cost and balance card */}
+            <Card className={`border ${hasInsufficientFunds ? 'border-red-200' : 'border-amber-200'}`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className={`p-2.5 rounded-full ${hasInsufficientFunds ? 'bg-red-100' : 'bg-amber-100'}`}>
+                    <Coins className={`h-8 w-8 ${hasInsufficientFunds ? 'text-red-500' : 'text-amber-600'}`} />
+                  </div>
+                  <div>
+                    <p className={`font-medium ${hasInsufficientFunds ? 'text-red-700' : 'text-amber-800'}`}>
+                      Cost: 20 QCoins
+                    </p>
+                    <p className={`text-sm ${hasInsufficientFunds ? 'text-red-600' : 'text-amber-700'}`}>
+                      Your balance: {wallet?.balance || 0} QCoins
+                      {hasInsufficientFunds && (
+                        <span className="font-medium text-red-600 ml-1">(Insufficient)</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Insufficient funds card */}
+            {hasInsufficientFunds && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-1.5">
+                    <AlertCircle className="h-4 w-4 text-amber-500" />
+                    Need more QCoins?
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 pb-4">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center justify-center gap-1.5 h-10"
+                        onClick={handleTopUpNavigation}
+                      >
+                        <CreditCard className="h-3.5 w-3.5" />
+                        <span>Top Up Coins</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center justify-center gap-1.5 h-10"
+                        onClick={handleQuizzoNavigation}
+                      >
+                        <Trophy className="h-3.5 w-3.5" />
+                        <span>Play Quizzo</span>
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Win up to 25 QCoins for each Quizzo victory! Complete quizzes to earn more coins.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Error message */}
+            {purchaseError && !hasInsufficientFunds && (
+              <div className="bg-red-50 p-3 rounded-md text-red-600 text-sm border border-red-100">
+                {purchaseError}
+              </div>
+            )}
+            
+            {/* Success message */}
+            {purchaseStatus === 'success' && (
+              <Card className="border-green-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-1.5 bg-green-100 rounded-full">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-green-700">Purchase successful!</p>
+                      <p className="text-sm text-green-600">Opening solution in a new tab...</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
+          <DialogFooter className="flex justify-between sm:justify-between gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setPurchaseDialogOpen(false)}
+              disabled={purchaseStatus === 'loading'}
+              className="flex-1 sm:flex-initial"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handlePurchase}
+              disabled={
+                purchaseStatus === 'loading' || 
+                purchaseStatus === 'success' || 
+                hasInsufficientFunds
+              }
+              className={`flex-1 sm:flex-initial ${hasInsufficientFunds ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {purchaseStatus === 'loading' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                'Purchase Solution'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

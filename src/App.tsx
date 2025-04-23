@@ -21,6 +21,8 @@ import PYQ from "@/pages/PYQ";
 import ProgramDetails from "@/pages/PYQ/ProgramDetails";
 import Settings from "@/pages/Settings";
 import TransactionHistory from "@/pages/QCoins/History";
+import TopUpPage from "@/pages/QCoins/TopUp";
+import QCoinsPage from "@/pages/QCoins";
 import BugReport from "@/pages/BugReport";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
@@ -214,10 +216,26 @@ function App() {
               }
             />
             <Route
+              path="/qcoins"
+              element={
+                <ProtectedRoute>
+                  <QCoinsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/qcoins/history"
               element={
                 <ProtectedRoute>
                   <TransactionHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/qcoins/topup"
+              element={
+                <ProtectedRoute>
+                  <TopUpPage />
                 </ProtectedRoute>
               }
             />
