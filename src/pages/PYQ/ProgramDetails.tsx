@@ -175,7 +175,7 @@ const programsData = {
 interface Paper {
   id: string;
   title: string;
-  path: string;
+  path: string; // The path to the PDF file, including leading slash
   filename: string;
   semester: string;
   session: string;
