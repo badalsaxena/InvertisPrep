@@ -1,61 +1,17 @@
 import { Link } from "react-router-dom";
-import { BookOpen, Trophy, Users, Clock, BarChart, FileText } from "lucide-react";
+import { BookOpen, Trophy, Clock, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import visitorCounterService from "@/services/visitorCounter";
-
-// Key for storing visitor count in localStorage
-const VISITOR_COUNT_KEY = 'invertisPrep_visitorCount';
-// Key for tracking globally shared count (simulates a server)
-const GLOBAL_COUNT_KEY = 'invertisPrep_globalCount';
+import { VisitorCounter } from "@/components/VisitorCounter";
 
 export function Hero() {
   const [isVisible, setIsVisible] = useState(false);
   const { user } = useAuth();
-  const [visitorCount, setVisitorCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Trigger animations on component mount
     setIsVisible(true);
-    
-    // Record visit and get initial count
-    const initVisitorCounter = async () => {
-      try {
-        setIsLoading(true);
-        // Force clear sessionStorage to ensure count increments on each page load for testing
-        sessionStorage.removeItem('invertisPrep_visitedThisSession');
-        
-        // This will increment count if it's a new session
-        const count = await visitorCounterService.recordVisit();
-        console.log('Current visitor count:', count);
-        setVisitorCount(count);
-      } catch (error) {
-        console.error("Error initializing visitor counter:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    initVisitorCounter();
-    
-    // Set up a polling interval to check for updated counts
-    const intervalId = setInterval(async () => {
-      try {
-        const count = await visitorCounterService.getVisitorCount();
-        if (count !== visitorCount) {
-          console.log('Updated visitor count:', count);
-          setVisitorCount(count);
-        }
-      } catch (error) {
-        console.error("Error updating visitor count:", error);
-      }
-    }, 5000); // Check every 5 seconds
-    
-    // Clean up interval on unmount
-    return () => clearInterval(intervalId);
-  }, [visitorCount]);
+  }, []);
 
   return (
     <div
@@ -74,26 +30,7 @@ export function Hero() {
 
       {/* Visitor Count Badge */}
       <div className="absolute top-20 right-6 sm:right-10 md:right-16 z-20">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="bg-white/10 backdrop-filter backdrop-blur-lg px-3 py-1.5 rounded-full flex items-center text-white border border-white/20 hover:bg-white/20 transition-all cursor-pointer shadow-md">
-                <BarChart className="h-4 w-4 mr-2 text-indigo-300" />
-                {isLoading ? (
-                  <span className="text-xs font-medium opacity-70">Loading...</span>
-                ) : (
-                  <span className="text-xs font-medium">
-                    {visitorCount.toLocaleString()} Visitors
-                  </span>
-                )}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent className="bg-indigo-900/90 border-indigo-700 text-white">
-              <p>Real-time visitor count: {visitorCount.toLocaleString()}</p>
-              <p className="text-xs text-indigo-200 mt-1">This counter updates in real-time</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <VisitorCounter />
       </div>
 
       <div className="mx-auto max-w-7xl px-2 sm:px-6 relative z-10 py-6 md:py-0">
