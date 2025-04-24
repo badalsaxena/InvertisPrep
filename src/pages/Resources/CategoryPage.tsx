@@ -9,7 +9,7 @@ import { ChevronLeft, Download, Eye, FileText, AlertCircle } from "lucide-react"
 const isDevelopment = window.location.hostname === 'localhost';
 const BACKEND_URL = isDevelopment 
   ? 'http://localhost:3000'
-  : 'https://invertisprepbackend.render.com';
+  : 'https://invertisprepbackend.onrender.com';
 
 // Define interface for the debug attempt data
 interface DebugAttempt {
