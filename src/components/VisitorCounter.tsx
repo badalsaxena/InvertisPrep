@@ -6,8 +6,8 @@ export const VisitorCounter = () => {
 
   // Loading from localStorage
   useEffect(() => {
-    // Get stored visits or start with 0
-    const storedVisits = Number(localStorage.getItem("visitCounter")) || 0;
+    // Get stored visits or start with 953
+    const storedVisits = Number(localStorage.getItem("visitCounter")) || 953;
     // Always increment by 1 on each page load
     setVisits(storedVisits + 1);
   }, []);
