@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { 
   Card, 
@@ -9,10 +9,8 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, ChevronRight, BookOpen, Search } from "lucide-react";
+import { GraduationCap, ChevronRight, BookOpen, BookMarked } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Program data with interface
 export interface Program {
@@ -274,127 +272,90 @@ export const programs: Program[] = [
 ];
 
 function PYQPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  const filteredPrograms = programs.filter(program => 
-    program.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    program.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div className="container mx-auto py-12 px-4">
-      <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
-          Previous Year Question Papers
-        </h1>
-        <p className="text-lg text-muted-foreground mb-6">
-          Access previous year question papers for all programs and branches.
-        </p>
-        <Separator className="my-6" />
-        
-        <div className="max-w-md mx-auto mb-8">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search programs..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            Previous Year Question Papers
+          </h1>
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            Access previous year question papers for all programs and branches.
+          </p>
         </div>
         
-        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 text-amber-800 text-sm mt-6">
+        {/* Featured Syllabus Card */}
+        <div className="mb-10">
+          <Link to="/resources/syllabus" className="no-underline">
+            <Card className="overflow-hidden border border-gray-100 shadow-md hover:shadow-lg transition-all">
+              <div className="relative">
+                <div className="absolute top-0 right-0 left-0 h-16 bg-gradient-to-r from-indigo-500 to-blue-600 z-0"></div>
+                <div className="relative z-10 pt-4 px-6">
+                  <div className="bg-white p-3 rounded-full shadow-sm border border-blue-100 inline-block">
+                    <BookMarked className="h-6 w-6 text-indigo-600" />
+                  </div>
+                </div>
+              </div>
+              <CardHeader className="pt-2 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-xl font-bold text-gray-800">Syllabus</CardTitle>
+                    <CardDescription className="text-gray-600 mt-1">
+                      Course syllabi for all departments
+                    </CardDescription>
+                  </div>
+                  <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-sm w-full sm:w-auto">
+                    Browse Syllabus
+                  </Button>
+                </div>
+              </CardHeader>
+            </Card>
+          </Link>
+        </div>
+        
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-4 text-amber-800 text-sm mb-8">
           <p><strong>Note:</strong> Before downloading any previous year papers, please check your current syllabus.</p>
         </div>
-      </div>
-
-      <Tabs defaultValue="grid" className="max-w-6xl mx-auto">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-          <TabsTrigger value="grid">Grid View</TabsTrigger>
-          <TabsTrigger value="detailed">Detailed View</TabsTrigger>
-        </TabsList>
         
-        <TabsContent value="grid" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {filteredPrograms.map((program) => (
-              <Link to={`/pyq/${program.id}`} key={program.id} className="no-underline">
-                <Card className="h-full transition-all hover:shadow-md">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-xl font-bold">
-                          {program.name}
-                        </CardTitle>
-                        <CardDescription>
-                          {program.fullName}
-                        </CardDescription>
-                      </div>
-                      <div className="p-2 bg-primary/10 rounded-full">
-                        <GraduationCap className="h-5 w-5 text-primary" />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <p className="text-sm text-muted-foreground">
-                      {program.description}
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="ghost" className="w-full justify-between group">
-                      <span className="flex items-center">
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        View Question Papers
-                      </span>
-                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="detailed">
-          <div className="space-y-6 max-w-4xl mx-auto">
-            {filteredPrograms.map((program) => (
-              <Card key={program.id} className="overflow-hidden">
-                <CardHeader className="bg-muted/50">
-                  <div className="flex items-center justify-between">
+        {/* Program Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {programs.map((program) => (
+            <Link to={`/pyq/${program.id}`} key={program.id} className="no-underline">
+              <Card className="h-full transition-all hover:shadow-md">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle>{program.name} - {program.fullName}</CardTitle>
-                      <CardDescription className="mt-1.5">{program.description}</CardDescription>
+                      <CardTitle className="text-xl font-bold">
+                        {program.name}
+                      </CardTitle>
+                      <CardDescription>
+                        {program.fullName}
+                      </CardDescription>
                     </div>
                     <div className="p-2 bg-primary/10 rounded-full">
-                      <GraduationCap className="h-6 w-6 text-primary" />
+                      <GraduationCap className="h-5 w-5 text-primary" />
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-6">
-                  <h3 className="text-sm font-medium mb-3">Available Subjects:</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                    {program.subjects?.map((subject, index) => (
-                      <div key={index} className="flex items-center text-sm">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary mr-2"></div>
-                        {subject}
-                      </div>
-                    ))}
-                  </div>
+                <CardContent className="pb-3">
+                  <p className="text-sm text-muted-foreground">
+                    {program.description}
+                  </p>
                 </CardContent>
-                <CardFooter className="bg-muted/30 flex justify-end">
-                  <Link to={`/pyq/${program.id}`}>
-                    <Button className="group">
-                      View All Question Papers
-                      <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </Link>
+                <CardFooter>
+                  <Button variant="ghost" className="w-full justify-between group">
+                    <span className="flex items-center">
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      View Question Papers
+                    </span>
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
                 </CardFooter>
               </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

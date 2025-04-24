@@ -10,20 +10,47 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   NavigationMenu,
-  
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { 
+  Menu, 
+  ChevronDown, 
+  LogOut, 
+  Home, 
+  BookOpen, 
+  Trophy, 
+  Info, 
+  MessageSquare, 
+  Mail, 
+  ExternalLink,
+  User,
+  BarChart,
+  Coins,
+  PlusCircle,
+  X
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -42,13 +69,13 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Resources", path: "/resources" },
-    { name: "PYQ", path: "/pyq" },
-    { name: "Quizzo", path: "/quizzo" },
-    { name: "About", path: "/about" },
-    { name: "Blog", path: "/blog" },
-    { name: "Contact", path: "/contact-us" },
+    { name: "Home", path: "/", icon: <Home className="h-4 w-4 mr-2" /> },
+    { name: "Resources", path: "/resources", icon: <BookOpen className="h-4 w-4 mr-2" /> },
+    { name: "PYQ", path: "/pyq", icon: <ExternalLink className="h-4 w-4 mr-2" /> },
+    { name: "Quizzo", path: "/quizzo", icon: <Trophy className="h-4 w-4 mr-2" /> },
+    { name: "About", path: "/about", icon: <Info className="h-4 w-4 mr-2" /> },
+    { name: "Blog", path: "/blog", icon: <MessageSquare className="h-4 w-4 mr-2" />, mobileOnly: true },
+    { name: "Contact", path: "/contact-us", icon: <Mail className="h-4 w-4 mr-2" /> },
   ];
 
   // Format user name for display
@@ -75,7 +102,7 @@ export default function Navbar() {
           <div className="hidden sm:flex flex-1 justify-center items-center">
             <NavigationMenu>
               <NavigationMenuList>
-                {navLinks.map((link) => (
+                {navLinks.filter(link => !link.mobileOnly).map((link) => (
                   <NavigationMenuItem key={link.path}>
                     <Link to={link.path}>
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -114,21 +141,187 @@ export default function Navbar() {
             </NavigationMenu>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center sm:hidden">
-            <Button
-              variant="ghost"
-              size="default"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </Button>
-          </div>
+          {/* Mobile menu button - Replaced with Sheet */}
+          {isMounted && (
+            <div className="sm:hidden flex items-center">
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="default"
+                    className="inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
+                  >
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="p-0">
+                  <div className="h-full flex flex-col">
+                    {/* User Profile Section at Top */}
+                    <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50">
+                      {user ? (
+                        <div className="flex flex-col items-center">
+                          <Avatar className="h-16 w-16 mb-3 ring-2 ring-white shadow-md">
+                            <AvatarImage 
+                              src={user.photoURL || undefined} 
+                              alt={user.displayName || "User"}
+                              referrerPolicy="no-referrer"
+                            />
+                            <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-purple-400 text-white text-lg">
+                              {user.displayName ? getInitials(user.displayName) : "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-center">
+                            <p className="font-bold text-lg text-gray-800">{user.displayName || "User"}</p>
+                            <p className="text-sm text-gray-500">{user.email}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center space-y-4">
+                          <SheetHeader>
+                            <SheetTitle className="text-center">Welcome to InvertisPrep</SheetTitle>
+                          </SheetHeader>
+                          <div className="w-full space-y-2">
+                            <Link to="/login" className="w-full" onClick={() => setOpen(false)}>
+                              <Button variant="outline" className="w-full">Login</Button>
+                            </Link>
+                            <Link to="/signup" className="w-full" onClick={() => setOpen(false)}>
+                              <Button className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">Sign up</Button>
+                            </Link>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Navigation Links */}
+                    <div className="flex-1 overflow-auto py-2">
+                      {/* Main Nav Links */}
+                      <div className="space-y-1 px-2">
+                        {navLinks.map((link) => (
+                          <Link
+                            key={link.path}
+                            to={link.path}
+                            className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                            onClick={() => setOpen(false)}
+                          >
+                            {link.icon}
+                            {link.name}
+                          </Link>
+                        ))}
+                        
+                        {/* User Menu Links (when logged in) */}
+                        {user && (
+                          <>
+                            <Separator className="my-2" />
+                            <p className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                              Account
+                            </p>
+                            <div className="space-y-1">
+                              <Link
+                                to="/dashboard"
+                                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                                onClick={() => setOpen(false)}
+                              >
+                                <Home className="h-4 w-4 mr-2" />
+                                Dashboard
+                              </Link>
+                              <Link
+                                to="/profile"
+                                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                                onClick={() => setOpen(false)}
+                              >
+                                <User className="h-4 w-4 mr-2" />
+                                Profile
+                              </Link>
+                              <Link
+                                to="/academic-progress"
+                                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                                onClick={() => setOpen(false)}
+                              >
+                                <BarChart className="h-4 w-4 mr-2" />
+                                Academic Progress
+                              </Link>
+                              <Link
+                                to="/qcoins"
+                                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                                onClick={() => setOpen(false)}
+                              >
+                                <Coins className="h-4 w-4 mr-2" />
+                                QCoins Wallet
+                              </Link>
+                              <Link
+                                to="/qcoins/topup"
+                                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                                onClick={() => setOpen(false)}
+                              >
+                                <PlusCircle className="h-4 w-4 mr-2" />
+                                Top Up QCoins
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                        
+                        <Separator className="my-2" />
+                        
+                        {/* More Menu Items */}
+                        <p className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          More
+                        </p>
+                        <Link
+                          to="/our-mentors"
+                          className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                          onClick={() => setOpen(false)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Our Mentors
+                        </Link>
+                        <Link
+                          to="/our-team"
+                          className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                          onClick={() => setOpen(false)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Our Team
+                        </Link>
+                        <Link
+                          to="/bug-report"
+                          className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                          onClick={() => setOpen(false)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Report Bug
+                        </Link>
+                        <Link
+                          to="/terms-of-service"
+                          className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                          onClick={() => setOpen(false)}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Terms of Service
+                        </Link>
+                      </div>
+                    </div>
+                    
+                    {/* Logout Button at Bottom */}
+                    {user && (
+                      <div className="p-4 border-t border-gray-200">
+                        <Button 
+                          variant="outline" 
+                          className="w-full flex items-center justify-center" 
+                          onClick={() => {
+                            handleLogout();
+                            setOpen(false);
+                          }}
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Log out
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          )}
 
           {/* Styled User Box (Desktop) */}
           <div className="hidden sm:flex sm:items-center">
@@ -165,10 +358,13 @@ export default function Navbar() {
                     <Link to="/profile" className="w-full">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/settings" className="w-full">Settings</Link>
+                    <Link to="/academic-progress" className="w-full">Academic Progress</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/admin/dashboard" className="w-full">Admin Dashboard</Link>
+                    <Link to="/qcoins" className="w-full">QCoins Wallet</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/qcoins/topup" className="w-full">Top Up QCoins</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
@@ -191,131 +387,6 @@ export default function Navbar() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden`}>
-        <div className="pt-2 pb-3 space-y-1">
-          {/* Mobile Navigation Links */}
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {link.name}
-            </Link>
-          ))}
-          
-          {/* Mobile More Menu */}
-          <div className="border-t border-gray-200 pt-2">
-            <div className="px-3 py-2 text-base font-medium text-gray-700">More</div>
-            <Link
-              to="/our-mentors"
-              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Our Mentors
-            </Link>
-            <Link
-              to="/our-team"
-              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Our Team
-            </Link>
-            <Link
-              to="/bug-report"
-              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Report Bug
-            </Link>
-            <Link
-              to="/terms-of-service"
-              className="block px-6 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Terms of Service
-            </Link>
-          </div>
-          
-          {/* Mobile Auth Menu */}
-          {user ? (
-            <div className="border-t border-gray-200 pt-4">
-              <div className="flex items-center space-x-3 px-4 py-2">
-                <Avatar>
-                  <AvatarImage 
-                    src={user.photoURL || undefined} 
-                    alt={user.displayName || "User"}
-                    referrerPolicy="no-referrer"
-                  />
-                  <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-purple-400 text-white">
-                    {user.displayName ? getInitials(user.displayName) : "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium">
-                  {user.displayName || user.email}
-                </span>
-              </div>
-              <Link
-                to="/dashboard"
-                className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/profile"
-                className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Profile
-              </Link>
-              <Link
-                to="/settings"
-                className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Settings
-              </Link>
-              <Link
-                to="/admin/dashboard"
-                className="block px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Admin Dashboard
-              </Link>
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-600"
-              >
-                Log out
-              </button>
-            </div>
-          ) : (
-            <div className="border-t border-gray-200 mt-4 pt-4 px-4 space-y-2">
-              <Link
-                to="/login"
-                className="block w-full text-center px-4 py-2 text-base font-medium text-gray-700 hover:bg-purple-50 rounded-md border border-gray-300"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="block w-full text-center px-4 py-2 text-base font-medium text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 rounded-md shadow-md"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign up
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </nav>

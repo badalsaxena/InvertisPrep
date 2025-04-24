@@ -1,36 +1,61 @@
 import { Link } from "react-router-dom";
-import { BookOpen, Trophy, Users, Clock, BarChart } from "lucide-react";
+import { BookOpen, Trophy, Users, Clock, BarChart, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import visitorCounterService from "@/services/visitorCounter";
+
+// Key for storing visitor count in localStorage
+const VISITOR_COUNT_KEY = 'invertisPrep_visitorCount';
+// Key for tracking globally shared count (simulates a server)
+const GLOBAL_COUNT_KEY = 'invertisPrep_globalCount';
 
 export function Hero() {
   const [isVisible, setIsVisible] = useState(false);
   const { user } = useAuth();
-  const [visitorCount, setVisitorCount] = useState<number>(250);
-  const [isLoading, setIsLoading] = useState(false);
+  const [visitorCount, setVisitorCount] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Trigger animations on component mount
     setIsVisible(true);
     
-    // Fetch visitor count from Vercel Analytics
-    const fetchVisitorCount = async () => {
+    // Record visit and get initial count
+    const initVisitorCounter = async () => {
       try {
-        // In a real implementation, you would integrate with Vercel Analytics API
-        // For now, we'll use a simulated count that increases slightly each load
-        // to give the impression of a dynamic count
-        const baseCount = 250;
-        const randomIncrement = Math.floor(Math.random() * 20);
-        setVisitorCount(baseCount + randomIncrement);
+        setIsLoading(true);
+        // Force clear sessionStorage to ensure count increments on each page load for testing
+        sessionStorage.removeItem('invertisPrep_visitedThisSession');
+        
+        // This will increment count if it's a new session
+        const count = await visitorCounterService.recordVisit();
+        console.log('Current visitor count:', count);
+        setVisitorCount(count);
       } catch (error) {
-        console.error('Error fetching visitor count:', error);
-        // Keep the default visitor count if there's an error
+        console.error("Error initializing visitor counter:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    fetchVisitorCount();
-  }, []);
+    initVisitorCounter();
+    
+    // Set up a polling interval to check for updated counts
+    const intervalId = setInterval(async () => {
+      try {
+        const count = await visitorCounterService.getVisitorCount();
+        if (count !== visitorCount) {
+          console.log('Updated visitor count:', count);
+          setVisitorCount(count);
+        }
+      } catch (error) {
+        console.error("Error updating visitor count:", error);
+      }
+    }, 5000); // Check every 5 seconds
+    
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
+  }, [visitorCount]);
 
   return (
     <div
@@ -54,14 +79,18 @@ export function Hero() {
             <TooltipTrigger asChild>
               <div className="bg-white/10 backdrop-filter backdrop-blur-lg px-3 py-1.5 rounded-full flex items-center text-white border border-white/20 hover:bg-white/20 transition-all cursor-pointer shadow-md">
                 <BarChart className="h-4 w-4 mr-2 text-indigo-300" />
-                <span className="text-xs font-medium">
-                  {visitorCount.toLocaleString()}+ Visitors
-                </span>
+                {isLoading ? (
+                  <span className="text-xs font-medium opacity-70">Loading...</span>
+                ) : (
+                  <span className="text-xs font-medium">
+                    {visitorCount.toLocaleString()} Visitors
+                  </span>
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent className="bg-indigo-900/90 border-indigo-700 text-white">
-              <p>Over {visitorCount.toLocaleString()} visitors this month</p>
-              <p className="text-xs text-indigo-200 mt-1">Join our growing community today!</p>
+              <p>Real-time visitor count: {visitorCount.toLocaleString()}</p>
+              <p className="text-xs text-indigo-200 mt-1">This counter updates in real-time</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -103,46 +132,52 @@ export function Hero() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-6 lg:mt-0">
-            {/* Feature Card 1 */}
+            {/* Feature Card 1 - Resources */}
             <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
-              <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">
-                  <BookOpen className="h-5 w-5 md:h-6 md:w-6" />
+              <Link to="/resources" className="block">
+                <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
+                  <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">
+                    <BookOpen className="h-5 w-5 md:h-6 md:w-6" />
+                  </div>
+                  <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">Resources</h3>
                 </div>
-                <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">Study Materials</h3>
-              </div>
-              <p className="text-xs md:text-sm text-gray-200 font-['Poppins'] ml-10 md:ml-14">
-                Access comprehensive study materials and previous year papers.
-              </p>
+                <p className="text-xs md:text-sm text-gray-200 font-['Poppins'] ml-10 md:ml-14">
+                  Access comprehensive learning resources and study materials.
+                </p>
+              </Link>
             </div>
 
-            {/* Feature Card 2 */}
+            {/* Feature Card 2 - Quiz Battles */}
             <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
-              <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">
-                  <Trophy className="h-5 w-5 md:h-6 md:w-6" />
+              <Link to="/quizzo" className="block">
+                <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
+                  <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">
+                    <Trophy className="h-5 w-5 md:h-6 md:w-6" />
+                  </div>
+                  <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">Quiz Battles</h3>
                 </div>
-                <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">Quiz Battles</h3>
-              </div>
-              <p className="text-xs md:text-sm text-gray-200 font-['Poppins'] ml-10 md:ml-14">
-                Compete with peers in real-time quiz battles.
-              </p>
+                <p className="text-xs md:text-sm text-gray-200 font-['Poppins'] ml-10 md:ml-14">
+                  Compete with peers in real-time quiz battles.
+                </p>
+              </Link>
             </div>
 
-            {/* Feature Card 3 */}
+            {/* Feature Card 3 - PYQ Solutions */}
             <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
-              <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">
-                  <Users className="h-5 w-5 md:h-6 md:w-6" />
+              <Link to="/pyq" className="block">
+                <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
+                  <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">
+                    <FileText className="h-5 w-5 md:h-6 md:w-6" />
+                  </div>
+                  <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">PYQ Solutions</h3>
                 </div>
-                <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">Community</h3>
-              </div>
-              <p className="text-xs md:text-sm text-gray-200 font-['Poppins'] ml-10 md:ml-14">
-                Join a community of learners and share knowledge.
-              </p>
+                <p className="text-xs md:text-sm text-gray-200 font-['Poppins'] ml-10 md:ml-14">
+                  Access previous year question papers with detailed solutions.
+                </p>
+              </Link>
             </div>
 
-            {/* Feature Card 4 */}
+            {/* Feature Card 4 - 24/7 Access (No Link) */}
             <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
               <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
                 <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">

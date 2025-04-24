@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronLeft, Download, Eye, FileText, AlertCircle } from "lucide-react";
+import { ChevronLeft, Download, Eye, FileText, AlertCircle, Search } from "lucide-react";
 
 // Set backend URL based on environment
 // When running locally (dev mode), use localhost, otherwise use production
 const isDevelopment = window.location.hostname === 'localhost';
 const BACKEND_URL = isDevelopment 
-  ? 'http://localhost:3000'
+  ? 'https://invertisprepbackend.onrender.com'
   : 'https://invertisprepbackend.onrender.com';
 
 // Define interface for the debug attempt data
@@ -46,6 +46,7 @@ export default function CategoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
   const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     // Format category name for display
@@ -58,8 +59,13 @@ export default function CategoryPage() {
       setDebugInfo(null);
       
       try {
-        // Special handling for cheatsheets category (API uses singular form)
-        const apiCategoryId = categoryId === "cheatsheets" ? "cheatsheet" : categoryId;
+        // Special handling for category naming
+        let apiCategoryId = categoryId;
+        if (categoryId === "cheatsheets") {
+          apiCategoryId = "cheatsheet";
+        } else if (categoryId === "syllabus") {
+          apiCategoryId = "syllabus";
+        }
         
         console.log(`Fetching files for category: ${categoryId} from ${BACKEND_URL} (API parameter: ${apiCategoryId})`);
         let debugData: DebugInfo = {
@@ -199,10 +205,25 @@ export default function CategoryPage() {
     }
   };
 
+  // Filter files based on search query
+  const filteredFiles = files.filter(file => 
+    file.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Mobile Header */}
+        <div className="block sm:hidden mb-4">
+          <Link to="/resources" className="text-sm text-indigo-600 flex items-center mb-2">
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back to All Resources
+          </Link>
+          <h1 className="text-xl font-bold text-gray-900">{categoryName} Resources</h1>
+        </div>
+
+        {/* Desktop Header and Breadcrumb */}
+        <div className="hidden sm:block mb-8">
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
               <li className="inline-flex items-center">
@@ -218,19 +239,35 @@ export default function CategoryPage() {
               </li>
             </ol>
           </nav>
+          
+          <div className="mt-4 mb-6 flex items-center justify-between">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">{categoryName} Resources</h1>
+            <Button variant="outline" onClick={() => navigate('/resources')}>
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Back to All Resources
+            </Button>
+          </div>
         </div>
         
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">{categoryName} Resources</h1>
-          <Button variant="outline" onClick={() => navigate('/resources')}>
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to All Resources
-          </Button>
+        {/* Search Bar */}
+        <div className="mb-4 sm:mb-6">
+          <div className="relative w-full max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+              placeholder={`Search ${categoryName} files...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-indigo-600 rounded-full"></div>
+          <div className="flex justify-center py-8">
+            <div className="animate-spin h-6 w-6 border-t-2 border-b-2 border-indigo-600 rounded-full"></div>
           </div>
         ) : error ? (
           <div className="text-center py-12">
@@ -301,63 +338,110 @@ export default function CategoryPage() {
               </div>
             )}
           </div>
-        ) : files.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Size</TableHead>
-                  <TableHead>Upload Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {files.map((file) => (
-                  <TableRow key={file.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center">
-                        <FileText className="h-4 w-4 mr-2 text-indigo-600" />
-                        {file.name}
+        ) : filteredFiles.length > 0 ? (
+          <div className="bg-white shadow overflow-hidden rounded-md">
+            {/* Mobile View - Card Style List */}
+            <div className="block sm:hidden">
+              <ul className="divide-y divide-gray-200">
+                {filteredFiles.map((file) => (
+                  <li key={file.id} className="px-4 py-3">
+                    <div className="flex items-start">
+                      <FileText className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs text-gray-500">{formatBytes(file.size)}</p>
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleViewPdf(file.path)}
+                              className="h-8 px-2 text-xs"
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1" />
+                              View
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleDownload(file.id)}
+                              className="h-8 px-2 text-xs bg-indigo-600"
+                            >
+                              <Download className="h-3.5 w-3.5 mr-1" />
+                              Download
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>{formatBytes(file.size)}</TableCell>
-                    <TableCell>{formatDate(file.uploadDate)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => handleViewPdf(file.path)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleDownload(file.id)}
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          Download
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </li>
                 ))}
-              </TableBody>
-            </Table>
+              </ul>
+            </div>
+
+            {/* Desktop View - Table */}
+            <div className="hidden sm:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Size</TableHead>
+                    <TableHead>Upload Date</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredFiles.map((file) => (
+                    <TableRow key={file.id}>
+                      <TableCell className="flex items-center">
+                        <FileText className="h-5 w-5 text-indigo-600 mr-3 flex-shrink-0" />
+                        <span className="font-medium">{file.name}</span>
+                      </TableCell>
+                      <TableCell>{formatBytes(file.size)}</TableCell>
+                      <TableCell>{formatDate(file.uploadDate)}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleViewPdf(file.path)}
+                            className="flex items-center"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleDownload(file.id)}
+                            className="flex items-center"
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-600">
-            <FileText className="h-16 w-16 mx-auto text-gray-400" />
-            <p className="mt-4 text-lg">No files found in {categoryName}</p>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/resources')}
-              className="mt-4"
-            >
-              Back to Resources
-            </Button>
+          <div className="text-center py-8 bg-white rounded-lg shadow">
+            <FileText className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+            {searchQuery ? (
+              <>
+                <p className="text-base font-medium text-gray-900 mb-2">No matching files found</p>
+                <p className="text-sm text-gray-500 mb-3">Try adjusting your search terms</p>
+                <Button onClick={() => setSearchQuery("")} variant="outline" size="sm">
+                  Clear Search
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-base font-medium text-gray-900 mb-2">No files available</p>
+                <p className="text-sm text-gray-500">Files will be uploaded soon.</p>
+              </>
+            )}
           </div>
         )}
       </div>
