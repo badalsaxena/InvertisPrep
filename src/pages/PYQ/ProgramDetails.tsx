@@ -147,12 +147,12 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
-  fashion_design: {
+  fashiondesign: {
     name: "Fashion Design",
     fullName: "Bachelor of Design in Fashion",
     branches: [
-      { id: "general", name: "General" },
-      { id: "textile", name: "Textile Design" }
+      { id: "general", name: "General" }
+      
     ]
   },
   education: {
@@ -162,13 +162,12 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
-  applied_science: {
+  appliedscienceandhumanities: {
     name: "Applied Science",
     fullName: "Bachelor of Applied Sciences",
     branches: [
-      { id: "general", name: "General" },
-      { id: "biotechnology", name: "Biotechnology" },
-      { id: "food_tech", name: "Food Technology" }
+      { id: "general", name: "General" }
+      
     ]
   },
   msc: {
