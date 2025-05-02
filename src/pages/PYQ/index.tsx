@@ -242,11 +242,18 @@ export const programs: Program[] = [
     subjects: programSubjects["bjmc"]
   },
   {
-    id: "fashion_design",
+    id: "fashiondesign",
     name: "Fashion Design",
     fullName: "Bachelor of Design in Fashion",
     description: "4-year undergraduate program focusing on fashion and textile design",
-    subjects: programSubjects["fashion_design"]
+    subjects: programSubjects["fashiondesign"]
+  },
+  {
+    id: "law",
+    name: "Law",
+    fullName: "Bachelor of Law",
+    description: "3-year undergraduate program focusing on legal studies",
+    subjects: programSubjects["law"]
   },
   {
     id: "education",
@@ -256,11 +263,11 @@ export const programs: Program[] = [
     subjects: programSubjects["education"]
   },
   {
-    id: "applied_science",
+    id: "appliedscienceandhumanities",
     name: "Applied Science",
     fullName: "Bachelor of Applied Sciences",
     description: "3-year program focusing on practical applications of scientific principles",
-    subjects: programSubjects["applied_science"]
+    subjects: programSubjects["appliedscienceandhumanities"]
   },
   {
     id: "msc",
