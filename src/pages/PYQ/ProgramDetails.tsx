@@ -155,6 +155,13 @@ const programsData = {
       
     ]
   },
+  law: {
+    name: "Law",
+    fullName: "Bachelor of Law",
+    branches: [
+      { id: "general", name: "General" }
+    ]
+  },
   education: {
     name: "Education",
     fullName: "Bachelor of Education",
