@@ -227,13 +227,7 @@ export const programs: Program[] = [
     description: "4-year undergraduate program focusing on pharmaceutical sciences",
     subjects: programSubjects["pharmacy"]
   },
-  {
-    id: "ba",
-    name: "BA",
-    fullName: "Bachelor of Arts",
-    description: "3-year undergraduate program focusing on humanities and social sciences",
-    subjects: programSubjects["ba"]
-  },
+  
   {
     id: "bjmc",
     name: "BJMC",

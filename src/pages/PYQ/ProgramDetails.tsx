@@ -129,17 +129,7 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
-  ba: {
-    name: "BA",
-    fullName: "Bachelor of Arts",
-    branches: [
-      { id: "general", name: "General" },
-      { id: "economics", name: "Economics" },
-      { id: "english", name: "English" },
-      { id: "history", name: "History" },
-      { id: "political_science", name: "Political Science" }
-    ]
-  },
+  
   bjmc: {
     name: "BJMC",
     fullName: "Bachelor of Journalism & Mass Communication",
