@@ -129,7 +129,13 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
-  
+  diploma: {
+    name: "Diploma",
+    fullName: "Diploma",
+    branches: [
+      { id: "general", name: "General" }
+    ]
+  },
   bjmc: {
     name: "BJMC",
     fullName: "Bachelor of Journalism & Mass Communication",
