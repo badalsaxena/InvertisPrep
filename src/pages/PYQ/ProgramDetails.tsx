@@ -804,16 +804,6 @@ function PaperCard({ paper }: { paper: Paper }) {
           <FileText className="h-3 w-3 mr-1.5" />
           Download
         </a>
-        <a
-          href={`${BACKEND_URL}${solutionPath}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleSolutionDownload}
-          className="inline-flex items-center px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-md transition-colors"
-        >
-          <BookOpen className="h-3 w-3 mr-1.5" />
-          Premium Solution
-        </a>
       </div>
       
       {/* Auth Required Dialog */}

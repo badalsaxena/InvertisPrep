@@ -216,15 +216,6 @@ const PYQBrowser: React.FC<PYQBrowserProps> = () => {
                         Download
                       </a>
                     </Button>
-                    <Button 
-                      size="sm"
-                      variant="secondary"
-                      className="flex items-center gap-1.5 bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200"
-                      onClick={(e) => handleSolutionDownload(e, paper)}
-                    >
-                      <BookOpen className="h-3.5 w-3.5" />
-                      Premium Solution
-                    </Button>
                   </div>
                 </CardContent>
               </Card>

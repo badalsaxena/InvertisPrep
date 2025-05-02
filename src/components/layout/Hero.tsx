@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BookOpen, Trophy, Clock, FileText } from "lucide-react";
+import { BookOpen, Trophy, FileText, Medal, ArrowUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { VisitorCounter } from "@/components/VisitorCounter";
@@ -36,8 +36,6 @@ export function Hero() {
       <div className="mx-auto max-w-7xl px-2 sm:px-6 relative z-10 py-6 md:py-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
           <div className="max-w-xl mx-auto text-center lg:text-left pt-10 sm:pt-0">
-            
-
             <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white font-['Montserrat']">
               <span className={`inline-block transition-all duration-700 delay-100 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'}`}>
                 Your Gateway to
@@ -68,8 +66,27 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mt-6 lg:mt-0">
-            {/* Feature Card 1 - Resources */}
+          <div className="grid grid-cols-2 gap-3 md:gap-4 mt-6 lg:mt-0">
+            {/* Feature Card 1 - Leaderboard (NEW) with Stats */}
+            <div className={`rounded-xl bg-gradient-to-r from-indigo-600/40 via-purple-600/40 to-pink-600/40 p-3 md:p-5 shadow-xl backdrop-blur-sm border border-pink-300/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-pink-500/30 hover:scale-105 hover:-translate-y-1 relative overflow-hidden`}>
+              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg shadow transform rotate-0">
+                NEW
+              </div>
+              <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-r from-indigo-200 to-pink-200 text-indigo-600">
+                  <Medal className="h-5 w-5 md:h-6 md:w-6" />
+                </div>
+                <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">Leaderboard</h3>
+              </div>
+              <p className="text-xs md:text-sm text-gray-100 font-['Poppins'] ml-10 md:ml-14 mb-2">
+                Compete, rank up, and show off your academic prowess!
+              </p>
+              
+              {/* Quizzo Stats Section */}
+              
+            </div>
+            
+            {/* Feature Card 2 - Resources */}
             <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
               <Link to="/resources" className="block">
                 <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
@@ -84,7 +101,7 @@ export function Hero() {
               </Link>
             </div>
 
-            {/* Feature Card 2 - Quiz Battles */}
+            {/* Feature Card 3 - Quiz Battles */}
             <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
               <Link to="/quizzo" className="block">
                 <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
@@ -99,7 +116,7 @@ export function Hero() {
               </Link>
             </div>
 
-            {/* Feature Card 3 - PYQ Solutions */}
+            {/* Feature Card 4 - PYQ Solutions */}
             <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
               <Link to="/pyq" className="block">
                 <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
@@ -112,19 +129,6 @@ export function Hero() {
                   Access previous year question papers with detailed solutions.
                 </p>
               </Link>
-            </div>
-
-            {/* Feature Card 4 - 24/7 Access (No Link) */}
-            <div className={`rounded-xl bg-transparent p-3 md:p-5 shadow-xl backdrop-blur-sm border border-white/50 transition-all duration-500 transform ${isVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-10 opacity-0 scale-95'} hover:shadow-indigo-500/30 hover:scale-105 hover:-translate-y-1`}>
-              <div className="flex items-center gap-x-3 md:gap-x-4 mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 rounded-lg bg-indigo-100 text-indigo-600">
-                  <Clock className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <h3 className="text-base md:text-lg font-semibold leading-7 text-white font-['Montserrat']">24/7 Access</h3>
-              </div>
-              <p className="text-xs md:text-sm text-gray-200 font-['Poppins'] ml-10 md:ml-14">
-                Study anytime, anywhere with our platform.
-              </p>
             </div>
           </div>
         </div>

@@ -21,6 +21,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { updateLeaderboard } from '@/services/leaderboardService';
+import { toast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Coins } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Medal } from "lucide-react";
 
 // Define a type for the quiz results with extended properties
 interface QuizResult {
@@ -242,7 +252,18 @@ export default function MultiplayerQuizzo() {
         timeSpent: 0 // This would ideally come from the request
       });
       
-      // 3. Refresh wallet to show updated balance
+      // 3. Update leaderboard with points earned
+      await updateLeaderboard(
+        uid,
+        user?.displayName || 'Anonymous',
+        user?.photoURL || undefined,
+        profile?.course || 'Unknown',
+        score,
+        correctAnswers,
+        isWinner
+      );
+      
+      // 4. Refresh wallet to show updated balance
       setTimeout(() => {
         refreshWallet();
       }, 1500);
@@ -578,69 +599,95 @@ export default function MultiplayerQuizzo() {
           
           {/* Finished state - Show results */}
           {gameState === 'finished' && gameResults && (
-            <div className="max-w-md mx-auto bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center">
-              <div className="flex justify-center mb-6">
-                <Trophy className={`h-16 w-16 ${
-                  gameResults.myResult.score > gameResults.opponentResult.score
-                    ? 'text-yellow-500'
-                    : 'text-indigo-600'
-                }`} />
+            <div className="max-w-md mx-auto">
+              <Card className="mb-6">
+                <CardContent className="p-8 text-center">
+                  <div className="mb-4">
+                    {gameResults.myResult.score > gameResults.opponentResult.score ? (
+                      <Trophy className="h-14 w-14 text-yellow-500 mx-auto" />
+                    ) : gameResults.myResult.score < gameResults.opponentResult.score ? (
+                      <Award className="h-14 w-14 text-blue-500 mx-auto" />
+                    ) : (
+                      <Medal className="h-14 w-14 text-purple-500 mx-auto" />
+                    )}
+                  </div>
+                  
+                  <h2 className="text-2xl font-bold mb-1">
+                    {gameResults.myResult.score > gameResults.opponentResult.score
+                      ? "You Won! 🎉"
+                      : gameResults.myResult.score < gameResults.opponentResult.score
+                      ? "Good Try!"
+                      : "It's a Draw!"}
+                  </h2>
+                  
+                  <p className="text-gray-500 mb-6">
+                    {gameResults.myResult.score > gameResults.opponentResult.score
+                      ? "Congratulations on your victory!"
+                      : gameResults.myResult.score < gameResults.opponentResult.score
+                      ? "You'll get them next time."
+                      : "Both players matched each other."}
+                  </p>
+                  
+                  {/* Final scores */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className={`p-4 rounded-lg ${
+                      gameResults.myResult.score >= gameResults.opponentResult.score
+                        ? "bg-green-50 border border-green-100"
+                        : "bg-gray-50 border border-gray-100"
+                    }`}>
+                      <p className="text-sm text-gray-600 mb-1">Your Score</p>
+                      <p className="text-xl font-bold text-indigo-600">{gameResults.myResult.score}</p>
+                    </div>
+                    
+                    <div className={`p-4 rounded-lg ${
+                      gameResults.opponentResult.score > gameResults.myResult.score
+                        ? "bg-green-50 border border-green-100"
+                        : "bg-gray-50 border border-gray-100"
+                    }`}>
+                      <p className="text-sm text-gray-600 mb-1">Opponent's Score</p>
+                      <p className="text-xl font-bold">{gameResults.opponentResult.score}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Points earned */}
+                  {user && gameResults.myResult.score > 0 && (
+                    <div className="mb-6 p-3 bg-indigo-50 rounded-lg text-indigo-700 font-medium">
+                      {gameResults.myResult.score > gameResults.opponentResult.score ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div>Victory bonus: +50 XP</div>
+                        </div>
+                      ) : null}
+                      <div className="mt-2">
+                        Total: {gameResults.myResult.score + (gameResults.myResult.score > gameResults.opponentResult.score ? 50 : 0)} XP
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Reward message */}
+                  {rewardMessage && (
+                    <Badge variant="outline" className="mx-auto mt-2">
+                      <Coins className="h-3.5 w-3.5 mr-1" />
+                      {rewardMessage}
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
+              
+              <div className="flex flex-col gap-3">
+                <Button onClick={() => setGameState('setup')} className="w-full">
+                  Play Again
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/quizzo")} className="w-full">
+                  Back to Quizzo Hub
+                </Button>
+                <Link
+                  to="/leaderboard"
+                  className="w-full mt-2 text-center text-sm text-indigo-600 hover:text-indigo-800 flex items-center justify-center"
+                >
+                  <Medal className="h-4 w-4 mr-1.5" />
+                  View Leaderboard
+                </Link>
               </div>
-              
-              <h2 className="text-2xl font-bold mb-6">
-                {gameResults.myResult.score > gameResults.opponentResult.score ? (
-                  <span className="text-green-600">Victory!</span>
-                ) : gameResults.myResult.score < gameResults.opponentResult.score ? (
-                  <span className="text-red-600">Defeat!</span>
-                ) : (
-                  <span className="text-blue-600">Draw!</span>
-                )}
-              </h2>
-              
-              {/* Final scores */}
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className={`p-4 rounded-md ${
-                  gameResults.myResult.score >= gameResults.opponentResult.score 
-                    ? 'bg-green-50 border border-green-200' 
-                    : 'bg-gray-50 border border-gray-200'
-                }`}>
-                  <div className="text-sm font-medium mb-1">You</div>
-                  <div className="text-3xl font-bold mb-2">
-                    {gameResults.myResult.score}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    Time: {(gameResults.myResult.totalTime / 1000).toFixed(1)}s
-                  </div>
-                </div>
-                
-                <div className={`p-4 rounded-md ${
-                  gameResults.opponentResult.score > gameResults.myResult.score 
-                    ? 'bg-green-50 border border-green-200' 
-                    : 'bg-gray-50 border border-gray-200'
-                }`}>
-                  <div className="text-sm font-medium mb-1">Opponent</div>
-                  <div className="text-3xl font-bold mb-2">
-                    {gameResults.opponentResult.score}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    Time: {(gameResults.opponentResult.totalTime / 1000).toFixed(1)}s
-                  </div>
-                </div>
-              </div>
-              
-              {/* Add reward notification */}
-              {rewardMessage && (
-                <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-md text-blue-700">
-                  <span className="text-lg font-medium">{rewardMessage}</span>
-                </div>
-              )}
-              
-              <Button
-                onClick={playAgain}
-                className="bg-indigo-600 hover:bg-indigo-700 px-8 py-2 text-white font-medium rounded-md"
-              >
-                Play Again
-              </Button>
             </div>
           )}
         </div>

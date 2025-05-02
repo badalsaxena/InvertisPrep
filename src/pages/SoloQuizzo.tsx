@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
-import { CircleDashed, CircleCheck, CircleAlert, Timer } from "lucide-react";
+import { CircleDashed, CircleCheck, CircleAlert, Timer, Trophy, Coins } from "lucide-react";
 import { updateQuizProgress } from '@/services/academicProgressService';
 import { addQuizReward } from '@/services/walletService';
+import { updateLeaderboard } from '@/services/leaderboardService';
 import {
   Select,
   SelectContent,
@@ -203,12 +204,14 @@ export default function SoloQuizzo() {
     total: number;
     accuracy: number;
     isWinner: boolean;
+    points: number;
   }>({
     correct: 0,
     incorrect: 0,
     total: 0,
     accuracy: 0,
-    isWinner: false
+    isWinner: false,
+    points: 0
   });
   
   const handleStartQuiz = () => {
@@ -271,12 +274,18 @@ export default function SoloQuizzo() {
     const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
     const isWinner = accuracy >= 60; // Winner if accuracy is 60% or higher
     
+    // Calculate points - 20 points per correct answer plus bonus for high accuracy
+    const basePoints = correctAnswers * 20;
+    const accuracyBonus = accuracy >= 90 ? 50 : accuracy >= 80 ? 30 : accuracy >= 70 ? 20 : 0;
+    const totalPoints = basePoints + accuracyBonus;
+    
     setResults({
       correct: correctAnswers,
       incorrect: totalQuestions - correctAnswers,
       total: totalQuestions,
       accuracy,
-      isWinner
+      isWinner,
+      points: totalPoints
     });
     
     setGameState('finished');
@@ -291,12 +300,12 @@ export default function SoloQuizzo() {
       try {
         // Calculate QCoin reward - 3 for winners, 1 for participation
         const coinsEarned = isWinner ? 3 : 1;
-        setRewardMessage(`You earned ${coinsEarned} QCoins!`);
+        setRewardMessage(`You earned ${coinsEarned} QCoins and ${totalPoints} XP!`);
         
         // Update academic progress
         const quizData = {
           subject,
-          score: correctAnswers * 10, // 10 points per correct answer
+          score: totalPoints, // Now using calculated total points
           correctAnswers,
           totalQuestions,
           isWin: isWinner,
@@ -309,14 +318,25 @@ export default function SoloQuizzo() {
         // 2. Update academic progress
         await updateQuizProgress(user.uid, quizData);
         
-        // 3. Refresh wallet to show updated balance
+        // 3. Update leaderboard with points earned
+        await updateLeaderboard(
+          user.uid,
+          user.displayName || 'Anonymous',
+          user.photoURL || undefined,
+          profile?.course || 'Unknown',
+          totalPoints,
+          correctAnswers,
+          isWinner
+        );
+        
+        // 4. Refresh wallet to show updated balance
         setTimeout(() => {
           refreshWallet();
         }, 1500);
         
         toast({
           title: "Progress Saved",
-          description: "Your quiz results have been saved to your profile.",
+          description: `Your quiz results have been saved. You earned ${totalPoints} points!`,
           variant: "default"
         });
       } catch (error) {
@@ -470,42 +490,51 @@ export default function SoloQuizzo() {
         <div className="max-w-md mx-auto">
           {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
           
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center">
-                <h2 className="text-xl font-bold mb-4">
-                  {results.isWinner ? "Great Job! 🎉" : "Quiz Complete"}
-                </h2>
-                
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Score</p>
-                    <p className="text-xl font-bold">{results.correct}/{results.total}</p>
-                  </div>
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Accuracy</p>
-                    <p className="text-xl font-bold">{results.accuracy}%</p>
-                  </div>
-                </div>
-                
-                {/* Show reward message if user is logged in */}
-                {rewardMessage && user && (
-                  <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg">
-                    {rewardMessage}
-                  </div>
+          <Card className="mb-6">
+            <CardContent className="p-8 text-center">
+              <div className="mb-4">
+                {results.isWinner ? (
+                  <Trophy className="h-12 w-12 text-yellow-500 mx-auto" />
+                ) : (
+                  <CircleCheck className="h-12 w-12 text-blue-500 mx-auto" />
                 )}
-                
-                <div className="flex flex-col gap-3">
-                  <Button onClick={() => setGameState('setup')}>
-                    Try Another Quiz
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate("/quizzo")}>
-                    Back to Quizzo Hub
-                  </Button>
+              </div>
+              <h2 className="text-2xl font-bold mb-2">
+                {results.isWinner ? "Great Job! 🎉" : "Quiz Complete"}
+              </h2>
+              
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Score</p>
+                  <p className="text-xl font-bold">{results.correct} / {results.total}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Accuracy</p>
+                  <p className="text-xl font-bold">{results.accuracy}%</p>
+                </div>
+                <div className="text-center col-span-2">
+                  <p className="text-sm text-gray-600">Points Earned</p>
+                  <p className="text-xl font-bold text-indigo-600">{results.points} XP</p>
                 </div>
               </div>
+              
+              {rewardMessage && (
+                <Badge variant="outline" className="mt-4 mx-auto">
+                  <Coins className="h-3.5 w-3.5 mr-1" />
+                  {rewardMessage}
+                </Badge>
+              )}
             </CardContent>
           </Card>
+          
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => setGameState('setup')}>
+              Try Another Quiz
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/quizzo")}>
+              Back to Quizzo Hub
+            </Button>
+          </div>
         </div>
       )}
     </div>

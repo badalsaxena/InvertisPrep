@@ -31,7 +31,8 @@ import {
   BarChart,
   Coins,
   PlusCircle,
-  X
+  X,
+  Medal
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Separator } from "@/components/ui/separator";
@@ -73,7 +74,6 @@ export default function Navbar() {
     { name: "Resources", path: "/resources", icon: <BookOpen className="h-4 w-4 mr-2" /> },
     { name: "PYQ", path: "/pyq", icon: <ExternalLink className="h-4 w-4 mr-2" /> },
     { name: "Quizzo", path: "/quizzo", icon: <Trophy className="h-4 w-4 mr-2" /> },
-    { name: "About", path: "/about", icon: <Info className="h-4 w-4 mr-2" /> },
     { name: "Blog", path: "/blog", icon: <MessageSquare className="h-4 w-4 mr-2" />, mobileOnly: true },
     { name: "Contact", path: "/contact-us", icon: <Mail className="h-4 w-4 mr-2" /> },
   ];
@@ -112,6 +112,19 @@ export default function Navbar() {
                   </NavigationMenuItem>
                 ))}
                 
+                {/* Leaderboard - Special Release */}
+                <NavigationMenuItem>
+                  <Link to="">
+                    <NavigationMenuLink className="group h-10 flex items-center justify-center relative px-4 py-2 rounded-md border-none bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-medium shadow-md hover:shadow-lg transition-all animate-pulse">
+                      <Medal className="h-4 w-4 mr-1.5" />
+                      <span>Leaderboard</span>
+                      <div className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold">
+                        SOON
+                      </div>
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                
                 {/* More Dropdown */}
                 <NavigationMenuItem>
                   <DropdownMenu>
@@ -122,10 +135,13 @@ export default function Navbar() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link to="/our-mentors" className="w-full">Our Mentors</Link>
+                        <Link to="/our-team" className="w-full">Our Team</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                        <Link to="/about" className="w-full">About</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/our-team" className="w-full">Our Team</Link>
+                        <Link to="/our-mentors" className="w-full">Our Mentors</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
@@ -207,6 +223,19 @@ export default function Navbar() {
                             {link.name}
                           </Link>
                         ))}
+                        
+                        {/* Leaderboard - Special Item for Mobile */}
+                        <Link
+                          to="/leaderboard"
+                          className="flex items-center px-3 py-2 my-2 rounded-md text-sm font-medium text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 transition-colors shadow-sm relative"
+                          onClick={() => setOpen(false)}
+                        >
+                          <Medal className="h-4 w-4 mr-2" />
+                          Leaderboard
+                          <span className="ml-2 px-1.5 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold">
+                            NEW
+                          </span>
+                        </Link>
                         
                         {/* User Menu Links (when logged in) */}
                         {user && (
