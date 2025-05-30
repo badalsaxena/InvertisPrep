@@ -35,22 +35,11 @@ const teamMembers: TeamMember[] = [
       portfolio: "https://ahqafali.site"
     }
   },
-  {
-    id: 2,
-    name: "Mr. Badal Saxena",
-    role: "UI/UX Designer, Fontend Developer",
-    bio: "Mr. Badal Saxena has made the UI/UX of InvertisPrep. He is a good frontend developer and a UI/UX designer.",
-    image: "badal.jpg",
-    category: 'leadership',
-    social: {
-      github: "https://github.com/badalsaxena",
-      linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/"
-    }
-  },
+  
   
   // Development Team
   {
-    id: 3,
+    id: 2,
     name: "Mr. Pratyaksh Parashari",
     role: "Resource Head ",
     bio: "Mr. Pratyaksh Parashari leads our Resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
@@ -62,7 +51,7 @@ const teamMembers: TeamMember[] = [
     }
   },
   {
-    id: 4,
+    id: 3,
     name: "Mr. Kamal Yadav",
     role: "Resource Team",
     bio: "Mr. Kamal Yadav is a part of resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
@@ -74,7 +63,7 @@ const teamMembers: TeamMember[] = [
     }
   },
   {
-    id: 5,
+    id: 4,
     name: "Mr. Vivek Vishwakarma",
     role: "Cyber Security Head & Testing Expert",
     bio: "Mr. Vivek Vishwakarma is responsible for the Cyber Security of the InvertisPrep platform. He is a good cyber security expert and a testing expert.",
@@ -89,7 +78,7 @@ const teamMembers: TeamMember[] = [
   
   // Design Team
   {
-    id: 6,
+    id: 5,
     name: "Mr. Shashank Mishra",
     role: "Resource Team",
     bio: "Mr. Shashank Mishra has done a great job in the resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
