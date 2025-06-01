@@ -35,35 +35,8 @@ const teamMembers: TeamMember[] = [
       portfolio: "https://ahqafali.site"
     }
   },
-  
-  
-  // Development Team
   {
     id: 2,
-    name: "Mr. Pratyaksh Parashari",
-    role: "Resource Head ",
-    bio: "Mr. Pratyaksh Parashari leads our Resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
-    image: "pratyaksh.jpg",
-    category: 'development',
-    social: {
-      linkedin: "https://www.linkedin.com/in/pratyaksh-parashari-696454343/",
-      github: "https://github.com/rahul"
-    }
-  },
-  {
-    id: 3,
-    name: "Mr. Kamal Yadav",
-    role: "Resource Team",
-    bio: "Mr. Kamal Yadav is a part of resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
-    image: "kamal.jpg",
-    category: 'development',
-    social: {
-      linkedin: "https://linkedin.com/in/neha-singh",
-      github: "https://github.com/neha"
-    }
-  },
-  {
-    id: 4,
     name: "Mr. Vivek Vishwakarma",
     role: "Cyber Security Head & Testing Expert",
     bio: "Mr. Vivek Vishwakarma is responsible for the Cyber Security of the InvertisPrep platform. He is a good cyber security expert and a testing expert.",
@@ -75,6 +48,34 @@ const teamMembers: TeamMember[] = [
       github: "https://github.com/v45cfghh"
     }
   },
+  
+  
+  // Development Team
+  {
+    id: 3,
+    name: "Mr. Pratyaksh Parashari",
+    role: "Resource Head ",
+    bio: "Mr. Pratyaksh Parashari leads our Resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
+    image: "pratyaksh.jpg",
+    category: 'development',
+    social: {
+      linkedin: "https://www.linkedin.com/in/pratyaksh-parashari-696454343/",
+      github: "https://github.com/rahul"
+    }
+  },
+  {
+    id: 4,
+    name: "Mr. Kamal Yadav",
+    role: "Resource Team",
+    bio: "Mr. Kamal Yadav is a part of resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
+    image: "kamal.jpg",
+    category: 'development',
+    social: {
+      linkedin: "https://linkedin.com/in/neha-singh",
+      github: "https://github.com/neha"
+    }
+  },
+  
   
   // Design Team
   {
@@ -116,7 +117,7 @@ const OurTeam: React.FC = () => {
         
         {/* All Team Members */}
         <TabsContent value="all" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {teamMembers.map((member) => (
               <TeamMemberCard key={member.id} member={member} />
             ))}
@@ -125,7 +126,7 @@ const OurTeam: React.FC = () => {
         
         {/* Leadership Team */}
         <TabsContent value="leadership" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {teamMembers
               .filter(member => member.category === 'leadership')
               .map((member) => (
@@ -136,7 +137,7 @@ const OurTeam: React.FC = () => {
         
         {/* Development Team */}
         <TabsContent value="development" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {teamMembers
               .filter(member => member.category === 'development')
               .map((member) => (
@@ -147,7 +148,7 @@ const OurTeam: React.FC = () => {
         
         {/* Design Team */}
         <TabsContent value="design" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {teamMembers
               .filter(member => member.category === 'design')
               .map((member) => (
@@ -158,7 +159,7 @@ const OurTeam: React.FC = () => {
         
         {/* Marketing Team */}
         <TabsContent value="marketing" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 place-items-center">
             {teamMembers
               .filter(member => member.category === 'marketing')
               .map((member) => (
@@ -188,7 +189,7 @@ const OurTeam: React.FC = () => {
 // Team Member Card Component
 const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
   return (
-    <Card className="overflow-hidden hover:shadow-md transition-all duration-300">
+    <Card className="overflow-hidden hover:shadow-md transition-all duration-300 w-full max-w-sm">
       <div className="flex justify-center pt-6">
         <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/10">
           <img 
