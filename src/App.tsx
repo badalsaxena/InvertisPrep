@@ -32,6 +32,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/Blog/BlogPost";
 import OurMentors from "@/pages/OurMentors";
 import OurTeam from "@/pages/OurTeam";
+import Leaderboard from "@/pages/Leaderboard";
 import { handleQuizReward } from "./api/quiz-rewards";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from '@vercel/analytics/react';
@@ -41,6 +42,7 @@ import AdminRouteWrapper from "./pages/Admin/AdminRouteWrapper";
 import ErrorBoundary from "./components/ErrorBoundary";
 import TestPage from "./pages/TestPage";
 import PDFUpload from "./pages/Admin/PDFUpload";
+import { resetPeriodicLeaderboards } from './services/leaderboardService';
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -162,6 +164,13 @@ const QuizRewardsApi = () => {
 };
 
 function App() {
+  useEffect(() => {
+    // Reset periodic leaderboards if needed
+    resetPeriodicLeaderboards().catch(error => {
+      console.error("Error resetting periodic leaderboards:", error);
+    });
+  }, []);
+
   return (
     <ErrorBoundary>
       <Router>
@@ -271,6 +280,7 @@ function App() {
             <Route path="/quizzo" element={<Quizzo />} />
             <Route path="/quizzo/multiplayer" element={<MultiplayerQuizzo />} />
             <Route path="/quizzo/solo" element={<SoloQuizzo />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             
             {/* Legal and Support Routes */}
             <Route path="/bug-report" element={<BugReport />} />

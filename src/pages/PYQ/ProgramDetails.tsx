@@ -129,15 +129,11 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
-  ba: {
-    name: "BA",
-    fullName: "Bachelor of Arts",
+  diploma: {
+    name: "Diploma",
+    fullName: "Diploma",
     branches: [
-      { id: "general", name: "General" },
-      { id: "economics", name: "Economics" },
-      { id: "english", name: "English" },
-      { id: "history", name: "History" },
-      { id: "political_science", name: "Political Science" }
+      { id: "general", name: "General" }
     ]
   },
   bjmc: {
@@ -147,12 +143,19 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
-  fashion_design: {
+  fashiondesign: {
     name: "Fashion Design",
     fullName: "Bachelor of Design in Fashion",
     branches: [
-      { id: "general", name: "General" },
-      { id: "textile", name: "Textile Design" }
+      { id: "general", name: "General" }
+      
+    ]
+  },
+  law: {
+    name: "Law",
+    fullName: "Bachelor of Law",
+    branches: [
+      { id: "general", name: "General" }
     ]
   },
   education: {
@@ -162,13 +165,12 @@ const programsData = {
       { id: "general", name: "General" }
     ]
   },
-  applied_science: {
+  appliedscienceandhumanities: {
     name: "Applied Science",
     fullName: "Bachelor of Applied Sciences",
     branches: [
-      { id: "general", name: "General" },
-      { id: "biotechnology", name: "Biotechnology" },
-      { id: "food_tech", name: "Food Technology" }
+      { id: "general", name: "General" }
+      
     ]
   },
   msc: {
@@ -801,16 +803,6 @@ function PaperCard({ paper }: { paper: Paper }) {
         >
           <FileText className="h-3 w-3 mr-1.5" />
           Download
-        </a>
-        <a
-          href={`${BACKEND_URL}${solutionPath}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleSolutionDownload}
-          className="inline-flex items-center px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-md transition-colors"
-        >
-          <BookOpen className="h-3 w-3 mr-1.5" />
-          Premium Solution
         </a>
       </div>
       
