@@ -35,23 +35,38 @@ const teamMembers: TeamMember[] = [
       portfolio: "https://ahqafali.site"
     }
   },
-  {
+
+   {
     id: 2,
+    name: "Mr. Badal Saxena",
+    role: "UI & UX , Frontend Developer",
+    bio: "Mr. Badal Saxena is responsible for designing and developing the user interface of the InvertisPrep platform. He is a skilled Frontend Developer and UI/UX Designer, dedicated to creating seamless, visually appealing, and user-friendly experiences.",
+    image: "badal.jpg",
+    category: 'development',
+    social: {
+      github: "https://github.com/badalsaxena",
+      linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/",
+      portfolio: "https://badal-saxena-portfolio.vercel.app/"
+    }
+  },
+
+  {
+    id: 3,
     name: "Mr. Vivek Vishwakarma",
     role: "Cyber Security Head & Testing Expert",
     bio: "Mr. Vivek Vishwakarma is responsible for the Cyber Security of the InvertisPrep platform. He is a good cyber security expert and a testing expert.",
     image: "vivek.jpg",
     category: 'development',
     social: {
-      github: "https://github.com/badalsaxena",
-      linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/"
+      github: "https://github.com/vivek12coder",
+      linkedin: "https://www.linkedin.com/in/vivek-vishwakarma-953697321?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
     }
   },
   
   
   // Development Team
   {
-    id: 3,
+    id: 4,
     name: "Mr. Pratyaksh Parashari",
     role: "Resource Head ",
     bio: "Mr. Pratyaksh Parashari leads our Resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
@@ -63,7 +78,7 @@ const teamMembers: TeamMember[] = [
     }
   },
   {
-    id: 4,
+    id: 5,
     name: "Mr. Kamal Yadav",
     role: "Resource Team",
     bio: "Mr. Kamal Yadav is a part of resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
@@ -78,7 +93,7 @@ const teamMembers: TeamMember[] = [
   
   // Design Team
   {
-    id: 5,
+    id: 6,
     name: "Mr. Shashank Mishra",
     role: "Resource Team",
     bio: "Mr. Shashank Mishra has done a great job in the resource team and is responsible for the resource collection and management of the InvertisPrep platform.",
