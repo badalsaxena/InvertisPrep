@@ -44,7 +44,8 @@ const teamMembers: TeamMember[] = [
     category: 'leadership',
     social: {
       github: "https://github.com/badalsaxena",
-      linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/"
+      linkedin: "https://www.linkedin.com/in/badal-saxena-699b6934b/",
+      portfolio: "https://badal-saxena-portfolio.vercel.app/"
     }
   },
   
